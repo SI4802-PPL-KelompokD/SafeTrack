@@ -1,0 +1,7 @@
+-- Jalankan melalui HeidiSQL/phpMyAdmin sebagai admin MySQL.
+CREATE DATABASE safetrack CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- Bila belum ada user khusus, buat dengan password pilihanmu:
+CREATE USER 'safetrack'@'localhost' IDENTIFIED BY 'GANTI_PASSWORD_INI';
+GRANT ALL PRIVILEGES ON safetrack.* TO 'safetrack'@'localhost';
+-- Hak ini untuk development/migration pada schema ini saja.
+-- DB production nanti memakai akun migration dan runtime terpisah.
