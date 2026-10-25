@@ -1,0 +1,97 @@
+[
+  {
+    "path": ".env.example",
+    "action": "replace",
+    "sha256": "db4b8d641567d46c1f7300fb65e7d862d51bd7d3254694c075e02b1331180227"
+  },
+  {
+    "path": ".env.testing.example",
+    "action": "add",
+    "sha256": "0f15b689945618911b66bca43da917a96718698357e46482db20b13b852be08d"
+  },
+  {
+    "path": ".github/workflows/database.yml",
+    "action": "add",
+    "sha256": "33d8d11c47953f5c83b1b4354b590c4f881fc312656ac4875c3189aa0efc29cf"
+  },
+  {
+    "path": ".gitignore",
+    "action": "replace",
+    "sha256": "25c30c9bd256626cb4555b78e7f015d19b6aabd757c6f9d933f73e38929597e1"
+  },
+  {
+    "path": "app/Console/Commands/CreateInitialAdmin.php",
+    "action": "add",
+    "sha256": "8db4badfd4dfa2da30a9001fad5b76c64105ad16c73a006efc76daaa08dc91d6"
+  },
+  {
+    "path": "app/Services/HazardClaimService.php",
+    "action": "add",
+    "sha256": "dd843923903a1ccc3d3584d1d94920e4300d26f454468c22d25bb648cd84e894"
+  },
+  {
+    "path": "app/Services/RegistrationService.php",
+    "action": "add",
+    "sha256": "778fc8c0d402ebd72ae84df76a5678104f6b8e66bd3d2b1b656a3da3a294b51c"
+  },
+  {
+    "path": "composer.json",
+    "action": "replace",
+    "sha256": "00b6be5ea749f6ab29705e758841869abdddeb159a4746885bbf80399d8e1ca0"
+  },
+  {
+    "path": "database/seeders/DatabaseSeeder.php",
+    "action": "replace",
+    "sha256": "f38bbb3dcdf3dce0f8cff0ff67f64e7ceab7f16c56a509643be379f37a9e39db"
+  },
+  {
+    "path": "docs/safetrack/AUDIT_REPORT.md",
+    "action": "add",
+    "sha256": "aa3fec669190eeb85d56068f55612f9051d0fba0ba37d5996025cc70ea772967"
+  },
+  {
+    "path": "docs/safetrack/VALIDATION.md",
+    "action": "replace",
+    "sha256": "a1a3f78005d5f669b706e5dba07c110adcfb3cc179171f220c41799fa4272127"
+  },
+  {
+    "path": "phpunit.xml",
+    "action": "replace",
+    "sha256": "2b1baad002e0b026c4deff25d174299c07849d70b10867c2268c7486df1f8c5e"
+  },
+  {
+    "path": "README.md",
+    "action": "replace",
+    "sha256": "d4342f75acd6e4f6472509f19d40abc6b0fdcc3d180f130a01aeb1027d0e8e49"
+  },
+  {
+    "path": "README_APPLY_FIX.md",
+    "action": "add",
+    "sha256": "34757d19f74029a17a5534d4cc664b4899f1d57fb6f92060851ebbd0473a2a9a"
+  },
+  {
+    "path": "README_DATABASE_SETUP.md",
+    "action": "replace",
+    "sha256": "a031c9db12ef88fd9287572ad0cda2725a5ff0abc9312f14e07b03e4becff77c"
+  },
+  {
+    "path": "scripts/setup-team.php",
+    "action": "add",
+    "sha256": "76ece10e6e4313d0acf9697bb5e2fe8d9152d1e45752152e8a406099fdc4c9cf"
+  },
+  {
+    "path": "tests/Feature/DatabaseSetupTest.php",
+    "action": "add",
+    "sha256": "e1bd37efa58a74f8fbe40ce092d15257a0822a741a25e0ee83d29b5995ead831"
+  },
+  {
+    "path": "tests/TestCase.php",
+    "action": "replace",
+    "sha256": "b694956cf419cfba8e2910cec4735479d1e754ac10f5fc8b2a616ae2fb11cb15"
+  },
+  {
+    "path": "vite.config.js",
+    "action": "replace",
+    "sha256": "3b23f4019a8057e70a071a7d5b0d4c2ec1910339f6a02bb472db097b17a73a2c"
+  }
+]
