@@ -14,6 +14,7 @@ class AuthTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutVite();
         $this->seed(DemoSeeder::class);
     }
 
