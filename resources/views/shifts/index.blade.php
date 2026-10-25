@@ -223,16 +223,20 @@
             color: var(--text-heading);
         }
         .sidebar-link.active {
-            background-color: var(--amber-active-bg);
-            color: #854d0e;
+            background-color: #0f2a4a;
+            color: #ffffff;
             font-weight: 600;
-            border-left: 3.5px solid #d97706;
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            margin-left: -12px;
-            padding-left: 20px;
+            border-radius: var(--radius-sm);
         }
         .sidebar-link.active svg {
-            color: #d97706;
+            color: #ffffff;
+        }
+        .sidebar-link.active:hover {
+            background-color: #163860;
+            color: #ffffff;
+        }
+        .sidebar-link.active:hover svg {
+            color: #ffffff;
         }
 
         /* Sidebar User Footer */
