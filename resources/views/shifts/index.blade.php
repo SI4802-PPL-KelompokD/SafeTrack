@@ -1364,17 +1364,22 @@
         <!-- Bottom User Profile Card (Referencing Foto 1) -->
         <div class="sidebar-user-footer">
             <div class="user-meta-wrap">
-                <div class="user-avatar-badge">AH</div>
+                <div class="user-avatar-badge">{{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}</div>
                 <div class="user-name-title">
-                    <span class="user-full-name">Admin HSE</span>
-                    <span class="user-role-label">Admin / HSE</span>
+                    <span class="user-full-name">{{ Auth::user()->name ?? 'Admin HSE' }}</span>
+                    <span class="user-role-label">
+                        {{ (Auth::user() && Auth::user()->role === 'super_admin') ? 'Super Admin' : 'Admin / HSE' }}
+                    </span>
                 </div>
             </div>
-            <button type="button" class="btn-user-exit" title="Keluar">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:17px;height:17px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                </svg>
-            </button>
+            <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                @csrf
+                <button type="submit" class="btn-user-exit" title="Keluar / Logout" id="btnLogoutSidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:17px;height:17px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                    </svg>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -1401,7 +1406,7 @@
 
                 <div class="account-switch-btn" title="Ganti Akun">
                     <span class="account-switch-label">Ganti Akun</span>
-                    <span class="account-switch-name">Admin HSE - HSE</span>
+                    <span class="account-switch-name">{{ Auth::user()->name ?? 'Admin HSE' }}</span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:12px;height:12px;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
@@ -1413,7 +1418,7 @@
                     </svg>
                 </button>
 
-                <div class="user-avatar-badge" style="width:32px;height:32px;font-size:11px;">AH</div>
+                <div class="user-avatar-badge" style="width:32px;height:32px;font-size:11px;">{{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}</div>
             </div>
         </header>
 
