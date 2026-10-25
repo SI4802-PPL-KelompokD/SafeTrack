@@ -18,4 +18,8 @@ class User extends Authenticatable {
  public function department(){return $this->belongsTo(Department::class);}
  public function employeeRegistry(){return $this->belongsTo(EmployeeRegistry::class);}
  public function reports(){return $this->hasMany(HazardReport::class,'reporter_id');}
+ public function sapMonthlySummaries(){return $this->hasMany(SapMonthlySummary::class);}
+ public function sapEntries(){return $this->hasMany(SapEntry::class);}
+ public function sapTargets(){return $this->hasMany(SapTarget::class);}
 }
+

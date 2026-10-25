@@ -4,6 +4,6 @@ use Illuminate\Database\Eloquent\Model;
 class DailyInspection extends Model {
  
  protected $table='daily_inspections';
- protected $guarded=['*'];
+ protected $guarded=['id'];
  public function answers(){return $this->hasMany(InspectionAnswer::class);}
 }
