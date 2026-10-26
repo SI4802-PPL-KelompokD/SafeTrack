@@ -28,8 +28,8 @@ class SapController extends Controller
         $periodCarbon = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth();
         $periodDate = $periodCarbon->format('Y-m-01');
 
-        // Query rekap SAP bulanan dengan relasi karyawan dan departemen
-        $summariesQuery = SapMonthlySummary::with(['user.employeeRegistry', 'department'])
+        // Query rekap SAP bulanan dengan relasi karyawan, departemen, dan reward
+        $summariesQuery = SapMonthlySummary::with(['user.employeeRegistry', 'department', 'eligibleReward'])
             ->where('period', $periodDate);
 
         // Filter pencarian nama / NIK jika ada
@@ -52,6 +52,7 @@ class SapController extends Controller
         $participatingEmployees = (int) (clone $baseStatsQuery)->where('total_points', '>', 0)->count();
         $totalEmployeesRecapped = (int) (clone $baseStatsQuery)->count();
         $targetMetCount = (int) (clone $baseStatsQuery)->where('target_met', true)->count();
+        $rewardEligibleCount = (int) (clone $baseStatsQuery)->where('reward_eligible', true)->count();
         $averagePoints = $totalEmployeesRecapped > 0 ? round($totalPoints / $totalEmployeesRecapped, 1) : 0;
 
         return view('sap.index', [
@@ -64,6 +65,7 @@ class SapController extends Controller
             'participatingEmployees' => $participatingEmployees,
             'totalEmployeesRecapped' => $totalEmployeesRecapped,
             'targetMetCount' => $targetMetCount,
+            'rewardEligibleCount' => $rewardEligibleCount,
             'averagePoints' => $averagePoints,
         ]);
     }

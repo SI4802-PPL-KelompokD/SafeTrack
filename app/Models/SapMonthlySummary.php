@@ -21,6 +21,7 @@ class SapMonthlySummary extends Model
             'safety_talk_count' => 'integer',
             'total_points' => 'integer',
             'target_met' => 'boolean',
+            'reward_eligible' => 'boolean',
             'calculated_at' => 'datetime',
         ];
     }
@@ -33,5 +34,10 @@ class SapMonthlySummary extends Model
     public function department()
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function eligibleReward()
+    {
+        return $this->belongsTo(Reward::class, 'eligible_reward_id');
     }
 }

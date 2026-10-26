@@ -601,6 +601,18 @@
         .badge-target.unmet { background: #fee2e2; color: #991b1b; }
         .badge-target.none { background: #f1f5f9; color: #64748b; }
 
+        .badge-reward {
+            display: inline-block;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .badge-reward.eligible { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-reward.not-eligible { background: #f1f5f9; color: #64748b; }
+
         .badge-dept {
             font-size: 12px;
             font-weight: 600;
@@ -887,8 +899,8 @@
                         </svg>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-label">Target Bulanan Tercapai</span>
-                        <span class="stat-value" id="statTargetMet">{{ $targetMetCount }}</span>
+                        <span class="stat-label">Konversi Terpenuhi</span>
+                        <span class="stat-value" id="statTargetMet" style="font-size:19px;">{{ $targetMetCount }} <span style="font-size:12px;color:var(--text-muted);font-weight:600;">HSE</span> &bull; {{ $rewardEligibleCount }} <span style="font-size:12px;color:var(--text-muted);font-weight:600;">Reward</span></span>
                     </div>
                 </div>
             </div>
@@ -922,7 +934,7 @@
                                     <th style="text-align:center;" title="Safety Talk Diikuti">Safety Talk</th>
                                     <th style="text-align:center;" title="Resolusi Bahaya Diterima">Resolusi</th>
                                     <th style="text-align:center;">Total Poin SAP</th>
-                                    <th style="text-align:center;">Target</th>
+                                    <th style="text-align:center;">Status Konversi (Target / Reward)</th>
                                     <th>Terakhir Dihitung</th>
                                 </tr>
                             </thead>
@@ -964,12 +976,22 @@
                                             </span>
                                         </td>
                                         <td style="text-align:center;">
-                                            @if ($summary->target_met === true)
-                                                <span class="badge-target met">Tercapai</span>
-                                            @elseif ($summary->target_met === false)
-                                                <span class="badge-target unmet">Belum</span>
+                                            @if ($summary->is_hse_snapshot)
+                                                {{-- Karyawan Departemen HSE: Konversi Target Bulanan (KPI) --}}
+                                                @if ($summary->target_met === true)
+                                                    <span class="badge-target met" title="KPI / Target Bulanan HSE Terpenuhi">Target Terpenuhi</span>
+                                                @elseif ($summary->target_met === false)
+                                                    <span class="badge-target unmet" title="Poin SAP belum mencapai ambang target HSE">Target Belum Terpenuhi</span>
+                                                @else
+                                                    <span class="badge-target none" title="Aturan konversi target HSE belum ditetapkan">-</span>
+                                                @endif
                                             @else
-                                                <span class="badge-target none">-</span>
+                                                {{-- Karyawan Non-HSE: Konversi Reward --}}
+                                                @if ($summary->reward_eligible && $summary->eligibleReward)
+                                                    <span class="badge-reward eligible" title="Berhak atas reward sesuai ambang poin">🎁 {{ $summary->eligibleReward->name }} ({{ $summary->eligibleReward->required_points }} pts)</span>
+                                                @else
+                                                    <span class="badge-reward not-eligible" title="Poin belum mencapai ambang reward aktif">Belum Mencapai Ambang</span>
+                                                @endif
                                             @endif
                                         </td>
                                         <td style="font-size:12px;color:var(--text-muted);">

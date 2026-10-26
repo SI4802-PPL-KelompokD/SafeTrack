@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DailyInspection;
 use App\Models\HazardReport;
 use App\Models\HazardResolution;
+use App\Models\Reward;
 use App\Models\SafetyTalk;
 use App\Models\SapEntry;
 use App\Models\SapMonthlySummary;
@@ -158,32 +159,14 @@ class SapCalculationService
                 $safetyTalkCount = count($uniqueTalkIds);
                 $resolutionCount = count($resolutions);
 
-                // 6. Cek target SAP karyawan (jika ditetapkan)
-                $targets = SapTarget::where('user_id', $user->id)
-                    ->where('period', $periodDate)
-                    ->get();
-
-                $targetMet = null;
-                if ($targets->isNotEmpty()) {
-                    $targetMet = true;
-                    $countsByActivity = [
-                        self::ACTIVITY_HAZARD => $hazardCount,
-                        self::ACTIVITY_INSPECTION => $inspectionCount,
-                        self::ACTIVITY_SAFETY_TALK => $safetyTalkCount,
-                        self::ACTIVITY_RESOLUTION => $resolutionCount,
-                    ];
-
-                    foreach ($targets as $target) {
-                        $actualCount = $countsByActivity[$target->activity] ?? 0;
-                        if ($actualCount < $target->target_count) {
-                            $targetMet = false;
-                            break;
-                        }
-                    }
-                }
-
                 $departmentId = $user->department_id;
                 $isHseSnapshot = (bool) ($user->department?->is_hse ?? false);
+
+                // 6. UC-26: Konversi Poin SAP (Reward untuk Non-HSE / Pemenuhan Target untuk HSE)
+                $conversion = $this->convertPoints($user, $totalPoints, $periodDate, $isHseSnapshot);
+                $targetMet = $conversion['target_met'];
+                $rewardEligible = $conversion['reward_eligible'];
+                $eligibleRewardId = $conversion['eligible_reward_id'];
 
                 // 7. Simpan / perbarui rekap SAP bulanan (sap_monthly_summaries)
                 return SapMonthlySummary::updateOrCreate(
@@ -200,6 +183,8 @@ class SapCalculationService
                         'safety_talk_count' => $safetyTalkCount,
                         'total_points' => $totalPoints,
                         'target_met' => $targetMet,
+                        'reward_eligible' => $rewardEligible,
+                        'eligible_reward_id' => $eligibleRewardId,
                         'calculated_at' => Carbon::now(),
                     ]
                 );
@@ -305,4 +290,94 @@ class SapCalculationService
 
         return $rules;
     }
+
+    /**
+     * UC-26: Mengonversi Poin SAP (Reward / Target).
+     *
+     * Alur:
+     * - Untuk Non-HSE: Konversi poin menjadi reward menggunakan tabel rewards (name & required_points).
+     * - Untuk HSE: Konversi poin menjadi pemenuhan target bulanan (KPI) berdasarkan aturan konversi SAP (UC-27/PBI-23).
+     *   Jika aturan konversi HSE belum ditetapkan, jangan jalankan konversi dan jangan ubah target_met menjadi true.
+     *
+     * @param User $user
+     * @param int $totalPoints
+     * @param string $periodDate
+     * @param bool $isHse
+     * @return array{target_met: ?bool, reward_eligible: bool, eligible_reward_id: ?int}
+     */
+    public function convertPoints(User $user, int $totalPoints, string $periodDate, bool $isHse): array
+    {
+        try {
+            if ($isHse) {
+                // Karyawan Departemen HSE: Konversi poin menjadi pemenuhan target bulanan (KPI)
+                // Ambang pemenuhan target HSE diambil dari aturan konversi SAP (UC-27 / PBI-23)
+                $hseRule = SapPointRule::whereIn('activity', ['hse_target_threshold', 'hse_target', 'target_threshold'])
+                    ->where('effective_from', '<=', $periodDate)
+                    ->where(function ($q) use ($periodDate) {
+                        $q->whereNull('effective_until')
+                            ->orWhere('effective_until', '>=', $periodDate);
+                    })
+                    ->orderByDesc('effective_from')
+                    ->first();
+
+                // Alur Alternatif (2'): Jika aturan konversi belum ditetapkan / tidak tersedia, jangan konversi dan jangan set target_met menjadi true
+                if (!$hseRule) {
+                    return [
+                        'target_met' => null,
+                        'reward_eligible' => false,
+                        'eligible_reward_id' => null,
+                    ];
+                }
+
+                $threshold = $hseRule->points;
+                // Alur Normal (4) & Alur Alternatif (3'): Tetapkan target_met jika poin mencapai ambang
+                $targetMet = $totalPoints >= $threshold;
+
+                return [
+                    'target_met' => $targetMet,
+                    'reward_eligible' => false,
+                    'eligible_reward_id' => null,
+                ];
+            }
+
+            // Karyawan Non-HSE: Konversi poin menjadi hak reward
+            // Aturan ambang reward diambil dari tabel rewards yang aktif (UC-27)
+            $eligibleReward = Reward::where('is_active', true)
+                ->where('required_points', '<=', $totalPoints)
+                ->orderByDesc('required_points')
+                ->first();
+
+            // Alur Normal (3): Tandai karyawan berhak atas reward sesuai ambang poin
+            // Alur Alternatif (3'): Jika poin belum mencapai ambang atau aturan belum ada, tidak ditandai reward
+            if ($eligibleReward) {
+                return [
+                    'target_met' => null,
+                    'reward_eligible' => true,
+                    'eligible_reward_id' => $eligibleReward->id,
+                ];
+            }
+
+            return [
+                'target_met' => null,
+                'reward_eligible' => false,
+                'eligible_reward_id' => null,
+            ];
+        } catch (\Throwable $e) {
+            // Error Situation: Catat kegagalan dan status tidak berubah
+            Log::error("Kegagalan konversi poin SAP (UC-26) untuk pengguna ID {$user->id}: " . $e->getMessage(), [
+                'user_id' => $user->id,
+                'total_points' => $totalPoints,
+                'period' => $periodDate,
+                'is_hse' => $isHse,
+                'exception' => $e,
+            ]);
+
+            return [
+                'target_met' => null,
+                'reward_eligible' => false,
+                'eligible_reward_id' => null,
+            ];
+        }
+    }
 }
+

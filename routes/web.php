@@ -39,7 +39,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $currentPeriod = now()->format('Y-m-01');
-        $sapSummary = SapMonthlySummary::where('user_id', $user->id)
+        $sapSummary = SapMonthlySummary::with('eligibleReward')
+            ->where('user_id', $user->id)
             ->where('period', $currentPeriod)
             ->first();
 

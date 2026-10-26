@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\HazardCategory;
 use App\Models\HazardReport;
 use App\Models\HazardResolution;
+use App\Models\Reward;
 use App\Models\SafetyTalk;
 use App\Models\SapEntry;
 use App\Models\SapMonthlySummary;
@@ -198,59 +199,246 @@ class SapCalculationTest extends TestCase
     /**
      * UC-25: Evaluasi target SAP (target_met).
      */
-    public function test_sap_target_compliance_evaluation(): void
+    /**
+     * UC-26: Karyawan Non-HSE dikonversi menjadi berhak atas reward saat poin mencapai ambang.
+     */
+    public function test_uc26_non_hse_employee_converted_to_reward_when_points_reach_threshold(): void
     {
         $now = Carbon::now();
-        $periodDate = $now->copy()->startOfMonth()->format('Y-m-01');
         $category = HazardCategory::first() ?? HazardCategory::create(['code' => 'GEN', 'name' => 'Umum', 'is_active' => true]);
         $area = WorkArea::first();
 
-        // Tetapkan target: karyawan harus membuat 2 hazard report bulan ini
-        SapTarget::create([
-            'user_id' => $this->employeeUser->id,
-            'period' => $periodDate,
-            'activity' => 'hazard_verified',
-            'target_count' => 2,
-            'created_by' => $this->adminUser->id,
+        // Buat aturan konversi reward (UC-27): Sepeda (ambang 2 poin)
+        $reward = Reward::create([
+            'name' => 'Hadiah Sepeda',
+            'required_points' => 2,
+            'is_active' => true,
         ]);
 
-        // Buat hanya 1 hazard report
+        // Karyawan non-HSE memperoleh 2 hazard report (2 poin)
+        for ($i = 1; $i <= 2; $i++) {
+            HazardReport::create([
+                'client_request_id' => (string) Str::uuid(),
+                'reporter_id' => $this->employeeUser->id,
+                'reporter_department_id' => $this->opsDept->id,
+                'category_id' => $category->id,
+                'work_area_id' => $area->id,
+                'title' => "Hazard Non-HSE {$i}",
+                'location' => 'Area Produksi',
+                'description' => "Desc {$i}",
+                'risk_level' => 'low',
+                'status' => 'open',
+                'verified_at' => $now,
+                'reported_at' => $now,
+            ]);
+        }
+
+        $summary = $this->sapService->calculateForUser($this->employeeUser, $now);
+
+        $this->assertEquals(2, $summary->total_points);
+        $this->assertFalse($summary->is_hse_snapshot);
+        $this->assertTrue($summary->reward_eligible); // Tertandai berhak atas reward
+        $this->assertEquals($reward->id, $summary->eligible_reward_id);
+        $this->assertNull($summary->target_met); // Non-HSE tidak dikonversi ke target KPI
+    }
+
+    /**
+     * UC-26: Karyawan Non-HSE belum berhak atas reward jika poin belum mencapai ambang (Alur Alternatif 3').
+     */
+    public function test_uc26_non_hse_employee_not_eligible_when_points_below_threshold(): void
+    {
+        $now = Carbon::now();
+        $category = HazardCategory::first() ?? HazardCategory::create(['code' => 'GEN', 'name' => 'Umum', 'is_active' => true]);
+        $area = WorkArea::first();
+
+        // Aturan reward ambang 10 poin
+        Reward::create([
+            'name' => 'Hadiah Sepeda',
+            'required_points' => 10,
+            'is_active' => true,
+        ]);
+
+        // Karyawan hanya memiliki 1 poin
         HazardReport::create([
             'client_request_id' => (string) Str::uuid(),
             'reporter_id' => $this->employeeUser->id,
             'reporter_department_id' => $this->opsDept->id,
             'category_id' => $category->id,
             'work_area_id' => $area->id,
-            'title' => 'Hazard 1',
+            'title' => 'Hazard 1 pt',
             'location' => 'Lantai 1',
-            'description' => 'Desc 1',
+            'description' => 'Desc',
             'risk_level' => 'low',
             'status' => 'open',
             'verified_at' => $now,
             'reported_at' => $now,
         ]);
 
-        $summary1 = $this->sapService->calculateForUser($this->employeeUser, $now);
-        $this->assertFalse($summary1->target_met); // Target belum terpenuhi (1 < 2)
+        $summary = $this->sapService->calculateForUser($this->employeeUser, $now);
 
-        // Tambah hazard report ke-2
+        $this->assertEquals(1, $summary->total_points);
+        $this->assertFalse($summary->reward_eligible); // Belum mencapai ambang 10 poin
+        $this->assertNull($summary->eligible_reward_id);
+    }
+
+    /**
+     * UC-26: Karyawan Non-HSE tidak dikonversi jika belum ada aturan reward aktif (Alur Alternatif 2').
+     */
+    public function test_uc26_non_hse_employee_no_conversion_when_no_active_rewards(): void
+    {
+        $now = Carbon::now();
+        $category = HazardCategory::first() ?? HazardCategory::create(['code' => 'GEN', 'name' => 'Umum', 'is_active' => true]);
+        $area = WorkArea::first();
+
+        // Karyawan memiliki 5 poin, tetapi tabel rewards kosong
+        for ($i = 1; $i <= 5; $i++) {
+            HazardReport::create([
+                'client_request_id' => (string) Str::uuid(),
+                'reporter_id' => $this->employeeUser->id,
+                'reporter_department_id' => $this->opsDept->id,
+                'category_id' => $category->id,
+                'work_area_id' => $area->id,
+                'title' => "Hazard {$i}",
+                'location' => 'Lantai 1',
+                'description' => "Desc {$i}",
+                'risk_level' => 'low',
+                'status' => 'open',
+                'verified_at' => $now,
+                'reported_at' => $now,
+            ]);
+        }
+
+        $summary = $this->sapService->calculateForUser($this->employeeUser, $now);
+
+        $this->assertEquals(5, $summary->total_points);
+        $this->assertFalse($summary->reward_eligible);
+        $this->assertNull($summary->eligible_reward_id);
+    }
+
+    /**
+     * UC-26: Karyawan HSE dikonversi menjadi target_met = true saat poin mencapai ambang aturan konversi.
+     */
+    public function test_uc26_hse_employee_converted_to_target_met_when_points_reach_threshold(): void
+    {
+        $now = Carbon::now();
+        $periodDate = $now->copy()->startOfMonth()->format('Y-m-01');
+        $hseUser = User::where('username', 'hse')->first();
+        $hseDept = Department::where('code', 'HSE')->first();
+        $category = HazardCategory::first() ?? HazardCategory::create(['code' => 'GEN', 'name' => 'Umum', 'is_active' => true]);
+        $area = WorkArea::first();
+
+        // Aturan konversi HSE (UC-27 / PBI-23): target terpenuhi jika mencapai ambang 2 poin
+        SapPointRule::create([
+            'activity' => 'hse_target_threshold',
+            'points' => 2,
+            'effective_from' => '2026-01-01',
+        ]);
+
+        // Karyawan HSE memperoleh 2 hazard report (2 poin)
+        for ($i = 1; $i <= 2; $i++) {
+            HazardReport::create([
+                'client_request_id' => (string) Str::uuid(),
+                'reporter_id' => $hseUser->id,
+                'reporter_department_id' => $hseDept->id,
+                'category_id' => $category->id,
+                'work_area_id' => $area->id,
+                'title' => "Hazard HSE {$i}",
+                'location' => 'Area Kantor',
+                'description' => "Desc {$i}",
+                'risk_level' => 'low',
+                'status' => 'open',
+                'verified_at' => $now,
+                'reported_at' => $now,
+            ]);
+        }
+
+        $summary = $this->sapService->calculateForUser($hseUser, $now);
+
+        $this->assertEquals(2, $summary->total_points);
+        $this->assertTrue($summary->is_hse_snapshot);
+        $this->assertTrue($summary->target_met); // Target KPI terpenuhi (2 >= 2)
+        $this->assertFalse($summary->reward_eligible); // HSE tidak dikonversi ke reward barang
+    }
+
+    /**
+     * UC-26: Karyawan HSE target_met = false jika poin belum mencapai ambang aturan konversi (Alur Alternatif 3').
+     */
+    public function test_uc26_hse_employee_target_not_met_when_points_below_threshold(): void
+    {
+        $now = Carbon::now();
+        $hseUser = User::where('username', 'hse')->first();
+        $hseDept = Department::where('code', 'HSE')->first();
+        $category = HazardCategory::first() ?? HazardCategory::create(['code' => 'GEN', 'name' => 'Umum', 'is_active' => true]);
+        $area = WorkArea::first();
+
+        // Aturan konversi HSE membutuhkan 10 poin
+        SapPointRule::create([
+            'activity' => 'hse_target_threshold',
+            'points' => 10,
+            'effective_from' => '2026-01-01',
+        ]);
+
+        // Karyawan HSE hanya memperoleh 1 hazard report (1 poin)
         HazardReport::create([
             'client_request_id' => (string) Str::uuid(),
-            'reporter_id' => $this->employeeUser->id,
-            'reporter_department_id' => $this->opsDept->id,
+            'reporter_id' => $hseUser->id,
+            'reporter_department_id' => $hseDept->id,
             'category_id' => $category->id,
             'work_area_id' => $area->id,
-            'title' => 'Hazard 2',
-            'location' => 'Lantai 2',
-            'description' => 'Desc 2',
+            'title' => 'Hazard HSE 1 pt',
+            'location' => 'Area Kantor',
+            'description' => 'Desc',
             'risk_level' => 'low',
             'status' => 'open',
             'verified_at' => $now,
             'reported_at' => $now,
         ]);
 
-        $summary2 = $this->sapService->calculateForUser($this->employeeUser, $now);
-        $this->assertTrue($summary2->target_met); // Target terpenuhi (2 >= 2)
+        $summary = $this->sapService->calculateForUser($hseUser, $now);
+
+        $this->assertEquals(1, $summary->total_points);
+        $this->assertTrue($summary->is_hse_snapshot);
+        $this->assertFalse($summary->target_met); // Target belum terpenuhi (1 < 10)
+    }
+
+    /**
+     * UC-26: Karyawan HSE tidak dikonversi jika aturan konversi belum ditetapkan (Alur Alternatif 2').
+     * Sistem tidak mengubah target_met menjadi true jika aturan belum ada.
+     */
+    public function test_uc26_hse_employee_no_conversion_when_rule_not_configured(): void
+    {
+        $now = Carbon::now();
+        $hseUser = User::where('username', 'hse')->first();
+        $hseDept = Department::where('code', 'HSE')->first();
+        $category = HazardCategory::first() ?? HazardCategory::create(['code' => 'GEN', 'name' => 'Umum', 'is_active' => true]);
+        $area = WorkArea::first();
+
+        // Pastikan tidak ada aturan hse_target_threshold di database
+        SapPointRule::whereIn('activity', ['hse_target_threshold', 'hse_target', 'target_threshold'])->delete();
+
+        // Karyawan HSE memperoleh 5 poin
+        for ($i = 1; $i <= 5; $i++) {
+            HazardReport::create([
+                'client_request_id' => (string) Str::uuid(),
+                'reporter_id' => $hseUser->id,
+                'reporter_department_id' => $hseDept->id,
+                'category_id' => $category->id,
+                'work_area_id' => $area->id,
+                'title' => "Hazard HSE {$i}",
+                'location' => 'Area Kantor',
+                'description' => "Desc {$i}",
+                'risk_level' => 'low',
+                'status' => 'open',
+                'verified_at' => $now,
+                'reported_at' => $now,
+            ]);
+        }
+
+        $summary = $this->sapService->calculateForUser($hseUser, $now);
+
+        $this->assertEquals(5, $summary->total_points);
+        $this->assertTrue($summary->is_hse_snapshot);
+        $this->assertNull($summary->target_met); // Aturan belum ada, target_met tidak diubah jadi true
     }
 
     /**
