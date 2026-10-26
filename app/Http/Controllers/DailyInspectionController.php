@@ -13,11 +13,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DailyInspectionController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $isAdmin = in_array($request->user()->role, ['super_admin', 'admin'], true);
         $inspections = DailyInspection::query()
@@ -30,7 +31,7 @@ class DailyInspectionController extends Controller
         return $this->inspectionView($request, $inspections, false);
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): Response
     {
         $inspections = DailyInspection::query()
             ->with(['inspector:id,name', 'workArea:id,name', 'shift:id,name'])
@@ -115,14 +116,20 @@ class DailyInspectionController extends Controller
         return redirect()->route('daily-inspections.index')->with('success', 'Inspeksi harian berhasil disimpan.');
     }
 
-    private function inspectionView(Request $request, LengthAwarePaginator $inspections, bool $openCreateModal): View
+    private function inspectionView(Request $request, LengthAwarePaginator $inspections, bool $openCreateModal): Response
     {
-        return view('daily-inspections.index', [
+        return Inertia::render('DailyInspections/Index', [
             'inspections' => $inspections,
             'isAdmin' => in_array($request->user()->role, ['super_admin', 'admin'], true),
-            'openCreateModal' => $openCreateModal,
+            'openCreateModal' => $openCreateModal || $request->session()->has('errors'),
             'workAreas' => WorkArea::query()->active()->orderBy('name')->get(['id', 'name']),
             'shifts' => Shift::query()->where('is_active', true)->orderBy('code')->get(['id', 'name']),
+            'endpoints' => [
+                'index' => route('daily-inspections.index'),
+                'create' => route('daily-inspections.create'),
+                'store' => route('daily-inspections.store'),
+                'questions' => route('work-areas.active-questions', ['workArea' => '__AREA__']),
+            ],
         ]);
     }
 }
