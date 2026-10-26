@@ -30,8 +30,23 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('inspection_questions', function (Blueprint $table) {
+            $table->dropForeign('inspection_questions_work_area_id_foreign');
+        });
+
+        Schema::table('inspection_questions', function (Blueprint $table) {
+            $table->index('work_area_id', 'inspection_questions_work_area_id_foreign');
+        });
+
+        Schema::table('inspection_questions', function (Blueprint $table) {
             $table->dropIndex('questions_area_active_order_index');
             $table->dropSoftDeletes();
+        });
+
+        Schema::table('inspection_questions', function (Blueprint $table) {
+            $table->foreign('work_area_id', 'inspection_questions_work_area_id_foreign')
+                ->references('id')
+                ->on('work_areas')
+                ->restrictOnDelete();
         });
 
         Schema::table('work_areas', function (Blueprint $table) {
