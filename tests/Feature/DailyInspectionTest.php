@@ -125,6 +125,32 @@ class DailyInspectionTest extends TestCase
         ]);
     }
 
+    public function test_employee_scope_and_forged_ownership_are_enforced(): void
+    {
+        $employee = User::where('username', 'karyawan')->firstOrFail();
+        $other = User::where('username', 'hse')->firstOrFail();
+        $payload = $this->validInspectionPayload();
+        $this->actingAs($other)->post(route('daily-inspections.store'), $payload)
+            ->assertRedirect(route('daily-inspections.index'));
+        $this->actingAs($employee)->post(route('daily-inspections.store'), [
+            ...$payload, 'inspector_id' => $other->id, 'department_id' => $other->department_id,
+            'role' => 'admin',
+        ])->assertRedirect(route('daily-inspections.index'));
+        $this->assertDatabaseHas('daily_inspections', ['inspector_id' => $employee->id, 'department_id' => $employee->department_id]);
+        $this->get(route('daily-inspections.index', ['inspector_id' => $other->id, 'role' => 'admin']))
+            ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->component('DailyInspections/Index', false)
+            ->where('inspections.total', 1)
+            ->where('inspections.data.0.inspector_id', $employee->id)
+            ->where('auth.user.isAdmin', false)
+            ->where('navigation.workAreas', null)
+            ->where('navigation.shifts', null));
+        $this->actingAs(User::where('username', 'admin')->firstOrFail())
+            ->get(route('daily-inspections.index'))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('DailyInspections/Index', false)->where('inspections.total', 2));
+    }
+
     private function validInspectionPayload(): array
     {
         $area = WorkArea::where('name', 'PIT/Front Loading')->firstOrFail();

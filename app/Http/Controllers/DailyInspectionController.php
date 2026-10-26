@@ -20,7 +20,7 @@ class DailyInspectionController extends Controller
 {
     public function index(Request $request): Response
     {
-        $isAdmin = in_array($request->user()->role, ['super_admin', 'admin'], true);
+        $isAdmin = $request->user()->can('manage-administration');
         $inspections = DailyInspection::query()
             ->with(['inspector:id,name', 'workArea:id,name', 'shift:id,name'])
             ->when(! $isAdmin, fn ($query) => $query->where('inspector_id', $request->user()->id))
@@ -120,7 +120,7 @@ class DailyInspectionController extends Controller
     {
         return Inertia::render('DailyInspections/Index', [
             'inspections' => $inspections,
-            'isAdmin' => in_array($request->user()->role, ['super_admin', 'admin'], true),
+            'isAdmin' => $request->user()->can('manage-administration'),
             'openCreateModal' => $openCreateModal || $request->session()->has('errors'),
             'workAreas' => WorkArea::query()->active()->orderBy('name')->get(['id', 'name']),
             'shifts' => Shift::query()->where('is_active', true)->orderBy('code')->get(['id', 'name']),

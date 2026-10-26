@@ -21,7 +21,7 @@ Route::get('/', function () {
     }
 
     $user = Auth::user();
-    if (in_array($user->role, ['super_admin', 'admin'], true)) {
+    if ($user->can('manage-administration')) {
         return redirect()->route('shifts.index');
     }
 
@@ -37,36 +37,38 @@ Route::middleware('guest')->group(function () {
 // Authenticated Routes (UC-03 Logout & Dashboards)
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::middleware('can:access-application')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('dashboard');
+        })->name('dashboard');
 
-    Route::middleware('inspection.inertia')->group(function () {
-        Route::get('/daily-inspections', [DailyInspectionController::class, 'index'])->name('daily-inspections.index');
-        Route::middleware('inspection-user')->group(function () {
-            Route::get('/daily-inspections/create', [DailyInspectionController::class, 'create'])->name('daily-inspections.create');
-            Route::post('/daily-inspections', [DailyInspectionController::class, 'store'])->name('daily-inspections.store');
+        Route::middleware('inspection.inertia')->group(function () {
+            Route::get('/daily-inspections', [DailyInspectionController::class, 'index'])->name('daily-inspections.index');
+            Route::middleware('inspection-user')->group(function () {
+                Route::get('/daily-inspections/create', [DailyInspectionController::class, 'create'])->name('daily-inspections.create');
+                Route::post('/daily-inspections', [DailyInspectionController::class, 'store'])->name('daily-inspections.store');
+            });
         });
-    });
-    Route::get('/work-areas/{workArea}/active-questions', [InspectionQuestionController::class, 'index'])
-        ->name('work-areas.active-questions');
+        Route::get('/work-areas/{workArea}/active-questions', [InspectionQuestionController::class, 'index'])
+            ->name('work-areas.active-questions');
 
-    // Admin & Super Admin Only Routes (Kelola Shift Kerja)
-    Route::middleware('admin')->group(function () {
-        Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
+        // Admin & Super Admin Only Routes (Kelola Shift Kerja)
+        Route::middleware('admin')->group(function () {
+            Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
 
-        Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
-            Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update']);
-            Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
-                ->name('work-areas.toggle-status');
-            Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
-                ->name('work-areas.questions.store');
-            Route::put('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'update'])
-                ->name('work-areas.questions.update');
-            Route::patch('work-areas/{workArea}/questions/{question}/toggle-status', [InspectionQuestionController::class, 'toggleStatus'])
-                ->name('work-areas.questions.toggle-status');
-            Route::delete('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'destroy'])
-                ->name('work-areas.questions.destroy');
+            Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
+                Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update']);
+                Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
+                    ->name('work-areas.toggle-status');
+                Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
+                    ->name('work-areas.questions.store');
+                Route::put('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'update'])
+                    ->name('work-areas.questions.update');
+                Route::patch('work-areas/{workArea}/questions/{question}/toggle-status', [InspectionQuestionController::class, 'toggleStatus'])
+                    ->name('work-areas.questions.toggle-status');
+                Route::delete('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'destroy'])
+                    ->name('work-areas.questions.destroy');
+            });
         });
     });
 });

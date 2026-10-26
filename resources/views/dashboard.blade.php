@@ -182,7 +182,7 @@
             </li>
         </ul>
 
-        @if (Auth::user() && in_array(Auth::user()->role, ['super_admin', 'admin'], true))
+        @if (Auth::user() && Auth::user()->can('manage-administration'))
             <div class="nav-title">Administrasi</div>
             <ul class="menu-list">
                 <li>
@@ -255,7 +255,7 @@
                 </div>
             </div>
 
-            @if (Auth::user()->role === 'employee')
+            @if (Auth::user()->can('submit-inspections'))
                 <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:24px;">
                     <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:8px;">Akses Akun Karyawan</h3>
                     <p style="font-size:13.5px;color:#64748b;line-height:1.6;">
