@@ -10,7 +10,7 @@ class EnsureInspectionUser
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user()?->role !== 'employee') {
+        if (! $request->user()?->can('submit-inspections')) {
             abort(403, 'Pengisian inspeksi hanya tersedia untuk akun pribadi HSE dan Non-HSE.');
         }
 

@@ -44,8 +44,56 @@ class WorkAreaManagementTest extends TestCase
         foreach ([$hseEmployee, $nonHseEmployee] as $employee) {
             $response = $this->actingAs($employee)->get(route('admin.work-areas.index'));
 
-            $response->assertRedirect(route('dashboard'))->assertSessionHas('error');
+            $response->assertForbidden();
         }
+    }
+
+    public function test_employee_cannot_call_any_administrative_endpoint_or_change_data(): void
+    {
+        $employee = User::where('username', 'karyawan')->firstOrFail();
+        $area = WorkArea::firstOrFail();
+        $question = InspectionQuestion::where('work_area_id', $area->id)->firstOrFail();
+        $shift = Shift::firstOrFail();
+        $before = [];
+        foreach (['work_areas', 'inspection_questions', 'shifts', 'audit_logs'] as $table) {
+            $before[$table] = DB::table($table)->orderBy('id')->get()->toJson();
+        }
+        $this->actingAs($employee);
+        foreach ([
+            ['GET', route('shifts.index')],
+            ['POST', route('shifts.store')],
+            ['PUT', route('shifts.update', $shift)],
+            ['DELETE', route('shifts.destroy', $shift)],
+            ['GET', route('admin.work-areas.index')],
+            ['GET', route('admin.work-areas.show', $area)],
+            ['POST', route('admin.work-areas.store')],
+            ['PUT', route('admin.work-areas.update', $area)],
+            ['PATCH', route('admin.work-areas.toggle-status', $area)],
+            ['POST', route('admin.work-areas.questions.store', $area)],
+            ['PUT', route('admin.work-areas.questions.update', [$area, $question])],
+            ['PATCH', route('admin.work-areas.questions.toggle-status', [$area, $question])],
+            ['DELETE', route('admin.work-areas.questions.destroy', [$area, $question])],
+        ] as [$method, $url]) {
+            $this->json($method, $url, ['role' => 'super_admin', 'userId' => $employee->id + 1])->assertForbidden();
+        }
+        foreach ($before as $table => $snapshot) {
+            $this->assertSame($snapshot, DB::table($table)->orderBy('id')->get()->toJson());
+        }
+    }
+
+    public function test_admin_cannot_mutate_a_question_through_another_area(): void
+    {
+        $admin = User::where('username', 'admin')->firstOrFail();
+        $question = InspectionQuestion::firstOrFail();
+        $otherArea = WorkArea::where('id', '!=', $question->work_area_id)->firstOrFail();
+        $before = $question->toArray();
+        $this->actingAs($admin);
+        $this->putJson(route('admin.work-areas.questions.update', [$otherArea, $question]), [
+            'question' => 'Tidak boleh berubah', 'sort_order' => 1,
+        ])->assertNotFound();
+        $this->patchJson(route('admin.work-areas.questions.toggle-status', [$otherArea, $question]))->assertNotFound();
+        $this->deleteJson(route('admin.work-areas.questions.destroy', [$otherArea, $question]))->assertNotFound();
+        $this->assertSame($before, $question->fresh()->toArray());
     }
 
     public function test_admin_can_create_valid_work_area(): void
