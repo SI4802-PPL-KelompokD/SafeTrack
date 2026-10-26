@@ -9,11 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class WorkAreaController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $workAreas = WorkArea::query()
             ->with('department:id,name')
@@ -26,9 +27,14 @@ class WorkAreaController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('work-areas.index', [
+        return Inertia::render('WorkAreas/Index', [
             'workAreas' => $workAreas,
             'departments' => Department::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'filters' => $request->only(['search', 'status']),
+            'endpoints' => [
+                'index' => route('admin.work-areas.index'),
+                'store' => route('admin.work-areas.store'),
+            ],
         ]);
     }
 
@@ -44,12 +50,21 @@ class WorkAreaController extends Controller
         return redirect()->route('admin.work-areas.index')->with('success', 'Area kerja berhasil ditambahkan.');
     }
 
-    public function show(WorkArea $workArea): View
+    public function show(WorkArea $workArea): Response
     {
         $workArea->load('department:id,name');
         $questions = $workArea->questions()->orderBy('sort_order')->orderBy('id')->paginate(15);
 
-        return view('work-areas.show', compact('workArea', 'questions'));
+        return Inertia::render('WorkAreas/Show', [
+            'workArea' => $workArea,
+            'questions' => $questions,
+            'endpoints' => [
+                'index' => route('admin.work-areas.index'),
+                'update' => route('admin.work-areas.update', $workArea),
+                'toggle' => route('admin.work-areas.toggle-status', $workArea),
+                'questionsStore' => route('admin.work-areas.questions.store', $workArea),
+            ],
+        ]);
     }
 
     public function update(Request $request, WorkArea $workArea): RedirectResponse

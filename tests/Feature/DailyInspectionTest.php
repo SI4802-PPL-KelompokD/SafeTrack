@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\WorkArea;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class DailyInspectionTest extends TestCase
@@ -17,6 +18,7 @@ class DailyInspectionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutVite();
         $this->seed(DemoSeeder::class);
     }
 
@@ -47,7 +49,9 @@ class DailyInspectionTest extends TestCase
         $this->actingAs($admin)
             ->get(route('daily-inspections.index'))
             ->assertOk()
-            ->assertDontSee('Buat Inspeksi');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('DailyInspections/Index', false)
+                ->where('isAdmin', true));
     }
 
     public function test_hse_can_open_and_store_daily_inspection(): void
@@ -57,7 +61,10 @@ class DailyInspectionTest extends TestCase
         $this->actingAs($hse)
             ->get(route('daily-inspections.create'))
             ->assertOk()
-            ->assertSee('Buat inspeksi harian');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('DailyInspections/Index', false)
+                ->where('isAdmin', false)
+                ->where('openCreateModal', true));
         $this->actingAs($hse)
             ->post(route('daily-inspections.store'), $this->validInspectionPayload())
             ->assertRedirect(route('daily-inspections.index'))
@@ -73,7 +80,10 @@ class DailyInspectionTest extends TestCase
         $this->actingAs($employee)
             ->get(route('daily-inspections.create'))
             ->assertOk()
-            ->assertSee('Buat inspeksi harian');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('DailyInspections/Index', false)
+                ->where('isAdmin', false)
+                ->where('openCreateModal', true));
         $this->actingAs($employee)
             ->post(route('daily-inspections.store'), $this->validInspectionPayload())
             ->assertRedirect(route('daily-inspections.index'))
