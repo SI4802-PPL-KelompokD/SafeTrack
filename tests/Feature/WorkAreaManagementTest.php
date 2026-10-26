@@ -10,6 +10,7 @@ use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class WorkAreaManagementTest extends TestCase
@@ -28,7 +29,10 @@ class WorkAreaManagementTest extends TestCase
         $response = $this->actingAs(User::where('username', 'admin')->firstOrFail())
             ->get(route('admin.work-areas.index'));
 
-        $response->assertOk()->assertSee('Kelola area kerja');
+        $response->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->component('WorkAreas/Index', false)
+            ->has('workAreas.data')
+            ->has('departments'));
     }
 
     public function test_hse_and_non_hse_employees_cannot_open_work_area_management_page(): void
@@ -166,7 +170,9 @@ class WorkAreaManagementTest extends TestCase
 
         $this->actingAs($user)->get(route('daily-inspections.create'))
             ->assertOk()
-            ->assertDontSee($inactive->name);
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('DailyInspections/Index', false)
+                ->where('workAreas', fn ($areas) => collect($areas)->doesntContain('name', $inactive->name)));
         $this->actingAs($user)->getJson(route('work-areas.active-questions', $inactive))->assertNotFound();
     }
 }
