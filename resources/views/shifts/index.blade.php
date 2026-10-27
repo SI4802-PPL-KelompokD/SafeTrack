@@ -348,7 +348,7 @@
         /* Header Title & Button */
         .page-header-row {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: 24px;
             margin-bottom: 24px;
@@ -577,10 +577,10 @@
             text-decoration: underline;
         }
         .btn-table-action.delete {
-            color: #0f172a;
+            color: #b91c1c;
         }
         .btn-table-action.delete:hover {
-            color: #ef4444;
+            color: #7f1d1d;
             text-decoration: underline;
         }
 
@@ -740,6 +740,9 @@
             padding-top: 12px;
         }
         .btn-modal-cancel {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             height: 40px;
             padding: 0 20px;
             background: #ffffff;
@@ -750,6 +753,7 @@
             color: #475569;
             cursor: pointer;
             transition: all 0.15s ease;
+            white-space: nowrap;
         }
         .btn-modal-cancel:hover {
             background-color: #f8fafc;
@@ -757,6 +761,9 @@
             color: var(--text-heading);
         }
         .btn-modal-save {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             height: 40px;
             padding: 0 24px;
             background-color: var(--navy-dark);
@@ -767,6 +774,7 @@
             color: #ffffff;
             cursor: pointer;
             transition: all 0.15s ease;
+            white-space: nowrap;
         }
         .btn-modal-save:hover {
             background-color: var(--navy-btn-hover);
@@ -1559,7 +1567,7 @@
                 </div>
                 <div class="modal-footer-actions" style="margin-top:20px;">
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('deleteShiftModal')" id="btnCancelDelete">Batal</button>
-                    <button type="submit" class="btn-modal-save" id="btnConfirmDelete" style="background-color:#ef4444;">Hapus shift</button>
+                    <button type="submit" class="btn-modal-save" id="btnConfirmDelete" style="background-color:#b91c1c;">Hapus shift</button>
                 </div>
             </div>
         </form>
