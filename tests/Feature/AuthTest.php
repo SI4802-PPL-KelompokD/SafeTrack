@@ -32,7 +32,7 @@ class AuthTest extends TestCase
     }
 
     /**
-     * Pengguna dapat login menggunakan username (Admin/HSE).
+     * Admin dapat login menggunakan username.
      */
     public function test_user_can_login_using_username(): void
     {
@@ -47,7 +47,7 @@ class AuthTest extends TestCase
     }
 
     /**
-     * Pengguna dapat login menggunakan email.
+     * HSE dengan akun pribadi dapat login menggunakan email.
      */
     public function test_user_can_login_using_email(): void
     {
@@ -57,7 +57,7 @@ class AuthTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('shifts.index'));
+        $response->assertRedirect(route('dashboard'));
     }
 
     /**
@@ -137,7 +137,7 @@ class AuthTest extends TestCase
     }
 
     /**
-     * Admin/HSE dapat mengakses halaman Kelola Shift.
+     * Admin dapat mengakses halaman Kelola Shift.
      */
     public function test_admin_can_access_shifts(): void
     {

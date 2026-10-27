@@ -1,9 +1,35 @@
 <?php
+
 namespace App\Models;
+
+use Database\Factories\WorkAreaFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-class WorkArea extends Model {
- 
- protected $table='work_areas';
- protected $guarded=['*'];
- public function questions(){return $this->hasMany(InspectionQuestion::class);}
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class WorkArea extends Model
+{
+    /** @use HasFactory<WorkAreaFactory> */
+    use HasFactory, SoftDeletes;
+
+    protected $table = 'area_kerja';
+
+    protected $fillable = ['name', 'description', 'is_active'];
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(InspectionQuestion::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
 }

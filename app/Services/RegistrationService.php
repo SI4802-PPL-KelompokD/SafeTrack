@@ -7,7 +7,7 @@ class RegistrationService {
  // Caller validates username/email/password; never accepts a public role or department.
  public function register(array $data): User {
   return DB::transaction(function()use($data){
-   $employee=DB::table('employee_registry')->where('nik',$data['nik'])->lockForUpdate()->first();
+   $employee=DB::table('nik')->where('nik',$data['nik'])->lockForUpdate()->first();
    if(!$employee || !$employee->is_active || DB::table('users')->where('employee_registry_id',$employee->id)->exists()){
     throw ValidationException::withMessages(['nik'=>'NIK tidak tersedia untuk registrasi.']);
    }

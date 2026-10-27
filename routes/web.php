@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\InspectionQuestionController;
 use App\Http\Controllers\SapController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\WorkAreaController;
 use App\Models\SapMonthlySummary;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -49,11 +51,24 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('dashboard');
 
-    // Admin & Super Admin Only Routes (Kelola Shift & Pencapaian SAP UC-28)
+    // Admin & Super Admin Only Routes (Kelola Shift, Work Areas, & Pencapaian SAP UC-28)
     Route::middleware('admin')->group(function () {
         Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
         Route::post('/sap/recalculate', [SapController::class, 'recalculate'])->name('sap.recalculate');
+
+        Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
+            Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+            Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
+                ->name('work-areas.toggle-status');
+            Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
+                ->name('work-areas.questions.store');
+            Route::put('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'update'])
+                ->name('work-areas.questions.update');
+            Route::patch('work-areas/{workArea}/questions/{question}/toggle-status', [InspectionQuestionController::class, 'toggleStatus'])
+                ->name('work-areas.questions.toggle-status');
+            Route::delete('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'destroy'])
+                ->name('work-areas.questions.destroy');
+        });
     });
 });
-

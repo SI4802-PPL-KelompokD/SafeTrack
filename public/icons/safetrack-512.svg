@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="SafeTrack">
+  <rect width="512" height="512" rx="112" fill="#0f2a4a"/>
+  <path d="m256 92 131 48v99c0 85-53 155-131 181-78-26-131-96-131-181v-99l131-48Z" fill="#173f6b" stroke="#f2a900" stroke-width="27"/>
+  <path d="m187 253 45 45 96-107" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/>
+</svg>

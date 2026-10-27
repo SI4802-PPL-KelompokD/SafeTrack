@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SapTarget extends Model
 {
-    protected $table = 'sap_targets';
+    protected $table = 'target_safety_talks';
 
     protected $guarded = ['id'];
 
