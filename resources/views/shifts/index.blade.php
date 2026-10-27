@@ -189,11 +189,16 @@
         }
         .sidebar-link:hover svg { color: var(--text-heading); }
         .sidebar-link.active {
-            background-color: #fef3c7;
-            color: #92400e;
+            background-color: #0f2a4a;
+            color: #ffffff;
             font-weight: 600;
         }
-        .sidebar-link.active svg { color: #d97706; }
+        .sidebar-link.active svg { color: #ffffff; }
+        .sidebar-link.active:hover {
+            background-color: #163860;
+            color: #ffffff;
+        }
+        .sidebar-link.active:hover svg { color: #ffffff; }
 
         /* Sidebar Footer Profile */
         .sidebar-user-footer {
@@ -1150,10 +1155,7 @@
                     <p class="page-desc-text">Satu referensi data untuk aktivitas keselamatan yang konsisten.</p>
                 </div>
                 <button type="button" class="btn-add-primary" onclick="openAddModal()" id="btnTambahShift">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    <span>+ Tambah shift</span>
+                    + Tambah shift
                 </button>
             </div>
 

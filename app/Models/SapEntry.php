@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SapEntry extends Model
 {
@@ -20,12 +21,12 @@ class SapEntry extends Model
         ];
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function rule()
+    public function rule(): BelongsTo
     {
         return $this->belongsTo(SapPointRule::class, 'point_rule_id');
     }
