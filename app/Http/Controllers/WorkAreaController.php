@@ -29,7 +29,6 @@ class WorkAreaController extends Controller
 
         return Inertia::render('WorkAreas/Index', [
             'workAreas' => $workAreas,
-            'departments' => Department::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'filters' => $request->only(['search', 'status']),
             'endpoints' => [
                 'index' => route('admin.work-areas.index'),
@@ -40,11 +39,30 @@ class WorkAreaController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $this->validateWorkArea($request);
-        $validated['code'] = $validated['code'] ?: Str::upper(Str::limit(Str::slug($validated['name'], ''), 30, ''));
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated = $this->validateWorkArea($request, withQuestions: true);
+        $departmentId = Department::query()->where('code', 'OPS')->value('id')
+            ?? Department::query()->where('is_active', true)->value('id');
+        abort_unless($departmentId, 422, 'Departemen operasional belum tersedia.');
 
-        $workArea = WorkArea::create($validated);
+        $workArea = DB::transaction(function () use ($validated, $departmentId): WorkArea {
+            $workArea = WorkArea::create([
+                'department_id' => $departmentId,
+                'name' => $validated['name'],
+                'code' => Str::upper(Str::limit(Str::slug($validated['name'], ''), 30, '')),
+                'description' => $validated['description'] ?? null,
+                'is_active' => true,
+            ]);
+
+            foreach ($validated['questions'] as $index => $question) {
+                $workArea->questions()->create([
+                    'question' => $question,
+                    'sort_order' => $index + 1,
+                    'is_active' => true,
+                ]);
+            }
+
+            return $workArea;
+        });
         $this->audit($request, 'work_area.created', $workArea, null, $workArea->toArray());
 
         return redirect()->route('admin.work-areas.index')->with('success', 'Area kerja berhasil ditambahkan.');
@@ -61,7 +79,6 @@ class WorkAreaController extends Controller
             'endpoints' => [
                 'index' => route('admin.work-areas.index'),
                 'update' => route('admin.work-areas.update', $workArea),
-                'toggle' => route('admin.work-areas.toggle-status', $workArea),
                 'questionsStore' => route('admin.work-areas.questions.store', $workArea),
             ],
         ]);
@@ -71,12 +88,19 @@ class WorkAreaController extends Controller
     {
         $before = $workArea->toArray();
         $validated = $this->validateWorkArea($request, $workArea);
-        $validated['code'] = $validated['code'] ?: Str::upper(Str::limit(Str::slug($validated['name'], ''), 30, ''));
-        $validated['is_active'] = $request->boolean('is_active');
         $workArea->update($validated);
         $this->audit($request, 'work_area.updated', $workArea, $before, $workArea->fresh()->toArray());
 
         return back()->with('success', 'Area kerja berhasil diperbarui.');
+    }
+
+    public function destroy(Request $request, WorkArea $workArea): RedirectResponse
+    {
+        $before = $workArea->toArray();
+        $workArea->delete();
+        $this->audit($request, 'work_area.deleted', $workArea, $before, []);
+
+        return redirect()->route('admin.work-areas.index')->with('success', 'Area kerja berhasil dihapus.');
     }
 
     public function toggleStatus(Request $request, WorkArea $workArea): RedirectResponse
@@ -88,19 +112,24 @@ class WorkAreaController extends Controller
         return back()->with('success', 'Status area kerja berhasil diperbarui.');
     }
 
-    private function validateWorkArea(Request $request, ?WorkArea $workArea = null): array
+    private function validateWorkArea(Request $request, ?WorkArea $workArea = null, bool $withQuestions = false): array
     {
-        return $request->validate([
-            'department_id' => ['required', 'exists:departments,id'],
+        $rules = [
             'name' => ['required', 'string', 'max:255', Rule::unique('work_areas', 'name')->ignore($workArea)],
-            'code' => ['nullable', 'string', 'max:30', Rule::unique('work_areas', 'code')->ignore($workArea)],
             'description' => ['nullable', 'string', 'max:2000'],
-            'is_active' => ['sometimes', 'boolean'],
-        ], [
-            'department_id.required' => 'Departemen wajib dipilih.',
+        ];
+
+        if ($withQuestions) {
+            $rules['questions'] = ['required', 'array', 'size:3'];
+            $rules['questions.*'] = ['required', 'string', 'max:2000', 'distinct'];
+        }
+
+        return $request->validate($rules, [
             'name.required' => 'Nama area kerja wajib diisi.',
             'name.unique' => 'Nama area kerja sudah digunakan.',
-            'code.unique' => 'Kode area kerja sudah digunakan.',
+            'questions.size' => 'Tiga pertanyaan awal wajib diisi.',
+            'questions.*.required' => 'Semua pertanyaan awal wajib diisi.',
+            'questions.*.distinct' => 'Pertanyaan awal tidak boleh sama.',
         ]);
     }
 

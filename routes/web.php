@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
 
         Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
-            Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update']);
+            Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
             Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
                 ->name('work-areas.toggle-status');
             Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
