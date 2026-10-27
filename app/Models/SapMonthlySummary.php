@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SapMonthlySummary extends Model
 {
-    protected $table = 'sap_monthly_summaries';
+    protected $table = 'history_sap';
 
     protected $guarded = ['id'];
 

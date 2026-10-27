@@ -133,26 +133,26 @@ class SapCalculationTest extends TestCase
         $this->assertEquals(4, $summary->total_points);
 
         // Pastikan ledger sap_entries mencatat 4 baris unik
-        $this->assertDatabaseCount('sap_entries', 4);
-        $this->assertDatabaseHas('sap_entries', [
+        $this->assertDatabaseCount('pencapaian', 4);
+        $this->assertDatabaseHas('pencapaian', [
             'user_id' => $this->employeeUser->id,
             'activity' => 'hazard_verified',
             'source_id' => $hazard->id,
             'is_void' => false,
         ]);
-        $this->assertDatabaseHas('sap_entries', [
+        $this->assertDatabaseHas('pencapaian', [
             'user_id' => $this->employeeUser->id,
             'activity' => 'inspection_reviewed',
             'source_id' => $inspection->id,
             'is_void' => false,
         ]);
-        $this->assertDatabaseHas('sap_entries', [
+        $this->assertDatabaseHas('pencapaian', [
             'user_id' => $this->employeeUser->id,
             'activity' => 'safety_talk_published',
             'source_id' => $talk->id,
             'is_void' => false,
         ]);
-        $this->assertDatabaseHas('sap_entries', [
+        $this->assertDatabaseHas('pencapaian', [
             'user_id' => $this->employeeUser->id,
             'activity' => 'resolution_accepted',
             'source_id' => $resolution->id,
@@ -187,13 +187,13 @@ class SapCalculationTest extends TestCase
         // Hitung pertama kali
         $firstSummary = $this->sapService->calculateForUser($this->employeeUser, $now);
         $this->assertEquals(1, $firstSummary->total_points);
-        $this->assertDatabaseCount('sap_entries', 1);
+        $this->assertDatabaseCount('pencapaian', 1);
 
         // Hitung kedua kali (re-run)
         $secondSummary = $this->sapService->calculateForUser($this->employeeUser, $now);
         $this->assertEquals(1, $secondSummary->total_points);
-        $this->assertDatabaseCount('sap_entries', 1);
-        $this->assertDatabaseCount('sap_monthly_summaries', 1);
+        $this->assertDatabaseCount('pencapaian', 1);
+        $this->assertDatabaseCount('history_sap', 1);
     }
 
     /**
@@ -507,7 +507,7 @@ class SapCalculationTest extends TestCase
 
         // Pastikan rekap bulanan terbuat
         $periodDate = $now->copy()->startOfMonth()->format('Y-m-01');
-        $this->assertDatabaseHas('sap_monthly_summaries', [
+        $this->assertDatabaseHas('history_sap', [
             'user_id' => $this->employeeUser->id,
             'period' => $periodDate,
             'hazard_count' => 1,

@@ -87,25 +87,25 @@ class SapCalculationService
 
                 // 3. Ambil data Safety Talk terverifikasi / dipublikasikan bulan berjalan
                 $attendedTalkIds = DB::table('safety_talk_attendees')
-                    ->join('safety_talks', 'safety_talk_attendees.safety_talk_id', '=', 'safety_talks.id')
+                    ->join('safety_talk', 'safety_talk_attendees.safety_talk_id', '=', 'safety_talk.id')
                     ->where('safety_talk_attendees.user_id', $user->id)
                     ->where(function ($q) {
-                        $q->where('safety_talks.status', 'published')
-                            ->orWhereNotNull('safety_talks.verified_at');
+                        $q->where('safety_talk.status', 'published')
+                            ->orWhereNotNull('safety_talk.verified_at');
                     })
-                    ->whereBetween(DB::raw('COALESCE(safety_talks.held_at, safety_talks.published_at, safety_talks.created_at)'), [$startOfMonth, $endOfMonth])
-                    ->pluck('safety_talks.id')
+                    ->whereBetween(DB::raw('COALESCE(safety_talk.held_at, safety_talk.published_at, safety_talk.created_at)'), [$startOfMonth, $endOfMonth])
+                    ->pluck('safety_talk.id')
                     ->toArray();
 
                 $readTalkIds = DB::table('safety_talk_reads')
-                    ->join('safety_talks', 'safety_talk_reads.safety_talk_id', '=', 'safety_talks.id')
+                    ->join('safety_talk', 'safety_talk_reads.safety_talk_id', '=', 'safety_talk.id')
                     ->where('safety_talk_reads.user_id', $user->id)
                     ->where(function ($q) {
-                        $q->where('safety_talks.status', 'published')
-                            ->orWhereNotNull('safety_talks.verified_at');
+                        $q->where('safety_talk.status', 'published')
+                            ->orWhereNotNull('safety_talk.verified_at');
                     })
                     ->whereBetween('safety_talk_reads.read_at', [$startOfMonth, $endOfMonth])
-                    ->pluck('safety_talks.id')
+                    ->pluck('safety_talk.id')
                     ->toArray();
 
                 $createdTalkIds = SafetyTalk::where('created_by', $user->id)
