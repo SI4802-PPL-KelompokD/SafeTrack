@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
 
     // Admin & Super Admin Only Routes (Kelola Shift, Work Areas, & Pencapaian SAP UC-28)
     Route::middleware('admin')->group(function () {
+        Route::get('/data-master', [ShiftController::class, 'index'])->name('admin.data-master');
         Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
         Route::post('/sap/recalculate', [SapController::class, 'recalculate'])->name('sap.recalculate');
