@@ -3,53 +3,40 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Kelola data shift kerja untuk operasional inspeksi harian SafeTrack.">
-    <title>Kelola Shift Kerja – SafeTrack</title>
+    <meta name="description" content="Data master SafeTrack - Kelola shift kerja, departemen, kategori temuan, dan area pertanyaan keselamatan.">
+    <title>Data Master – SafeTrack</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
     <style>
-        /* ── Design Tokens (SafeTrack System) ── */
         :root {
-            --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
             --bg-page: #f8fafc;
             --bg-surface: #ffffff;
             --bg-sidebar: #ffffff;
             --border-light: #e2e8f0;
-            --border-focus: #3b82f6;
+            --border-dark: #cbd5e1;
+            --border-focus: #2563eb;
             --navy-dark: #0f2a4a;
             --navy-deep: #0a1c32;
-            --navy-btn: #1e293b;
-            --navy-btn-hover: #0f172a;
-            --amber-accent: #f59e0b;
-            --amber-pale: #fef3c7;
-            --amber-active-bg: #fef9c3;
-            --amber-text: #92400e;
+            --navy-pill: #102a45;
+            --navy-btn-hover: #163860;
             --text-heading: #0f172a;
             --text-body: #334155;
             --text-muted: #64748b;
             --text-light: #94a3b8;
-            --status-green-bg: #dcfce7;
-            --status-green-text: #15803d;
-            --status-green-dot: #16a34a;
-            --status-gray-bg: #f1f5f9;
-            --status-gray-text: #64748b;
-            --status-gray-dot: #94a3b8;
             --sidebar-width: 260px;
             --topbar-height: 64px;
             --radius-sm: 6px;
             --radius-md: 10px;
             --radius-lg: 14px;
-            --radius-xl: 18px;
             --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
             --shadow-modal: 0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
         }
 
-        /* ── Reset & Base ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: var(--font-main);
@@ -60,11 +47,6 @@
             min-height: 100vh;
             display: flex;
             -webkit-font-smoothing: antialiased;
-        }
-
-        :focus-visible {
-            outline: 2px solid var(--border-focus);
-            outline-offset: 2px;
         }
 
         /* ── Layout Shell ── */
@@ -89,7 +71,6 @@
             overflow-y: auto;
         }
 
-        /* Logo SafeTrack */
         .brand-container {
             padding: 20px 20px 16px;
             display: flex;
@@ -107,15 +88,8 @@
             flex-shrink: 0;
             box-shadow: 0 2px 4px rgba(15, 42, 74, 0.2);
         }
-        .brand-logo-icon svg {
-            width: 20px;
-            height: 20px;
-            color: #f59e0b;
-        }
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-        }
+        .brand-logo-icon svg { width: 20px; height: 20px; color: #f59e0b; }
+        .brand-text { display: flex; flex-direction: column; }
         .brand-title {
             font-size: 18px;
             font-weight: 800;
@@ -123,42 +97,38 @@
             letter-spacing: -0.02em;
             color: #0f2a4a;
         }
-        .brand-title span {
-            color: #d97706;
-        }
+        .brand-title span { color: #d97706; }
         .brand-subtitle {
             font-size: 9.5px;
             font-weight: 700;
             letter-spacing: 0.1em;
             color: var(--text-muted);
-            text-transform: uppercase;
-            margin-top: 2px;
         }
 
-        /* Workspace Card */
+        /* Workspace Switcher Card */
         .workspace-card {
-            margin: 0 16px 16px;
+            margin: 0 12px 16px;
             padding: 10px 12px;
-            background: #ffffff;
+            background: #f8fafc;
             border: 1px solid var(--border-light);
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
         }
         .workspace-icon {
-            width: 32px;
-            height: 32px;
-            background: #f1f5f9;
-            border-radius: 7px;
+            width: 28px;
+            height: 28px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #475569;
             flex-shrink: 0;
         }
-        .workspace-icon svg { width: 17px; height: 17px; }
+        .workspace-icon svg { width: 16px; height: 16px; }
         .workspace-info {
             display: flex;
             flex-direction: column;
@@ -180,7 +150,7 @@
             text-overflow: ellipsis;
         }
 
-        /* Nav Sections */
+        /* Navigation */
         .nav-section-title {
             padding: 12px 20px 6px;
             font-size: 11px;
@@ -194,9 +164,7 @@
             padding: 0 12px;
             margin-bottom: 8px;
         }
-        .sidebar-menu li {
-            margin-bottom: 2px;
-        }
+        .sidebar-menu li { margin-bottom: 2px; }
         .sidebar-link {
             display: flex;
             align-items: center;
@@ -214,33 +182,25 @@
             height: 17px;
             flex-shrink: 0;
             color: #64748b;
-            transition: color 0.15s ease;
         }
         .sidebar-link:hover {
             background-color: #f1f5f9;
             color: var(--text-heading);
         }
-        .sidebar-link:hover svg {
-            color: var(--text-heading);
-        }
+        .sidebar-link:hover svg { color: var(--text-heading); }
         .sidebar-link.active {
             background-color: #0f2a4a;
             color: #ffffff;
             font-weight: 600;
-            border-radius: var(--radius-sm);
         }
-        .sidebar-link.active svg {
-            color: #ffffff;
-        }
+        .sidebar-link.active svg { color: #ffffff; }
         .sidebar-link.active:hover {
             background-color: #163860;
             color: #ffffff;
         }
-        .sidebar-link.active:hover svg {
-            color: #ffffff;
-        }
+        .sidebar-link.active:hover svg { color: #ffffff; }
 
-        /* Sidebar User Footer */
+        /* Sidebar Footer Profile */
         .sidebar-user-footer {
             margin-top: auto;
             padding: 14px 16px;
@@ -259,21 +219,17 @@
         .user-avatar-badge {
             width: 34px;
             height: 34px;
+            background: #e2e8f0;
             border-radius: 50%;
-            background: #fef3c7;
-            color: #92400e;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
             font-weight: 700;
+            font-size: 12px;
+            color: #334155;
             flex-shrink: 0;
         }
-        .user-name-title {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        .user-name-title { display: flex; flex-direction: column; overflow: hidden; }
         .user-full-name {
             font-size: 13px;
             font-weight: 700;
@@ -282,42 +238,37 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .user-role-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            white-space: nowrap;
-        }
+        .user-role-label { font-size: 11.5px; color: var(--text-muted); }
         .btn-user-exit {
             background: none;
             border: none;
             color: #94a3b8;
             cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
+            padding: 6px;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
             transition: color 0.15s ease;
         }
-        .btn-user-exit:hover {
-            color: #ef4444;
-        }
+        .btn-user-exit:hover { color: #ef4444; }
 
-        /* ── Main Canvas Content Area ── */
+        /* ── Canvas Main ── */
         .app-main {
             flex: 1;
             margin-left: var(--sidebar-width);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            background-color: var(--bg-page);
         }
 
-        /* ── Topbar ── */
+        /* Topbar */
         .app-topbar {
             height: var(--topbar-height);
-            background: var(--bg-surface);
+            background: #ffffff;
             border-bottom: 1px solid var(--border-light);
-            padding: 0 32px;
+            padding: 0 36px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -329,25 +280,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 13.5px;
+            font-size: 13px;
             color: var(--text-muted);
         }
-        .topbar-breadcrumbs a {
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: color 0.15s ease;
-        }
-        .topbar-breadcrumbs a:hover {
-            color: var(--text-heading);
-        }
-        .topbar-breadcrumbs .sep {
-            color: #cbd5e1;
-            font-size: 12px;
-        }
-        .topbar-breadcrumbs .current {
-            font-weight: 600;
-            color: var(--text-heading);
-        }
+        .topbar-breadcrumbs a { color: var(--text-muted); text-decoration: none; }
+        .topbar-breadcrumbs a:hover { color: var(--text-heading); }
+        .topbar-breadcrumbs .sep { color: #cbd5e1; font-size: 12px; }
+        .topbar-breadcrumbs .current { color: var(--text-heading); font-weight: 500; }
 
         .topbar-actions {
             display: flex;
@@ -355,95 +294,63 @@
             gap: 16px;
         }
         .topbar-search-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f8fafc;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            padding: 7px 12px;
-            width: 220px;
-            transition: all 0.15s ease;
-        }
-        .topbar-search-box:focus-within {
-            border-color: var(--border-focus);
-            background: #ffffff;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            position: relative;
+            width: 240px;
         }
         .topbar-search-box svg {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
             width: 15px;
             height: 15px;
             color: #94a3b8;
-            flex-shrink: 0;
         }
         .topbar-search-box input {
-            border: none;
-            background: transparent;
-            font-size: 12.5px;
-            color: var(--text-body);
             width: 100%;
+            height: 34px;
+            padding: 0 12px 0 34px;
+            background-color: #f1f5f9;
+            border: 1px solid transparent;
+            border-radius: 20px;
+            font-size: 12.5px;
+            color: var(--text-heading);
             outline: none;
+            transition: all 0.15s ease;
         }
-        .topbar-search-box input::placeholder {
-            color: #94a3b8;
+        .topbar-search-box input:focus {
+            background-color: #ffffff;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        /* Ganti Akun Dropdown pill */
         .account-switch-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: #f8fafc;
             border: 1px solid var(--border-light);
             border-radius: var(--radius-sm);
-            padding: 6px 12px;
-            font-size: 12.5px;
-            color: var(--text-heading);
+            padding: 5px 10px;
+            font-size: 12px;
             cursor: pointer;
-            font-family: inherit;
-            transition: all 0.15s ease;
         }
-        .account-switch-btn:hover {
-            background: #f1f5f9;
-        }
-        .account-switch-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: #94a3b8;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-        .account-switch-name {
-            font-weight: 600;
-        }
+        .account-switch-label { color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 10px; }
+        .account-switch-name { color: var(--text-heading); font-weight: 600; }
 
-        .topbar-icon-btn {
-            background: none;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            padding: 6px;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: color 0.15s ease;
-        }
-        .topbar-icon-btn:hover {
-            color: var(--text-heading);
-        }
-        .topbar-icon-btn svg { width: 19px; height: 19px; }
-
-        /* ── Page Canvas Content ── */
+        /* ── Content Container (100% Fluid Full Stretch) ── */
         .content-container {
             padding: 32px 36px 48px;
-            max-width: 1240px;
             width: 100%;
+            flex: 1;
         }
 
-        /* Header Title */
-        .page-header-group {
+        /* Header Title & Button */
+        .page-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
             margin-bottom: 24px;
         }
         .page-category-tag {
@@ -467,794 +374,621 @@
             color: var(--text-muted);
         }
 
-        /* ── 3 Stat Cards Row ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 28px;
-        }
-        .stat-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-            padding: 22px 24px;
-            box-shadow: var(--shadow-subtle);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .stat-card:hover {
-            box-shadow: var(--shadow-card);
-        }
-        .stat-card-title {
-            font-size: 13.5px;
-            font-weight: 500;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-        .stat-card-number {
-            font-size: 34px;
-            font-weight: 800;
-            color: var(--text-heading);
-            line-height: 1;
-            letter-spacing: -0.02em;
-        }
-
-        /* ── Filter & Action Row ── */
-        .action-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-        .toolbar-filters {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            max-width: 600px;
-        }
-        .search-input-wrap {
-            position: relative;
-            flex: 1;
-        }
-        .search-input-wrap svg {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
-            color: #94a3b8;
-            pointer-events: none;
-        }
-        .search-input-control {
-            width: 100%;
-            padding: 10px 14px 10px 38px;
-            font-size: 13.5px;
-            font-family: inherit;
-            color: var(--text-body);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            transition: all 0.15s ease;
-        }
-        .search-input-control:focus {
-            border-color: var(--border-focus);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
-        }
-        .select-filter-control {
-            padding: 10px 36px 10px 14px;
-            font-size: 13.5px;
-            font-family: inherit;
-            color: var(--text-body);
-            background: var(--bg-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 10px center/16px;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            appearance: none;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .select-filter-control:focus {
-            border-color: var(--border-focus);
-            outline: none;
-        }
-
         .btn-add-primary {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: var(--navy-btn);
+            height: 40px;
+            padding: 0 18px;
+            background-color: var(--navy-dark);
             color: #ffffff;
             font-size: 13.5px;
             font-weight: 600;
-            padding: 10px 18px;
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-md);
             border: none;
             cursor: pointer;
-            text-decoration: none;
-            transition: background 0.15s ease, transform 0.1s ease;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(15, 42, 74, 0.15);
+            transition: all 0.15s ease;
+            white-space: nowrap;
         }
         .btn-add-primary:hover {
-            background: var(--navy-btn-hover);
+            background-color: var(--navy-btn-hover);
+            transform: translateY(-1px);
         }
-        .btn-add-primary:active {
-            transform: scale(0.99);
-        }
-        .btn-add-primary svg {
-            width: 17px;
-            height: 17px;
-        }
+        .btn-add-primary svg { width: 16px; height: 16px; }
 
-        /* ── Flash Alerts ── */
-        .toast-banner {
-            padding: 12px 18px;
+        /* ── Sub-tabs Nav Pills ── */
+        .master-tabs-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .tab-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-sm);
             font-size: 13.5px;
-            margin-bottom: 20px;
+            font-weight: 500;
+            color: #475569;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .tab-pill:hover {
+            border-color: var(--border-dark);
+            color: var(--text-heading);
+        }
+        .tab-pill.active {
+            background-color: var(--navy-pill);
+            border-color: var(--navy-pill);
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .tab-pill-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+        }
+        .tab-pill.active .tab-pill-badge {
+            color: #94a3b8;
+        }
+
+        /* ── Alert Toasts ── */
+        .toast-banner {
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            box-shadow: var(--shadow-subtle);
+            margin-bottom: 20px;
         }
         .toast-banner.success {
-            background: #ecfdf5;
-            color: #065f46;
+            background-color: #ecfdf5;
             border: 1px solid #a7f3d0;
+            color: #065f46;
         }
         .toast-banner.error {
-            background: #fef2f2;
-            color: #991b1b;
+            background-color: #fef2f2;
             border: 1px solid #fecaca;
+            color: #991b1b;
         }
-        .toast-banner-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .toast-banner svg {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
+        .toast-banner-content { display: flex; align-items: center; gap: 10px; }
+        .toast-banner-content svg { width: 18px; height: 18px; flex-shrink: 0; }
         .toast-banner-close {
             background: none;
             border: none;
-            color: currentColor;
-            opacity: 0.6;
+            font-size: 18px;
+            line-height: 1;
+            color: inherit;
             cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
+            opacity: 0.7;
         }
         .toast-banner-close:hover { opacity: 1; }
 
-        /* ── Data Table Card ── */
-        .table-card {
-            background: var(--bg-surface);
+        /* ── Master Card ── */
+        .master-card {
+            background: #ffffff;
             border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-lg);
             overflow: hidden;
             box-shadow: var(--shadow-subtle);
         }
-        .safetrack-table {
+        .master-card-header {
+            padding: 24px 28px 16px;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+        .card-title-group h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 2px;
+        }
+        .card-title-group p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* ── Clean Table ── */
+        .master-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
         }
-        .safetrack-table thead th {
-            background: #f8fafc;
-            color: #64748b;
+        .master-table th {
+            padding: 14px 28px;
             font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            padding: 14px 20px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: capitalize;
             border-bottom: 1px solid var(--border-light);
-            white-space: nowrap;
+            background-color: #ffffff;
         }
-        .safetrack-table tbody td {
-            padding: 16px 20px;
+        .master-table td {
+            padding: 20px 28px;
             font-size: 13.5px;
-            color: #334155;
+            color: var(--text-body);
             border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
         }
-        .safetrack-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-        .safetrack-table tbody tr:hover {
+        .master-table tbody tr:hover td {
             background-color: #fafbfc;
         }
 
-        .shift-code-tag {
-            font-family: var(--font-mono);
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #0f172a;
-            background: #f1f5f9;
-            padding: 4px 8px;
-            border-radius: 5px;
-            display: inline-block;
-        }
-        .shift-name-text {
-            font-weight: 600;
-            color: var(--text-heading);
-        }
-
-        /* Time Pill (Referencing Foto 4 Time In / Time Out) */
-        .time-cell-badge {
-            font-family: var(--font-mono);
-            font-weight: 600;
-            font-size: 13.5px;
-            color: #1e293b;
-        }
-        .duration-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            color: #64748b;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 3px 8px;
-            border-radius: 9999px;
-        }
-        .duration-tag svg {
-            width: 12px;
-            height: 12px;
-            color: #94a3b8;
-        }
-
-        /* Status Badge (Referencing Foto 1) */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .status-badge.active {
-            background-color: var(--status-green-bg);
-            color: var(--status-green-text);
-        }
-        .status-badge.inactive {
-            background-color: var(--status-gray-bg);
-            color: var(--status-gray-text);
-        }
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-        }
-        .status-badge.active .status-dot {
-            background-color: var(--status-green-dot);
-        }
-        .status-badge.inactive .status-dot {
-            background-color: var(--status-gray-dot);
-        }
-
-        /* Action Buttons */
-        .action-btn-group {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 8px;
-        }
-        .btn-action-text {
-            background: none;
-            border: none;
-            color: #0f2a4a;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-decoration: none;
-            transition: all 0.15s ease;
-        }
-        .btn-action-text:hover {
-            background: #f1f5f9;
-            color: #1e40af;
-        }
-        .btn-action-delete {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: all 0.15s ease;
-        }
-        .btn-action-delete:hover {
-            color: #ef4444;
-            background: #fef2f2;
-        }
-
-        /* Empty State */
-        .table-empty-box {
-            padding: 48px 24px;
-            text-align: center;
-            color: var(--text-muted);
-        }
-        .table-empty-box svg {
-            width: 42px;
-            height: 42px;
-            color: #cbd5e1;
-            margin-bottom: 12px;
-        }
-        .table-empty-box p {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        /* Table Card Footer Note (Referencing Foto 1) */
-        .table-card-footer {
-            padding: 14px 20px;
-            border-top: 1px solid var(--border-light);
-            background: #fafbfc;
-            font-size: 12.5px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* Page Bottom Footer (Referencing Foto 1) */
-        .page-global-footer {
-            margin-top: 36px;
-            padding-top: 18px;
-            border-top: 1px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-light);
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .system-status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .indicator-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background-color: #22c55e;
-        }
-
-        /* ── Modal Dialog System (Referencing Foto 2 SafeTrack) ── */
-        .modal-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .modal-backdrop.open {
-            display: flex;
-            opacity: 1;
-        }
-        .modal-box {
-            background: var(--bg-surface);
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 540px;
-            box-shadow: var(--shadow-modal);
-            overflow: visible;
-            transform: translateY(8px);
-            transition: transform 0.2s ease;
-            position: relative;
-        }
-        .modal-backdrop.open .modal-box {
-            transform: translateY(0);
-        }
-        .modal-header {
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-light);
-        }
-        .modal-header-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text-heading);
-        }
-        .modal-btn-close {
-            background: none;
-            border: none;
-            font-size: 22px;
-            line-height: 1;
-            color: #94a3b8;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.15s ease;
-        }
-        .modal-btn-close:hover {
-            color: var(--text-heading);
-        }
-
-        .modal-body {
-            padding: 24px;
-        }
-
-        /* Top Info Box inside Modal (Referencing Foto 2) */
-        .modal-info-banner {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: var(--radius-sm);
-            padding: 12px 16px;
-            margin-bottom: 20px;
+        .shift-title-block {
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
-        .info-banner-primary {
-            font-size: 13.5px;
+        .shift-primary-name {
+            font-size: 14px;
             font-weight: 700;
             color: var(--text-heading);
         }
-        .info-banner-secondary {
+        .shift-code-sub {
             font-size: 12px;
-            color: var(--text-muted);
+            color: #94a3b8;
+            font-family: var(--font-main);
         }
 
-        .form-row-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 18px;
-        }
-        .form-field-group {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 18px;
-            position: relative;
-        }
-        .form-row-2col .form-field-group {
-            margin-bottom: 0;
-        }
-        .form-field-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 6px;
-        }
-        .form-field-input {
-            width: 100%;
-            padding: 9px 12px;
+        .shift-time-text {
             font-size: 13.5px;
-            font-family: inherit;
-            color: var(--text-body);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            transition: all 0.15s ease;
-        }
-        .form-field-input:focus {
-            border-color: var(--border-focus);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
-        }
-        .form-field-input.has-error {
-            border-color: #ef4444;
-            background: #fffafa;
-        }
-        .form-field-error-text {
-            font-size: 11.5px;
-            color: #ef4444;
-            margin-top: 4px;
+            font-weight: 500;
+            color: #334155;
         }
 
-        /* ── Custom Time Picker Input (Referencing Foto 3 Input Style & User Choice A1) ── */
-        .time-picker-wrapper {
-            position: relative;
-            width: 100%;
+        .ref-status-text {
+            font-size: 13px;
+            color: #64748b;
         }
-        .time-input-container {
+        .ref-status-text.active {
+            color: #0284c7;
+            font-weight: 500;
+        }
+
+        .table-actions {
             display: flex;
             align-items: center;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-sm);
-            background: #ffffff;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            overflow: hidden;
+            justify-content: flex-end;
+            gap: 20px;
         }
-        .time-input-container:hover {
-            border-color: #cbd5e1;
-        }
-        .time-input-container.active {
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
-        }
-        .time-text-input {
-            width: 100%;
+        .btn-table-action {
+            background: none;
             border: none;
-            background: transparent;
-            padding: 9px 12px;
-            font-family: var(--font-mono);
             font-size: 13.5px;
-            font-weight: 600;
-            color: var(--text-heading);
-            outline: none;
+            font-weight: 700;
             cursor: pointer;
-            letter-spacing: 0.05em;
+            padding: 0;
+            transition: color 0.15s ease;
         }
-        .time-icon-wrapper {
-            padding: 0 12px;
-            color: #64748b;
+        .btn-table-action.edit {
+            color: #0f172a;
+        }
+        .btn-table-action.edit:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        .btn-table-action.delete {
+            color: #b91c1c;
+        }
+        .btn-table-action.delete:hover {
+            color: #7f1d1d;
+            text-decoration: underline;
+        }
+
+        /* Card Bottom Note */
+        .card-bottom-note {
+            padding: 18px 28px;
+            font-size: 12.5px;
+            color: #94a3b8;
+            background: #ffffff;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        /* ── Page Footer ── */
+        .page-sys-footer {
+            margin-top: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .sys-live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dot-live {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #f59e0b;
+        }
+
+        /* ── Modal Popups (Matching Foto 2 Clean Style) ── */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(3px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-backdrop.open { display: flex; }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 520px;
+            box-shadow: var(--shadow-modal);
+            overflow: visible;
+            animation: modalFadeIn 0.2s ease-out;
+            position: relative;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.97) translateY(-8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            padding: 24px 28px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+        .modal-close-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--border-light);
+            background: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            pointer-events: none;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s ease;
         }
-        .time-icon-wrapper svg {
-            width: 17px;
-            height: 17px;
+        .modal-close-circle:hover {
+            background-color: #f1f5f9;
+            color: var(--text-heading);
+            border-color: var(--border-dark);
+        }
+        .modal-close-circle svg { width: 16px; height: 16px; }
+
+        .modal-body {
+            padding: 0 28px 24px;
         }
 
-        /* Custom Floating Time Picker Popover (No clunky native OS dropdowns) */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-heading);
+            margin-bottom: 8px;
+        }
+        .form-text-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-heading);
+            outline: none;
+            transition: all 0.15s ease;
+        }
+        .form-text-input:focus {
+            border-color: var(--navy-dark);
+            box-shadow: 0 0 0 3px rgba(15, 42, 74, 0.08);
+        }
+        .form-text-input.has-error {
+            border-color: #ef4444;
+            background-color: #fffafb;
+        }
+        .form-error-msg {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 5px;
+        }
+
+        .form-row-time {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .time-helper-note {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .modal-footer-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-top: 12px;
+        }
+        .btn-modal-cancel {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            padding: 0 20px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .btn-modal-cancel:hover {
+            background-color: #f8fafc;
+            border-color: var(--border-dark);
+            color: var(--text-heading);
+        }
+        .btn-modal-save {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            padding: 0 24px;
+            background-color: var(--navy-dark);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .btn-modal-save:hover {
+            background-color: var(--navy-btn-hover);
+        }
+
+        /* ── PRESERVED CUSTOM TIME PICKER POPOVER ── */
+        .time-picker-wrapper {
+            position: relative;
+        }
+        .time-input-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 44px;
+            padding: 0 14px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .time-input-box:hover {
+            border-color: var(--border-dark);
+        }
+        .time-val-display {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-heading);
+            border: none;
+            background: transparent;
+            outline: none;
+            cursor: pointer;
+            width: 80px;
+        }
+        .time-clock-icon {
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+        }
+        .time-clock-icon svg { width: 18px; height: 18px; }
+
+        /* Floating Custom Popover */
         .time-popover-box {
             display: none;
             position: absolute;
             top: calc(100% + 6px);
             left: 0;
-            width: 250px;
+            width: 260px;
             background: #ffffff;
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-md);
-            box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.18), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
-            z-index: 120;
-            padding: 14px;
-            animation: popoverFadeIn 0.15s ease forwards;
+            box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.15), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+            z-index: 200;
+            padding: 14px 14px 12px;
+            animation: modalFadeIn 0.15s ease-out;
         }
-        @keyframes popoverFadeIn {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .time-popover-box.open {
-            display: block;
-        }
+        .time-popover-box.open { display: block; }
+
         .popover-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .popover-header span {
             font-size: 11px;
             font-weight: 700;
+            letter-spacing: 0.05em;
             color: #64748b;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            margin-bottom: 12px;
         }
         .popover-preview-badge {
-            font-family: var(--font-mono);
-            font-size: 12px;
-            font-weight: 700;
-            background: #eff6ff;
-            color: #1d4ed8;
-            padding: 2px 7px;
+            background-color: #f1f5f9;
+            color: var(--navy-dark);
+            padding: 2px 8px;
             border-radius: 4px;
+            font-size: 12px;
+            font-weight: 800;
         }
-        /* Quick Preset Chips */
+
         .preset-row {
             display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
+            gap: 6px;
             margin-bottom: 12px;
         }
         .preset-chip {
-            font-family: var(--font-mono);
+            flex: 1;
+            padding: 4px 0;
+            text-align: center;
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            padding: 3px 6px;
-            cursor: pointer;
             color: #475569;
-            transition: all 0.12s ease;
+            cursor: pointer;
+            transition: all 0.1s ease;
         }
         .preset-chip:hover {
-            background: #fef3c7;
-            border-color: #f59e0b;
-            color: #92400e;
+            background: var(--navy-dark);
+            border-color: var(--navy-dark);
+            color: #ffffff;
         }
 
-        /* Jam & Menit Scrollable Picker Columns */
         .time-columns-container {
             display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            height: 160px;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f8fafc;
+            border: 1px solid #f1f5f9;
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            margin-bottom: 12px;
         }
         .time-column {
             flex: 1;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            align-items: center;
         }
         .time-column-label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             color: #94a3b8;
-            text-align: center;
-            margin-bottom: 4px;
-        }
-        .time-column-scroll {
-            flex: 1;
-            overflow-y: auto;
-            border: 1px solid #f1f5f9;
-            background: #f8fafc;
-            border-radius: 6px;
-            padding: 2px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+            margin-bottom: 6px;
+            letter-spacing: 0.05em;
         }
         .time-col-sep {
             font-size: 18px;
             font-weight: 700;
-            color: #94a3b8;
-            padding-top: 50px;
+            color: #cbd5e1;
+            padding: 0 6px;
         }
+        .time-column-scroll {
+            width: 100%;
+            height: 140px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            padding: 2px;
+        }
+        .time-column-scroll::-webkit-scrollbar { width: 3px; }
+        .time-column-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
         .time-scroll-item {
-            font-family: var(--font-mono);
-            font-size: 12.5px;
-            font-weight: 500;
-            text-align: center;
             padding: 6px 0;
+            text-align: center;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #64748b;
             border-radius: 4px;
             cursor: pointer;
-            color: #475569;
             transition: all 0.1s ease;
+            margin-bottom: 2px;
         }
         .time-scroll-item:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-        .time-scroll-item.selected {
-            background: #0f2a4a;
-            color: #ffffff;
-            font-weight: 700;
-        }
-        .popover-footer-actions {
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: flex-end;
-        }
-        .btn-popover-done {
-            background: #0f2a4a;
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 600;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 12px;
-            cursor: pointer;
-        }
-        .btn-popover-done:hover {
-            background: #1e293b;
-        }
-
-        /* Modal Footer Buttons (Referencing Foto 2) */
-        .modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
-            background: #fafbfc;
-            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-        }
-        .btn-modal-cancel {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: #475569;
-            font-size: 13.5px;
-            font-weight: 600;
-            padding: 9px 18px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .btn-modal-cancel:hover {
-            background: #f1f5f9;
+            background-color: #e2e8f0;
             color: var(--text-heading);
         }
-        .btn-modal-submit {
-            background: var(--navy-btn);
-            border: none;
-            color: #ffffff;
-            font-size: 13.5px;
-            font-weight: 600;
-            padding: 9px 20px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            transition: background 0.15s ease;
-        }
-        .btn-modal-submit:hover {
-            background: var(--navy-btn-hover);
-        }
-        .btn-modal-danger {
-            background: #dc2626;
-            border: none;
-            color: #ffffff;
-            font-size: 13.5px;
-            font-weight: 600;
-            padding: 9px 20px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: background 0.15s ease;
-        }
-        .btn-modal-danger:hover {
-            background: #b91c1c;
+        .time-scroll-item.selected {
+            background-color: var(--navy-dark) !important;
+            color: #ffffff !important;
+            font-weight: 700;
         }
 
-        /* ── Responsive ── */
+        .popover-footer-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 4px;
+        }
+        .btn-popover-done {
+            padding: 5px 14px;
+            background-color: var(--navy-dark);
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .btn-popover-done:hover {
+            background-color: var(--navy-btn-hover);
+        }
+
         @media (max-width: 900px) {
-            .app-sidebar { transform: translateX(-100%); transition: transform 0.2s ease; }
-            .app-sidebar.open { transform: translateX(0); }
+            .app-sidebar { display: none; }
             .app-main { margin-left: 0; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .content-container { padding: 20px 16px; }
+            .content-container { padding: 20px 16px 40px; }
             .app-topbar { padding: 0 16px; }
+            .page-header-row { flex-direction: column; gap: 16px; }
+            .btn-add-primary { width: 100%; justify-content: center; }
+            .master-table th, .master-table td { padding: 14px 16px; }
         }
     </style>
 </head>
 <body>
 <div class="app-shell">
 
-    <!-- ══ SafeTrack Sidebar (Referencing Foto 1) ══ -->
-    <aside class="app-sidebar" id="sidebarNav" role="navigation" aria-label="Navigasi SafeTrack">
-        <!-- Brand Logo -->
+    <!-- ══ Sidebar SafeTrack ══ -->
+    <aside class="app-sidebar" aria-label="Navigasi Utama">
         <div class="brand-container">
             <div class="brand-logo-icon">
-                <!-- SafeTrack Shield Icon -->
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L4 5V11.5C4 16.5 7.4 21.1 12 22.3C16.6 21.1 20 16.5 20 11.5V5L12 2Z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M9 12L11 14L15 9.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 2.18l7 2.33v4.49c0 4.54-3.07 8.79-7 9.9-3.93-1.11-7-5.36-7-9.9V6.51l7-2.33z" />
+                    <circle cx="12" cy="11.5" r="3.2" fill="#f59e0b" />
                 </svg>
             </div>
             <div class="brand-text">
-                <div class="brand-title">safe<span>Track</span></div>
-                <div class="brand-subtitle">SAFETY MANAGEMENT</div>
+                <span class="brand-title">safe<span>Track</span></span>
+                <span class="brand-subtitle">SAFETY MANAGEMENT</span>
             </div>
         </div>
 
-        <!-- Workspace Demonstrasi Selector -->
         <div class="workspace-card">
             <div class="workspace-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
                 </svg>
             </div>
@@ -1264,11 +998,11 @@
             </div>
         </div>
 
-        <!-- UTAMA Menu Group -->
+        <!-- Section Menu Utama -->
         <div class="nav-section-title">Utama</div>
         <ul class="sidebar-menu">
             <li>
-                <a href="#" class="sidebar-link">
+                <a href="{{ route('dashboard') }}" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
                     </svg>
@@ -1286,7 +1020,7 @@
             <li>
                 <a href="#" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V19.5a2.25 2.25 0 002.25 2.25h.75" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>Inspeksi Harian</span>
                 </a>
@@ -1294,15 +1028,17 @@
             <li>
                 <a href="#" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                     </svg>
                     <span>Safety Talk</span>
                 </a>
             </li>
             <li>
-                <a href="#" class="sidebar-link">
+                <a href="{{ route('sap.index') }}" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.757l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" />
+                        <circle cx="12" cy="12" r="5" stroke="currentColor" />
+                        <circle cx="12" cy="12" r="1.5" fill="currentColor" />
                     </svg>
                     <span>Pencapaian SAP</span>
                 </a>
@@ -1317,7 +1053,7 @@
             </li>
         </ul>
 
-        <!-- ADMINISTRASI Menu Group -->
+        <!-- Section Administrasi -->
         <div class="nav-section-title">Administrasi</div>
         <ul class="sidebar-menu">
             <li>
@@ -1329,15 +1065,8 @@
                 </a>
             </li>
             <li>
+                <!-- MENU UTAMA DATA MASTER (ACTIVE) -->
                 <a href="{{ route('shifts.index') }}" class="sidebar-link active">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Kelola Shift Kerja</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('admin.work-areas.index') }}" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
                     </svg>
@@ -1362,20 +1091,20 @@
             </li>
         </ul>
 
-        <!-- Bottom User Profile Card (Referencing Foto 1) -->
+        <!-- Bottom User Profile Footer -->
         <div class="sidebar-user-footer">
             <div class="user-meta-wrap">
                 <div class="user-avatar-badge">{{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}</div>
                 <div class="user-name-title">
                     <span class="user-full-name">{{ Auth::user()->name ?? 'Admin HSE' }}</span>
                     <span class="user-role-label">
-                        {{ (Auth::user() && Auth::user()->role === 'super_admin') ? 'Super Admin' : 'Admin / HSE' }}
+                        {{ (Auth::user() && Auth::user()->role === 'super_admin') ? 'Super Admin' : 'Admin' }}
                     </span>
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                 @csrf
-                <button type="submit" class="btn-user-exit" title="Keluar / Logout" id="btnLogoutSidebar">
+                <button type="submit" class="btn-user-exit" title="Keluar / Logout">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:17px;height:17px;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                     </svg>
@@ -1384,19 +1113,17 @@
         </div>
     </aside>
 
-    <!-- ══ Canvas Main Content ══ -->
+    <!-- ══ Canvas Main ══ -->
     <main class="app-main">
 
-        <!-- Topbar (Referencing Foto 1) -->
+        <!-- Topbar -->
         <header class="app-topbar">
-            <!-- Breadcrumbs -->
             <nav class="topbar-breadcrumbs" aria-label="Breadcrumb">
                 <a href="#">Workspace</a>
                 <span class="sep">&gt;</span>
-                <span class="current">Kelola Shift Kerja</span>
+                <span class="current">Data Master</span>
             </nav>
 
-            <!-- Actions & User Profile -->
             <div class="topbar-actions">
                 <div class="topbar-search-box">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -1407,51 +1134,62 @@
 
                 <div class="account-switch-btn" title="Ganti Akun">
                     <span class="account-switch-label">Ganti Akun</span>
-                    <span class="account-switch-name">{{ Auth::user()->name ?? 'Admin HSE' }}</span>
+                    <span class="account-switch-name">{{ Auth::user()->name ?? 'Admin HSE' }} - Admin</span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:12px;height:12px;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
                 </div>
 
-                <button class="topbar-icon-btn" aria-label="Notifikasi">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                <button class="btn-user-exit" aria-label="Notifikasi" style="padding:4px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:19px;height:19px;color:#64748b;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                     </svg>
                 </button>
 
-                <div class="user-avatar-badge" style="width:32px;height:32px;font-size:11px;">{{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}</div>
+                <div class="user-avatar-badge" style="width:32px;height:32px;font-size:11px;">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}
+                </div>
             </div>
         </header>
 
-        <!-- Page Main Canvas Area -->
+        <!-- Canvas Container -->
         <div class="content-container">
 
-            <!-- Title & Subtitle (Referencing Foto 1) -->
-            <div class="page-header-group">
-                <div class="page-category-tag">Administrasi</div>
-                <h1 class="page-main-title">Kelola shift kerja</h1>
-                <p class="page-desc-text">Atur jadwal kerja operasional, jam mulai, jam selesai, dan status shift karyawan.</p>
+            <!-- Title Header Row (Foto 1) -->
+            <div class="page-header-row">
+                <div class="page-header-text">
+                    <div class="page-category-tag">Administrasi</div>
+                    <h1 class="page-main-title">Data master</h1>
+                    <p class="page-desc-text">Satu referensi data untuk aktivitas keselamatan yang konsisten.</p>
+                </div>
+                <button type="button" class="btn-add-primary" onclick="openAddModal()" id="btnTambahShift">
+                    + Tambah shift
+                </button>
             </div>
 
-            <!-- 3 Stat Cards (Referencing Foto 1) -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-card-title">Seluruh shift</div>
-                    <div class="stat-card-number" id="statTotalShifts">{{ $shifts->count() }}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-card-title">Shift aktif</div>
-                    <div class="stat-card-number" id="statActiveShifts">{{ $shifts->where('is_active', true)->count() }}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-card-title">Shift nonaktif</div>
-                    <div class="stat-card-number" id="statInactiveShifts">{{ $shifts->where('is_active', false)->count() }}</div>
-                </div>
+            <!-- 4 Sub-Tabs Nav Pills (Foto 1) -->
+            <div class="master-tabs-bar">
+                <button type="button" class="tab-pill" onclick="alert('Modul Departemen dalam integrasi Data Master.')">
+                    <span>Departemen</span>
+                    <span class="tab-pill-badge">{{ $tabCounts['departments'] ?? 2 }}</span>
+                </button>
+                <button type="button" class="tab-pill active">
+                    <span>Shift kerja</span>
+                    <span class="tab-pill-badge">{{ $shifts->count() }}</span>
+                </button>
+                <button type="button" class="tab-pill" onclick="alert('Modul Kategori Temuan dalam integrasi Data Master.')">
+                    <span>Kategori temuan</span>
+                    <span class="tab-pill-badge">{{ $tabCounts['hazard_categories'] ?? 2 }}</span>
+                </button>
+                <a href="{{ route('admin.work-areas.index') }}" class="tab-pill" style="text-decoration:none;">
+                    <span>Area &amp; pertanyaan</span>
+                    <span class="tab-pill-badge">{{ $tabCounts['work_areas'] ?? 16 }}</span>
+                </a>
             </div>
 
-            <!-- Flash Toast Notifications -->
+            <!-- Flash Messages -->
             @if (session('success'))
-                <div class="toast-banner success" id="toastSuccess" role="alert">
+                <div class="toast-banner success" role="alert">
                     <div class="toast-banner-content">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1463,7 +1201,7 @@
             @endif
 
             @if (session('error'))
-                <div class="toast-banner error" id="toastError" role="alert">
+                <div class="toast-banner error" role="alert">
                     <div class="toast-banner-content">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
@@ -1474,180 +1212,122 @@
                 </div>
             @endif
 
-            <!-- Action & Filter Bar (Referencing Foto 1) -->
-            <div class="action-toolbar">
-                <div class="toolbar-filters">
-                    <div class="search-input-wrap">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                        </svg>
-                        <input type="text" id="filterKeyword" class="search-input-control" placeholder="Cari nama atau kode shift..." oninput="handleTableFilter()" aria-label="Cari nama atau kode shift">
+            <!-- Master Card Table (Foto 1) -->
+            <div class="master-card">
+                <div class="master-card-header">
+                    <div class="card-title-group">
+                        <h2>Shift kerja</h2>
+                        <p>{{ $shifts->count() }} data tersedia</p>
                     </div>
-                    <select id="filterStatus" class="select-filter-control" onchange="handleTableFilter()" aria-label="Filter status shift">
-                        <option value="all">Semua status</option>
-                        <option value="active">Aktif</option>
-                        <option value="inactive">Nonaktif</option>
-                    </select>
                 </div>
-                <button type="button" class="btn-add-primary" onclick="openAddModal()" id="btnOpenAddModal">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    <span>Tambah Shift</span>
-                </button>
-            </div>
 
-            <!-- ══ Shift Table Card (Referencing Foto 1 & Foto 4) ══ -->
-            <div class="table-card">
-                @if ($shifts->isEmpty())
-                    <div class="table-empty-box">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p>Belum ada data shift kerja yang terdaftar.</p>
-                        <p style="font-size:12.5px;color:#94a3b8;margin-top:4px;">Klik tombol "+ Tambah Shift" di atas untuk menambahkan shift baru.</p>
-                    </div>
-                @else
-                    <table class="safetrack-table">
-                        <thead>
+                <table class="master-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">Nama</th>
+                            <th style="width: 30%;">Jam kerja</th>
+                            <th style="width: 20%;">Referensi</th>
+                            <th style="width: 15%; text-align: right;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="shiftTableBody">
+                        @forelse ($shifts as $shift)
                             <tr>
-                                <th style="width: 140px;">Kode Shift</th>
-                                <th>Nama Shift</th>
-                                <th style="width: 130px;">Jam Mulai</th>
-                                <th style="width: 130px;">Jam Selesai</th>
-                                <th style="width: 140px;">Durasi</th>
-                                <th style="width: 120px;">Status</th>
-                                <th style="width: 120px; text-align: right;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="shiftTableBody">
-                            @foreach ($shifts as $shift)
-                                @php
-                                    $start = \Carbon\Carbon::parse($shift->starts_at);
-                                    $end = \Carbon\Carbon::parse($shift->ends_at);
-                                    if ($end->lessThan($start)) {
-                                        $end->addDay();
-                                    }
-                                    $diffMinutes = $start->diffInMinutes($end);
-                                    $hours = intdiv($diffMinutes, 60);
-                                    $mins = $diffMinutes % 60;
-                                    $durationLabel = $hours . ' jam' . ($mins > 0 ? ' ' . $mins . ' mnt' : '');
-                                @endphp
-                                <tr data-code="{{ strtolower($shift->code) }}" data-name="{{ strtolower($shift->name) }}" data-status="{{ $shift->is_active ? 'active' : 'inactive' }}">
-                                    <td>
-                                        <span class="shift-code-tag">{{ $shift->code }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="shift-name-text">{{ $shift->name }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="time-cell-badge">{{ $start->format('H:i') }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="time-cell-badge">{{ $end->format('H:i') }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="duration-tag">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            {{ $durationLabel }}
+                                <td>
+                                    <div class="shift-title-block">
+                                        <span class="shift-primary-name">{{ $shift->name }}</span>
+                                        <span class="shift-code-sub">{{ $shift->code }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="shift-time-text">
+                                        {{ substr($shift->starts_at, 0, 5) }} &ndash; {{ substr($shift->ends_at, 0, 5) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if ($shift->daily_inspections_count > 0)
+                                        <span class="ref-status-text active">
+                                            Digunakan ({{ $shift->daily_inspections_count }} inspeksi)
                                         </span>
-                                    </td>
-                                    <td>
-                                        @if ($shift->is_active)
-                                            <span class="status-badge active">
-                                                <span class="status-dot"></span>
-                                                Aktif
-                                            </span>
-                                        @else
-                                            <span class="status-badge inactive">
-                                                <span class="status-dot"></span>
-                                                Nonaktif
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="action-btn-group">
-                                            <button type="button" class="btn-action-text" onclick='openEditModal(@json($shift))' aria-label="Ubah shift {{ $shift->name }}">
-                                                Kelola
-                                            </button>
-                                            <button type="button" class="btn-action-delete" onclick="openDeleteModal({{ $shift->id }}, '{{ addslashes($shift->name) }}')" aria-label="Hapus shift {{ $shift->name }}" title="Hapus">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:16px;height:16px;">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    <div class="table-card-footer">
-                        <span id="tableEntriesCounter">Menampilkan {{ $shifts->count() }} shift kerja terdaftar.</span>
-                        <span>Jadwal operasional SafeTrack tersinkronisasi.</span>
-                    </div>
-                @endif
+                                    @else
+                                        <span class="ref-status-text">Belum digunakan</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button type="button" class="btn-table-action edit" onclick="openEditModal({{ json_encode($shift) }})">Ubah</button>
+                                        <button type="button" class="btn-table-action delete" onclick="confirmDeleteShift({{ $shift->id }}, '{{ addslashes($shift->name) }}', {{ $shift->daily_inspections_count }})">Hapus</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding: 48px; color: #94a3b8;">
+                                    Belum ada data shift kerja. Klik "+ Tambah shift" untuk menambahkan.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+
+                <div class="card-bottom-note">
+                    Data yang sudah dirujuk aktivitas tidak dapat dihapus atau diganti namanya agar riwayat tetap konsisten.
+                </div>
             </div>
 
-            <!-- Page Global Footer (Referencing Foto 1) -->
-            <footer class="page-global-footer">
-                <div>&copy; 2026 SafeTrack. Setiap kepedulian berarti.</div>
-                <div class="system-status-indicator">
-                    <span class="indicator-dot"></span>
-                    <span>Sistem aktif &bull; Data tersimpan otomatis</span>
-                </div>
+            <!-- Page System Footer -->
+            <footer class="page-sys-footer">
+                <span>&copy; 2026 SafeTrack. Setiap kepedulian berarti.</span>
+                <span class="sys-live-indicator">
+                    <span class="dot-live"></span>
+                    Sistem aktif &bull; Data tersimpan otomatis
+                </span>
             </footer>
 
         </div>
     </main>
+
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
-<!-- MODAL: Tambah Shift Kerja (Referencing Foto 2 & Foto 3)       -->
+<!-- MODAL: Tambah Shift (Matching Foto 2 dengan Time Picker Foto) -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <div class="modal-backdrop" id="addShiftModal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle">
-    <div class="modal-box">
+    <div class="modal-card">
         <div class="modal-header">
-            <h2 class="modal-header-title" id="addModalTitle">Tambah shift kerja</h2>
-            <button type="button" class="modal-btn-close" onclick="closeModal('addShiftModal')" aria-label="Tutup">&times;</button>
+            <h2 class="modal-title" id="addModalTitle">Tambah shift</h2>
+            <button type="button" class="modal-close-circle" onclick="closeModal('addShiftModal')" aria-label="Tutup">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
-        <form method="POST" action="{{ route('shifts.store') }}" id="addShiftForm">
+        <form method="POST" action="{{ route('shifts.store') }}">
             @csrf
             <div class="modal-body">
-                <div class="form-row-2col">
-                    <div class="form-field-group">
-                        <label for="add_code" class="form-field-label">Kode shift</label>
-                        <input type="text" id="add_code" name="code" class="form-field-input {{ $errors->has('code') && !old('_edit_id') ? 'has-error' : '' }}" placeholder="Contoh: PAGI" value="{{ old('code') }}" required>
-                        @if ($errors->has('code') && !old('_edit_id'))
-                            <div class="form-field-error-text">{{ $errors->first('code') }}</div>
-                        @endif
-                    </div>
-                    <div class="form-field-group">
-                        <label for="add_name" class="form-field-label">Nama shift</label>
-                        <input type="text" id="add_name" name="name" class="form-field-input {{ $errors->has('name') && !old('_edit_id') ? 'has-error' : '' }}" placeholder="Contoh: Shift Pagi 1" value="{{ old('name') }}" required>
-                        @if ($errors->has('name') && !old('_edit_id'))
-                            <div class="form-field-error-text">{{ $errors->first('name') }}</div>
-                        @endif
-                    </div>
+                <div class="form-group">
+                    <label for="add_name" class="form-group-label">Nama shift</label>
+                    <input type="text" id="add_name" name="name" class="form-text-input {{ $errors->has('name') && !old('_edit_id') ? 'has-error' : '' }}" placeholder="Masukkan nama shift..." value="{{ old('name') }}" required autofocus>
+                    @if ($errors->has('name') && !old('_edit_id'))
+                        <div class="form-error-msg">{{ $errors->first('name') }}</div>
+                    @endif
                 </div>
 
-                <!-- Custom Time Picker Row (Foto 3 Clock Icon + Foto 4/5 Clean Picker) -->
-                <div class="form-row-2col">
+                <div class="form-row-time">
                     <!-- Jam Mulai -->
-                    <div class="form-field-group">
-                        <label class="form-field-label">Jam mulai</label>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-group-label">Jam mulai</label>
                         <input type="hidden" name="starts_at" id="add_starts_at" value="{{ old('starts_at', '07:00') }}">
                         <div class="time-picker-wrapper">
-                            <div class="time-input-container" onclick="openTimePickerPopover(event, 'add_start')">
-                                <input type="text" id="add_start_display" class="time-text-input" value="{{ old('starts_at', '07:00') }}" readonly>
-                                <div class="time-icon-wrapper">
+                            <div class="time-input-box" onclick="openTimePickerPopover(event, 'add_start')">
+                                <input type="text" id="add_start_display" class="time-val-display" value="{{ old('starts_at', '07:00') }}" readonly>
+                                <div class="time-clock-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
                             </div>
-                            <!-- Floating Custom Scroll Picker -->
+                            <!-- Popover Pemilih Jam Sesuai Foto -->
                             <div class="time-popover-box" id="add_start_popover">
                                 <div class="popover-header">
                                     <span>Pilih Jam Mulai</span>
@@ -1676,24 +1356,24 @@
                             </div>
                         </div>
                         @if ($errors->has('starts_at') && !old('_edit_id'))
-                            <div class="form-field-error-text">{{ $errors->first('starts_at') }}</div>
+                            <div class="form-error-msg">{{ $errors->first('starts_at') }}</div>
                         @endif
                     </div>
 
                     <!-- Jam Selesai -->
-                    <div class="form-field-group">
-                        <label class="form-field-label">Jam selesai</label>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-group-label">Jam selesai</label>
                         <input type="hidden" name="ends_at" id="add_ends_at" value="{{ old('ends_at', '15:00') }}">
                         <div class="time-picker-wrapper">
-                            <div class="time-input-container" onclick="openTimePickerPopover(event, 'add_end')">
-                                <input type="text" id="add_end_display" class="time-text-input" value="{{ old('ends_at', '15:00') }}" readonly>
-                                <div class="time-icon-wrapper">
+                            <div class="time-input-box" onclick="openTimePickerPopover(event, 'add_end')">
+                                <input type="text" id="add_end_display" class="time-val-display" value="{{ old('ends_at', '15:00') }}" readonly>
+                                <div class="time-clock-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
                             </div>
-                            <!-- Floating Custom Scroll Picker -->
+                            <!-- Popover Pemilih Jam Selesai Sesuai Foto -->
                             <div class="time-popover-box" id="add_end_popover">
                                 <div class="popover-header">
                                     <span>Pilih Jam Selesai</span>
@@ -1722,68 +1402,59 @@
                             </div>
                         </div>
                         @if ($errors->has('ends_at') && !old('_edit_id'))
-                            <div class="form-field-error-text">{{ $errors->first('ends_at') }}</div>
+                            <div class="form-error-msg">{{ $errors->first('ends_at') }}</div>
                         @endif
                     </div>
                 </div>
 
-                <div class="form-field-group">
-                    <label for="add_is_active" class="form-field-label">Status shift</label>
-                    <select id="add_is_active" name="is_active" class="select-filter-control" style="width:100%;">
-                        <option value="1" {{ old('is_active', '1') == '1' ? 'selected' : '' }}>Aktif</option>
-                        <option value="0" {{ old('is_active') === '0' ? 'selected' : '' }}>Nonaktif</option>
-                    </select>
+                <div class="time-helper-note">
+                    Jam selesai yang lebih awal dari jam mulai berarti shift melewati tengah malam.
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-modal-cancel" onclick="closeModal('addShiftModal')">Batal</button>
-                <button type="submit" class="btn-modal-submit">Simpan Shift</button>
+
+                <div class="modal-footer-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('addShiftModal')">Batal</button>
+                    <button type="submit" class="btn-modal-save">Simpan data</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
-<!-- MODAL: Ubah Shift Kerja (Referencing Foto 2 SafeTrack Modal)   -->
+<!-- MODAL: Ubah Shift (Matching Foto 2 dengan Time Picker)        -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <div class="modal-backdrop" id="editShiftModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
-    <div class="modal-box">
+    <div class="modal-card">
         <div class="modal-header">
-            <h2 class="modal-header-title" id="editModalTitle">Kelola shift kerja</h2>
-            <button type="button" class="modal-btn-close" onclick="closeModal('editShiftModal')" aria-label="Tutup">&times;</button>
+            <h2 class="modal-title" id="editModalTitle">Ubah shift</h2>
+            <button type="button" class="modal-close-circle" onclick="closeModal('editShiftModal')" aria-label="Tutup">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
         <form method="POST" id="editShiftForm">
             @csrf
             @method('PUT')
             <input type="hidden" name="_edit_id" value="1">
             <div class="modal-body">
-                <!-- Info Banner (Foto 2) -->
-                <div class="modal-info-banner">
-                    <span class="info-banner-primary" id="editInfoShiftName">Shift Kerja</span>
-                    <span class="info-banner-secondary" id="editInfoShiftCode">KODE &bull; SafeTrack Shift</span>
-                </div>
-
-                <div class="form-row-2col">
-                    <div class="form-field-group">
-                        <label for="edit_code" class="form-field-label">Kode shift</label>
-                        <input type="text" id="edit_code" name="code" class="form-field-input" required>
-                    </div>
-                    <div class="form-field-group">
-                        <label for="edit_name" class="form-field-label">Nama shift</label>
-                        <input type="text" id="edit_name" name="name" class="form-field-input" required>
+                <div class="form-group">
+                    <label for="edit_name" class="form-group-label">Nama shift</label>
+                    <input type="text" id="edit_name" name="name" class="form-text-input" required>
+                    <div id="edit_name_warning" style="display:none; font-size:12px; color:#d97706; margin-top:4px;">
+                        Nama shift terkunci karena sudah dirujuk inspeksi harian.
                     </div>
                 </div>
 
-                <!-- Custom Time Picker Row (Jam Mulai & Jam Selesai) -->
-                <div class="form-row-2col">
+                <div class="form-row-time">
                     <!-- Jam Mulai -->
-                    <div class="form-field-group">
-                        <label class="form-field-label">Jam mulai</label>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-group-label">Jam mulai</label>
                         <input type="hidden" name="starts_at" id="edit_starts_at" value="07:00">
                         <div class="time-picker-wrapper">
-                            <div class="time-input-container" onclick="openTimePickerPopover(event, 'edit_start')">
-                                <input type="text" id="edit_start_display" class="time-text-input" value="07:00" readonly>
-                                <div class="time-icon-wrapper">
+                            <div class="time-input-box" onclick="openTimePickerPopover(event, 'edit_start')">
+                                <input type="text" id="edit_start_display" class="time-val-display" value="07:00" readonly>
+                                <div class="time-clock-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -1819,13 +1490,13 @@
                     </div>
 
                     <!-- Jam Selesai -->
-                    <div class="form-field-group">
-                        <label class="form-field-label">Jam selesai</label>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-group-label">Jam selesai</label>
                         <input type="hidden" name="ends_at" id="edit_ends_at" value="15:00">
                         <div class="time-picker-wrapper">
-                            <div class="time-input-container" onclick="openTimePickerPopover(event, 'edit_end')">
-                                <input type="text" id="edit_end_display" class="time-text-input" value="15:00" readonly>
-                                <div class="time-icon-wrapper">
+                            <div class="time-input-box" onclick="openTimePickerPopover(event, 'edit_end')">
+                                <input type="text" id="edit_end_display" class="time-val-display" value="15:00" readonly>
+                                <div class="time-clock-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -1861,110 +1532,130 @@
                     </div>
                 </div>
 
-                <div class="form-field-group">
-                    <label for="edit_is_active" class="form-field-label">Status shift</label>
-                    <select id="edit_is_active" name="is_active" class="select-filter-control" style="width:100%;">
-                        <option value="1">Aktif</option>
-                        <option value="0">Nonaktif</option>
-                    </select>
+                <div class="time-helper-note">
+                    Jam selesai yang lebih awal dari jam mulai berarti shift melewati tengah malam.
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-modal-cancel" onclick="closeModal('editShiftModal')">Batal</button>
-                <button type="submit" class="btn-modal-submit">Simpan perubahan</button>
+
+                <div class="modal-footer-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('editShiftModal')">Batal</button>
+                    <button type="submit" class="btn-modal-save">Simpan data</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
-<!-- MODAL: Hapus Shift Kerja                                      -->
+<!-- MODAL: Hapus Shift Konfirmasi                                -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <div class="modal-backdrop" id="deleteShiftModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
-    <div class="modal-box" style="max-width: 440px;">
+    <div class="modal-card" style="max-width: 440px;">
         <div class="modal-header">
-            <h2 class="modal-header-title" id="deleteModalTitle">Hapus shift kerja</h2>
-            <button type="button" class="modal-btn-close" onclick="closeModal('deleteShiftModal')" aria-label="Tutup">&times;</button>
+            <h2 class="modal-title" id="deleteModalTitle">Hapus shift kerja</h2>
+            <button type="button" class="modal-close-circle" onclick="closeModal('deleteShiftModal')" aria-label="Tutup">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
         <form method="POST" id="deleteShiftForm">
             @csrf
             @method('DELETE')
             <div class="modal-body">
-                <p style="font-size:14px;color:var(--text-body);line-height:1.6;">
-                    Apakah Anda yakin ingin menghapus shift kerja <strong id="deleteShiftNameText" style="color:var(--text-heading)"></strong>?
-                </p>
-                <p style="font-size:12.5px;color:var(--text-muted);margin-top:8px;">
-                    Catatan: Shift yang telah digunakan dalam inspeksi harian tidak dapat dihapus demi integritas data audit K3.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-modal-cancel" onclick="closeModal('deleteShiftModal')">Batal</button>
-                <button type="submit" class="btn-modal-danger">Hapus Shift</button>
+                <div id="deleteWarningMessage" style="font-size:13.5px; color:#475569; line-height:1.5;">
+                    Apakah Anda yakin ingin menghapus shift kerja ini? Tindakan ini tidak dapat dibatalkan.
+                </div>
+                <div class="modal-footer-actions" style="margin-top:20px;">
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('deleteShiftModal')" id="btnCancelDelete">Batal</button>
+                    <button type="submit" class="btn-modal-save" id="btnConfirmDelete" style="background-color:#b91c1c;">Hapus shift</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════════ -->
-<!-- SCRIPT: Modals, Custom Time Pickers, Instant Search & Filters  -->
-<!-- ══════════════════════════════════════════════════════════════ -->
 <script>
-    /* ── Modal Opening & Closing ── */
     function openModal(id) {
         document.getElementById(id).classList.add('open');
-        closeAllTimePickers();
     }
     function closeModal(id) {
         document.getElementById(id).classList.remove('open');
-        closeAllTimePickers();
     }
-
     function openAddModal() {
         openModal('addShiftModal');
-        document.getElementById('add_code').focus();
+        setTimeout(function() {
+            var input = document.getElementById('add_name');
+            if (input) input.focus();
+        }, 100);
     }
 
     function openEditModal(shift) {
-        document.getElementById('editShiftForm').action = '/shifts/' + shift.id;
-        document.getElementById('edit_code').value = shift.code;
+        var form = document.getElementById('editShiftForm');
+        form.action = '/shifts/' + shift.id;
         document.getElementById('edit_name').value = shift.name;
-        document.getElementById('editInfoShiftName').textContent = shift.name;
-        document.getElementById('editInfoShiftCode').textContent = shift.code + ' • Shift Kerja SafeTrack';
-        document.getElementById('edit_is_active').value = shift.is_active ? '1' : '0';
 
-        var sTime = shift.starts_at.substring(0, 5);
-        var eTime = shift.ends_at.substring(0, 5);
-        var sHour = sTime.substring(0, 2), sMin = sTime.substring(3, 5);
-        var eHour = eTime.substring(0, 2), eMin = eTime.substring(3, 5);
+        var startVal = (shift.starts_at || '07:00').substring(0, 5);
+        var endVal = (shift.ends_at || '15:00').substring(0, 5);
 
-        applyPresetTime('edit_start', sHour, sMin);
-        applyPresetTime('edit_end', eHour, eMin);
+        document.getElementById('edit_starts_at').value = startVal;
+        document.getElementById('edit_start_display').value = startVal;
+        document.getElementById('edit_start_badge').textContent = startVal;
+
+        document.getElementById('edit_ends_at').value = endVal;
+        document.getElementById('edit_end_display').value = endVal;
+        document.getElementById('edit_end_badge').textContent = endVal;
+
+        applyPresetTime('edit_start', startVal.substring(0, 2), startVal.substring(3, 5));
+        applyPresetTime('edit_end', endVal.substring(0, 2), endVal.substring(3, 5));
+
+        // Lock name if referenced
+        var warning = document.getElementById('edit_name_warning');
+        var nameInput = document.getElementById('edit_name');
+        if (shift.daily_inspections_count > 0) {
+            warning.style.display = 'block';
+            nameInput.readOnly = true;
+            nameInput.style.backgroundColor = '#f8fafc';
+        } else {
+            warning.style.display = 'none';
+            nameInput.readOnly = false;
+            nameInput.style.backgroundColor = '#ffffff';
+        }
 
         openModal('editShiftModal');
-        document.getElementById('edit_code').focus();
     }
 
-    function openDeleteModal(id, name) {
-        document.getElementById('deleteShiftForm').action = '/shifts/' + id;
-        document.getElementById('deleteShiftNameText').textContent = '"' + name + '"';
+    function confirmDeleteShift(id, name, inspectionsCount) {
+        var form = document.getElementById('deleteShiftForm');
+        var msg = document.getElementById('deleteWarningMessage');
+        var confirmBtn = document.getElementById('btnConfirmDelete');
+        var cancelBtn = document.getElementById('btnCancelDelete');
+
+        if (inspectionsCount > 0) {
+            form.action = '#';
+            form.onsubmit = function(e) { e.preventDefault(); closeModal('deleteShiftModal'); };
+            msg.innerHTML = '<span style="color:#ef4444; font-weight:700;">Tidak dapat dihapus!</span><br>Shift <strong>' + name + '</strong> sudah dirujuk dalam ' + inspectionsCount + ' inspeksi harian. Sesuai regulasi data keselamatan, data yang telah dirujuk tidak dapat dihapus.';
+            confirmBtn.style.display = 'none';
+            cancelBtn.textContent = 'Mengerti';
+        } else {
+            form.action = '/shifts/' + id;
+            form.onsubmit = null;
+            msg.innerHTML = 'Apakah Anda yakin ingin menghapus shift <strong>' + name + '</strong>?<br>Tindakan ini tidak dapat dibatalkan.';
+            confirmBtn.style.display = 'inline-flex';
+            cancelBtn.textContent = 'Batal';
+        }
+
         openModal('deleteShiftModal');
     }
 
-    /* Close modal on backdrop click */
-    document.querySelectorAll('.modal-backdrop').forEach(function(modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal(this.id);
-            }
+    /* Close on backdrop or escape */
+    document.querySelectorAll('.modal-backdrop').forEach(function(m) {
+        m.addEventListener('click', function(e) {
+            if (e.target === this) closeModal(this.id);
         });
     });
-
-    /* Close on Escape key */
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.modal-backdrop.open').forEach(function(m) {
-                closeModal(m.id);
-            });
+            document.querySelectorAll('.modal-backdrop.open').forEach(function(m) { closeModal(m.id); });
             closeAllTimePickers();
         }
     });
@@ -1982,7 +1673,6 @@
             hScroll.innerHTML = '';
             mScroll.innerHTML = '';
 
-            // Generate 00 to 23 Hours
             for (var h = 0; h < 24; h++) {
                 var hh = String(h).padStart(2, '0');
                 var hItem = document.createElement('div');
@@ -1998,7 +1688,6 @@
                 hScroll.appendChild(hItem);
             }
 
-            // Generate 00, 15, 30, 45 Minutes
             minuteSteps.forEach(function(mm) {
                 var mItem = document.createElement('div');
                 mItem.className = 'time-scroll-item';
@@ -2013,11 +1702,8 @@
                 mScroll.appendChild(mItem);
             });
 
-            // Set initial selected highlight
             var curVal = document.getElementById(pfx + '_display').value || '07:00';
-            var curH = curVal.substring(0, 2);
-            var curM = curVal.substring(3, 5);
-            applyPresetTime(pfx, curH, curM);
+            applyPresetTime(pfx, curVal.substring(0, 2), curVal.substring(3, 5));
         });
     }
 
@@ -2028,11 +1714,8 @@
         closeAllTimePickers();
         if (!wasOpen) {
             popover.classList.add('open');
-            // Scroll selected hour into view smoothly
             var activeH = popover.querySelector('.time-column-scroll .time-scroll-item.selected');
-            if (activeH) {
-                activeH.scrollIntoView({ block: 'nearest' });
-            }
+            if (activeH) activeH.scrollIntoView({ block: 'nearest' });
         }
     }
 
@@ -2042,7 +1725,6 @@
         });
     }
 
-    // Close picker when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.time-picker-wrapper')) {
             closeAllTimePickers();
@@ -2075,7 +1757,6 @@
         document.getElementById(pfx + '_display').value = combined;
         document.getElementById(pfx + '_badge').textContent = combined;
 
-        // Sync with actual hidden form input (starts_at / ends_at)
         var formField = (pfx.indexOf('start') !== -1) ? 'starts_at' : 'ends_at';
         var scope = (pfx.indexOf('add') !== -1) ? 'add' : 'edit';
         document.getElementById(scope + '_' + formField).value = combined;
@@ -2095,39 +1776,8 @@
         updateTimeCombinedValue(pfx);
     }
 
-    /* ── Live Client-side Table Search & Filter ── */
-    function handleTableFilter() {
-        var query = document.getElementById('filterKeyword').value.toLowerCase().trim();
-        var statusFilter = document.getElementById('filterStatus').value;
-        var rows = document.querySelectorAll('#shiftTableBody tr');
-        var visibleCount = 0;
-
-        rows.forEach(function(row) {
-            var code = row.getAttribute('data-code') || '';
-            var name = row.getAttribute('data-name') || '';
-            var status = row.getAttribute('data-status') || '';
-
-            var matchesKeyword = (query === '') || (code.indexOf(query) !== -1) || (name.indexOf(query) !== -1);
-            var matchesStatus = (statusFilter === 'all') || (status === statusFilter);
-
-            if (matchesKeyword && matchesStatus) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        var counter = document.getElementById('tableEntriesCounter');
-        if (counter) {
-            counter.textContent = 'Menampilkan ' + visibleCount + ' shift kerja terdaftar.';
-        }
-    }
-
-    // Initialize custom time pickers on DOM ready
     document.addEventListener('DOMContentLoaded', function() {
         initTimePickers();
-
         @if ($errors->any() && !old('_edit_id'))
             openAddModal();
         @endif

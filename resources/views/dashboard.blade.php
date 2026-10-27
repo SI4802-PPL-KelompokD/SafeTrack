@@ -103,7 +103,7 @@
             height: 64px; background: #ffffff; border-bottom: 1px solid var(--border-light);
             padding: 0 32px; display: flex; align-items: center; justify-content: space-between;
         }
-        .content-area { padding: 32px 36px; max-width: 1200px; }
+        .content-area { padding: 32px 36px; width: 100%; }
 
         .welcome-hero-card {
             background: linear-gradient(135deg, #0f2a4a 0%, #1e3a5f 100%);
@@ -113,7 +113,7 @@
         .welcome-hero-card h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
         .welcome-hero-card p { font-size: 14px; color: #cbd5e1; }
 
-        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 28px; }
         .card-stat { background: #ffffff; border: 1px solid var(--border-light); border-radius: 10px; padding: 20px; }
         .card-stat-label { font-size: 13px; color: #64748b; margin-bottom: 6px; }
         .card-stat-val { font-size: 28px; font-weight: 800; color: #0f172a; }
@@ -175,7 +175,7 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="menu-link">
+                <a href="{{ in_array(Auth::user()->role, ['super_admin', 'admin'], true) ? route('sap.index') : '#' }}" class="menu-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.757l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59"/></svg>
                     <span>Pencapaian SAP</span>
                 </a>
@@ -187,8 +187,8 @@
             <ul class="menu-list">
                 <li>
                     <a href="{{ route('shifts.index') }}" class="menu-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>Kelola Shift Kerja</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/></svg>
+                        <span>Data Master</span>
                     </a>
                 </li>
             </ul>
@@ -243,15 +243,41 @@
             <div class="stats-row">
                 <div class="card-stat">
                     <div class="card-stat-label">Laporan Bahaya Saya</div>
-                    <div class="card-stat-val">0</div>
+                    <div class="card-stat-val">{{ $sapSummary?->hazard_count ?? 0 }}</div>
                 </div>
                 <div class="card-stat">
                     <div class="card-stat-label">Inspeksi Bulan Ini</div>
-                    <div class="card-stat-val">0</div>
+                    <div class="card-stat-val">{{ $sapSummary?->inspection_count ?? 0 }}</div>
                 </div>
                 <div class="card-stat">
                     <div class="card-stat-label">Poin SAP K3</div>
-                    <div class="card-stat-val">0</div>
+                    <div class="card-stat-val">{{ $sapSummary?->total_points ?? 0 }}</div>
+                </div>
+                <div class="card-stat">
+                    <div class="card-stat-label">
+                        @if (Auth::user()->department?->is_hse)
+                            Target K3 (HSE)
+                        @else
+                            Hak Reward K3
+                        @endif
+                    </div>
+                    <div class="card-stat-val" style="font-size:18px;margin-top:6px;">
+                        @if (Auth::user()->department?->is_hse)
+                            @if ($sapSummary?->target_met === true)
+                                <span style="color:#15803d;font-weight:700;">&#10003; Terpenuhi</span>
+                            @elseif ($sapSummary?->target_met === false)
+                                <span style="color:#b91c1c;font-weight:700;">Belum Terpenuhi</span>
+                            @else
+                                <span style="color:#64748b;font-size:14px;font-weight:600;">Belum Ada Aturan</span>
+                            @endif
+                        @else
+                            @if ($sapSummary?->reward_eligible && $sapSummary?->eligibleReward)
+                                <span style="color:#b45309;font-weight:700;">🎁 {{ $sapSummary->eligibleReward->name }}</span>
+                            @else
+                                <span style="color:#64748b;font-size:14px;font-weight:600;">Belum Capai Ambang</span>
+                            @endif
+                        @endif
+                    </div>
                 </div>
             </div>
 
