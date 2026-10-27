@@ -31,8 +31,7 @@ class WorkAreaManagementTest extends TestCase
 
         $response->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('WorkAreas/Index', false)
-            ->has('workAreas.data')
-            ->has('departments'));
+            ->has('workAreas.data'));
     }
 
     public function test_hse_and_non_hse_employees_cannot_open_work_area_management_page(): void
@@ -53,15 +52,19 @@ class WorkAreaManagementTest extends TestCase
         $admin = User::where('username', 'admin')->firstOrFail();
 
         $response = $this->actingAs($admin)->post(route('admin.work-areas.store'), [
-            'department_id' => $admin->department_id,
             'name' => 'Laboratorium',
-            'code' => 'LAB',
             'description' => 'Area pengujian sampel.',
-            'is_active' => '1',
+            'questions' => [
+                'Apakah meja kerja dalam kondisi bersih?',
+                'Apakah alat keselamatan tersedia?',
+                'Apakah jalur evakuasi dapat digunakan?',
+            ],
         ]);
 
         $response->assertRedirect(route('admin.work-areas.index'))->assertSessionHas('success');
-        $this->assertDatabaseHas('work_areas', ['name' => 'Laboratorium', 'code' => 'LAB', 'is_active' => true]);
+        $area = WorkArea::where('name', 'Laboratorium')->firstOrFail();
+        $this->assertTrue($area->is_active);
+        $this->assertSame(3, $area->questions()->count());
         $this->assertDatabaseHas('audit_logs', ['actor_id' => $admin->id, 'action' => 'work_area.created']);
     }
 
@@ -71,9 +74,8 @@ class WorkAreaManagementTest extends TestCase
         $existing = WorkArea::firstOrFail();
 
         $response = $this->actingAs($admin)->post(route('admin.work-areas.store'), [
-            'department_id' => $admin->department_id,
             'name' => $existing->name,
-            'code' => 'OTHER',
+            'questions' => ['Pertanyaan satu?', 'Pertanyaan dua?', 'Pertanyaan tiga?'],
         ]);
 
         $response->assertSessionHasErrors(['name']);
@@ -85,15 +87,24 @@ class WorkAreaManagementTest extends TestCase
         $area = WorkArea::firstOrFail();
 
         $response = $this->actingAs($admin)->put(route('admin.work-areas.update', $area), [
-            'department_id' => $area->department_id,
             'name' => 'Area Produksi Utama',
-            'code' => 'PROD-UTAMA',
             'description' => 'Deskripsi baru',
-            'is_active' => '1',
         ]);
 
         $response->assertRedirect()->assertSessionHas('success');
         $this->assertDatabaseHas('work_areas', ['id' => $area->id, 'name' => 'Area Produksi Utama']);
+    }
+
+    public function test_admin_can_delete_work_area(): void
+    {
+        $admin = User::where('username', 'admin')->firstOrFail();
+        $area = WorkArea::factory()->create(['department_id' => $admin->department_id]);
+
+        $this->actingAs($admin)->delete(route('admin.work-areas.destroy', $area))
+            ->assertRedirect(route('admin.work-areas.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSoftDeleted('work_areas', ['id' => $area->id]);
     }
 
     public function test_used_work_area_can_be_deactivated_without_deletion(): void
