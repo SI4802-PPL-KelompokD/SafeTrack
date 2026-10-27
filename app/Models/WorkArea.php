@@ -32,11 +32,6 @@ class WorkArea extends Model
         return $this->hasMany(InspectionQuestion::class);
     }
 
-    public function dailyInspections(): HasMany
-    {
-        return $this->hasMany(DailyInspection::class);
-    }
-
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);

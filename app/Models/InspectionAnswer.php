@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InspectionAnswer extends Model
 {
-    protected $fillable = ['daily_inspection_id', 'inspection_question_id', 'question_snapshot', 'answer', 'notes'];
+    protected $table = 'inspection_answers';
 
-    public function findings(): HasMany
+    protected $guarded = ['*'];
+
+    public function findings()
     {
         return $this->hasMany(InspectionFinding::class);
     }

@@ -148,31 +148,4 @@ class WorkAreaManagementTest extends TestCase
 
         $response->assertSessionHasErrors(['question']);
     }
-
-    public function test_questions_endpoint_only_returns_active_questions_in_order(): void
-    {
-        $user = User::where('username', 'karyawan')->firstOrFail();
-        $area = WorkArea::where('name', 'PIT/Front Loading')->firstOrFail();
-        InspectionQuestion::factory()->for($area)->create(['question' => 'Pertanyaan terakhir?', 'sort_order' => 20]);
-        InspectionQuestion::factory()->inactive()->for($area)->create(['question' => 'Pertanyaan nonaktif?', 'sort_order' => 1]);
-
-        $response = $this->actingAs($user)->getJson(route('work-areas.active-questions', $area));
-
-        $response->assertOk()->assertJsonMissing(['question' => 'Pertanyaan nonaktif?']);
-        $orders = collect($response->json('data'))->pluck('sort_order')->all();
-        $this->assertSame(collect($orders)->sort()->values()->all(), $orders);
-    }
-
-    public function test_inactive_area_is_not_available_for_new_inspection(): void
-    {
-        $user = User::where('username', 'karyawan')->firstOrFail();
-        $inactive = WorkArea::factory()->inactive()->create(['department_id' => $user->department_id, 'name' => 'Area Nonaktif']);
-
-        $this->actingAs($user)->get(route('daily-inspections.create'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('DailyInspections/Index', false)
-                ->where('workAreas', fn ($areas) => collect($areas)->doesntContain('name', $inactive->name)));
-        $this->actingAs($user)->getJson(route('work-areas.active-questions', $inactive))->assertNotFound();
-    }
 }

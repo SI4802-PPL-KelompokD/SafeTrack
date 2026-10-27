@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\InspectionQuestion;
 use App\Models\WorkArea;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,15 +12,6 @@ use Illuminate\Validation\Rule;
 
 class InspectionQuestionController extends Controller
 {
-    public function index(WorkArea $workArea): JsonResponse
-    {
-        abort_unless($workArea->is_active, 404);
-
-        return response()->json([
-            'data' => $workArea->questions()->activeOrdered()->get(['id', 'question', 'sort_order']),
-        ]);
-    }
-
     public function store(Request $request, WorkArea $workArea): RedirectResponse
     {
         $validated = $this->validateQuestion($request, $workArea);
