@@ -3,7 +3,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 class HazardCategory extends Model {
  
- protected $table='hazard_categories';
+ protected $table='kategori_temuan';
  protected $guarded=['*'];
  
 }

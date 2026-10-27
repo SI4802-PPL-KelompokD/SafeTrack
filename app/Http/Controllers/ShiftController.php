@@ -25,7 +25,7 @@ class ShiftController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:30|unique:shifts,code',
+            'code' => 'required|string|max:30|unique:shift,code',
             'name' => 'required|string|max:255',
             'starts_at' => 'required|date_format:H:i',
             'ends_at' => 'required|date_format:H:i|after:starts_at',
@@ -57,7 +57,7 @@ class ShiftController extends Controller
     public function update(Request $request, Shift $shift): RedirectResponse
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:30|unique:shifts,code,' . $shift->id,
+            'code' => 'required|string|max:30|unique:shift,code,' . $shift->id,
             'name' => 'required|string|max:255',
             'starts_at' => 'required|date_format:H:i',
             'ends_at' => 'required|date_format:H:i|after:starts_at',
