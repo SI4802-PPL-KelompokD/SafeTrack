@@ -15,7 +15,7 @@ const icons = {
 };
 
 const mainMenu = [['dashboard', 'Ringkasan', 'dashboard'], ['hazard', 'Laporan Bahaya'], ['inspection', 'Inspeksi Harian'], ['talk', 'Safety Talk'], ['sap', 'Pencapaian SAP'], ['bell', 'Notifikasi']];
-const adminMenu = [['users', 'Kelola Karyawan'], ['clock', 'Kelola Shift Kerja', 'shifts'], ['data', 'Data Master', 'workAreas'], ['export', 'Ekspor Laporan'], ['clock', 'Jejak Audit']];
+const adminMenu = [['users', 'Kelola Karyawan'], ['data', 'Data Master', 'dataMaster'], ['export', 'Ekspor Laporan'], ['clock', 'Jejak Audit']];
 
 export default function SafeTrackLayout({ title, children }) {
     const { auth, navigation } = usePage().props;
@@ -33,7 +33,7 @@ export default function SafeTrackLayout({ title, children }) {
             <header className="app-topbar"><nav className="topbar-breadcrumbs"><a href={navigation.dashboard}>Workspace</a><span className="sep">›</span><span className="current">{title}</span></nav><div className="topbar-actions"><label className="topbar-search-box"><Icon type="search" /><input type="text" placeholder="Cari laporan bahaya..." aria-label="Cari laporan" /></label><button type="button" className="account-switch-btn"><span className="account-switch-label">Ganti Akun</span><span className="account-switch-name">{user.name}</span><span>⌄</span></button><button type="button" className="topbar-icon-btn" aria-label="Notifikasi"><Icon type="bell" /></button><div className="user-avatar-badge top-avatar">{initials}</div></div></header>
             <div className="content">{children}</div>
         </main>
-        <nav className="mobile-nav" aria-label="Navigasi utama"><a href={navigation.dashboard}><span>▦</span>Beranda</a><a href={navigation.shifts}><span>◷</span>Shift</a><a className="active" href={navigation.workAreas}><span>▤</span>Data Master</a></nav>
+        <nav className="mobile-nav" aria-label="Navigasi utama"><a href={navigation.dashboard}><span>▦</span>Beranda</a><a className="active" href={navigation.dataMaster}><span>▤</span>Data Master</a></nav>
     </div>;
 }
 
