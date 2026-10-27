@@ -103,7 +103,7 @@
             height: 64px; background: #ffffff; border-bottom: 1px solid var(--border-light);
             padding: 0 32px; display: flex; align-items: center; justify-content: space-between;
         }
-        .content-area { padding: 32px 36px; max-width: 1200px; }
+        .content-area { padding: 32px 36px; width: 100%; }
 
         .welcome-hero-card {
             background: linear-gradient(135deg, #0f2a4a 0%, #1e3a5f 100%);

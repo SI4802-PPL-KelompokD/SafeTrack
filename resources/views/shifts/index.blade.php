@@ -438,7 +438,6 @@
         /* ── Page Canvas Content ── */
         .content-container {
             padding: 32px 36px 48px;
-            max-width: 1240px;
             width: 100%;
         }
 

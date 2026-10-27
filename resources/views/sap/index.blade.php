@@ -296,7 +296,6 @@
 
         .main-content {
             padding: 28px;
-            max-width: 1400px;
             width: 100%;
         }
 
