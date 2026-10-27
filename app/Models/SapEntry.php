@@ -3,7 +3,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 class SapEntry extends Model {
  
- protected $table='sap_entries';
+ protected $table='pencapaian';
  protected $guarded=['*'];
  
 }

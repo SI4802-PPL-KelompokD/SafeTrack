@@ -4,19 +4,11 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use RuntimeException;
 
 class WorkAreaSeeder extends Seeder
 {
     public function run(): void
     {
-        $departmentId = DB::table('departments')->where('code', 'OPS')->value('id');
-
-        if (! $departmentId) {
-            throw new RuntimeException('Seeder area kerja membutuhkan departemen berkode OPS.');
-        }
-
         $names = [
             'PIT/Front Loading', 'Jalan', 'Disposal', 'Disposal Kritis', 'Workshop', 'Timbangan',
             'Fuel Storage', 'TPS Limbah B3', 'Kolam Pengendapan Lumpur', 'Nursery', 'Warehouse',
@@ -24,18 +16,16 @@ class WorkAreaSeeder extends Seeder
         ];
 
         foreach ($names as $name) {
-            DB::table('work_areas')->updateOrInsert(
-                ['department_id' => $departmentId, 'name' => $name],
+            DB::table('area_kerja')->updateOrInsert(
+                ['name' => $name],
                 [
-                    'code' => Str::upper(Str::limit(Str::slug($name, ''), 30, '')),
                     'is_active' => true,
                     'updated_at' => now(),
                     'created_at' => now(),
                 ],
             );
 
-            $workAreaId = DB::table('work_areas')
-                ->where('department_id', $departmentId)
+            $workAreaId = DB::table('area_kerja')
                 ->where('name', $name)
                 ->value('id');
 
