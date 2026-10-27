@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DailyInspectionController;
 use App\Http\Controllers\InspectionQuestionController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
@@ -40,16 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
-
-    Route::middleware('inspection.inertia')->group(function () {
-        Route::get('/daily-inspections', [DailyInspectionController::class, 'index'])->name('daily-inspections.index');
-        Route::middleware('inspection-user')->group(function () {
-            Route::get('/daily-inspections/create', [DailyInspectionController::class, 'create'])->name('daily-inspections.create');
-            Route::post('/daily-inspections', [DailyInspectionController::class, 'store'])->name('daily-inspections.store');
-        });
-    });
-    Route::get('/work-areas/{workArea}/active-questions', [InspectionQuestionController::class, 'index'])
-        ->name('work-areas.active-questions');
 
     // Admin & Super Admin Only Routes (Kelola Shift Kerja)
     Route::middleware('admin')->group(function () {

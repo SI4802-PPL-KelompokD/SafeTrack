@@ -29,7 +29,6 @@ class HandleInspectionInertiaRequests extends Middleware
             ],
             'navigation' => [
                 'dashboard' => route('dashboard'),
-                'inspections' => route('daily-inspections.index'),
                 'workAreas' => $user && in_array($user->role, ['super_admin', 'admin'], true)
                     ? route('admin.work-areas.index')
                     : null,
