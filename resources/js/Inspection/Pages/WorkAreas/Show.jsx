@@ -3,15 +3,28 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import SafeTrackLayout from '../../Layouts/SafeTrackLayout';
 import FlashMessage from '../../Components/FlashMessage';
 import Modal from '../../Components/Modal';
+import ConfirmDialog from '../../Components/ConfirmDialog';
 import PageHeader from '../../Components/PageHeader';
 import Pagination from '../../Components/Pagination';
 
 export default function WorkAreaShow({ workArea, questions, endpoints }) {
     const [question, setQuestion] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+    const removeQuestion = () => {
+        if (!deleteTarget) return;
+        setDeleting(true);
+        router.delete(`/admin/work-areas/${workArea.id}/questions/${deleteTarget.id}`, {
+            preserveScroll: true,
+            onSuccess: () => setDeleteTarget(null),
+            onFinish: () => setDeleting(false),
+        });
+    };
     return <SafeTrackLayout title="Ubah Area Kerja"><Head title={`Ubah ${workArea.name}`} /><PageHeader eyebrow="DATA MASTER" title="Ubah area kerja" description="Perbarui informasi area dan pertanyaan inspeksi." action={<div className="actions"><Link className="btn" href={endpoints.index}>← Kembali</Link><button className="btn primary" type="button" onClick={() => setQuestion({})}>+ Tambah pertanyaan</button></div>} /><FlashMessage />
         <AreaForm workArea={workArea} updateUrl={endpoints.update} />
-        <section className="panel"><div className="panel-head"><div><h2>Pertanyaan inspeksi</h2><p>Atur pertanyaan yang digunakan pada area {workArea.name}.</p></div><span className="badge">{questions.total} pertanyaan</span></div>{questions.data.map((item) => <article className="question-row" key={item.id}><div><span className="order">{item.sort_order}</span><strong>{item.question}</strong><small>Diperbarui {formatDate(item.updated_at)}</small></div><div className="question-actions"><span className={`badge ${item.is_active ? 'green' : 'gray'}`}>{item.is_active ? 'Aktif' : 'Nonaktif'}</span><button className="action-btn action-edit" type="button" onClick={() => setQuestion(item)}>Ubah</button><button className={`action-btn ${item.is_active ? 'action-disable' : 'action-enable'}`} type="button" onClick={() => router.patch(`/admin/work-areas/${workArea.id}/questions/${item.id}/toggle-status`, {}, { preserveScroll: true })}>{item.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button><button className="action-btn action-delete" type="button" onClick={() => confirm('Hapus pertanyaan ini?') && router.delete(`/admin/work-areas/${workArea.id}/questions/${item.id}`, { preserveScroll: true })}>Hapus</button></div></article>)}{questions.data.length === 0 && <div className="empty">Belum ada pertanyaan inspeksi untuk area ini.</div>}<Pagination links={questions.links} /></section>
+        <section className="panel"><div className="panel-head"><div><h2>Pertanyaan inspeksi</h2><p>Atur pertanyaan yang digunakan pada area {workArea.name}.</p></div><span className="badge">{questions.total} pertanyaan</span></div>{questions.data.map((item) => <article className="question-row" key={item.id}><div><span className="order">{item.sort_order}</span><strong>{item.question}</strong><small>Diperbarui {formatDate(item.updated_at)}</small></div><div className="question-actions"><span className={`badge ${item.is_active ? 'green' : 'gray'}`}>{item.is_active ? 'Aktif' : 'Nonaktif'}</span><button className="action-btn action-edit" type="button" onClick={() => setQuestion(item)}>Ubah</button><button className={`action-btn ${item.is_active ? 'action-disable' : 'action-enable'}`} type="button" onClick={() => router.patch(`/admin/work-areas/${workArea.id}/questions/${item.id}/toggle-status`, {}, { preserveScroll: true })}>{item.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button><button className="action-btn action-delete" type="button" onClick={() => setDeleteTarget(item)}>Hapus</button></div></article>)}{questions.data.length === 0 && <div className="empty">Belum ada pertanyaan inspeksi untuk area ini.</div>}<Pagination links={questions.links} /></section>
         <QuestionForm key={question?.id || 'new'} open={question !== null} item={question} workArea={workArea} storeUrl={endpoints.questionsStore} onClose={() => setQuestion(null)} />
+        <ConfirmDialog open={Boolean(deleteTarget)} title="Hapus pertanyaan inspeksi?" message="Anda akan menghapus pertanyaan berikut:" itemName={deleteTarget?.question} processing={deleting} onCancel={() => setDeleteTarget(null)} onConfirm={removeQuestion} />
     </SafeTrackLayout>;
 }
 
