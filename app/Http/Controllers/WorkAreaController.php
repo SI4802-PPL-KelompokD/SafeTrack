@@ -18,8 +18,6 @@ class WorkAreaController extends Controller
         $workAreas = WorkArea::query()
             ->withCount('questions')
             ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%'.$request->string('search')->trim().'%'))
-            ->when($request->status === 'active', fn ($query) => $query->where('is_active', true))
-            ->when($request->status === 'inactive', fn ($query) => $query->where('is_active', false))
             ->orderBy('name')
             ->orderBy('id')
             ->paginate(10)
@@ -27,7 +25,7 @@ class WorkAreaController extends Controller
 
         return Inertia::render('WorkAreas/Index', [
             'workAreas' => $workAreas,
-            'filters' => $request->only(['search', 'status']),
+            'filters' => $request->only(['search']),
             'endpoints' => [
                 'index' => route('admin.work-areas.index'),
                 'store' => route('admin.work-areas.store'),
