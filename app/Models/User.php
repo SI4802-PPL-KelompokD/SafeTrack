@@ -17,6 +17,8 @@ class User extends Authenticatable {
  protected function casts(): array {
   return ['email_verified_at'=>'datetime','password'=>'hashed','is_active'=>'boolean'];
  }
+ /** Admin/HSE = role super_admin atau admin (sama dengan middleware EnsureAdmin). */
+ public function isAdmin(): bool {return in_array($this->role,['super_admin','admin'],true);}
  public function department(){return $this->belongsTo(Department::class);}
  public function employeeRegistry(){return $this->belongsTo(EmployeeRegistry::class);}
  public function reports(){return $this->hasMany(HazardReport::class,'reporter_id');}
@@ -24,4 +26,3 @@ class User extends Authenticatable {
  public function sapEntries(){return $this->hasMany(SapEntry::class);}
  public function sapTargets(){return $this->hasMany(SapTarget::class);}
 }
-
