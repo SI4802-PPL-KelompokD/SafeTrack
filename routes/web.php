@@ -37,6 +37,9 @@ Route::middleware('guest')->group(function () {
 
 // Authenticated Routes (UC-03 Logout & Dashboards)
 Route::middleware('auth')->group(function () {
+    // SPK - 7 - Laporan Saya Case: Karyawan
+    
+    // End SPK - 7
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', function () {
         $user = Auth::user();
@@ -53,6 +56,9 @@ Route::middleware('auth')->group(function () {
 
     // Admin & Super Admin Only Routes (Kelola Shift, Work Areas, & Pencapaian SAP UC-28)
     Route::middleware('admin')->group(function () {
+        // SPK - 7 - Laporan Saya Case: Admin
+    
+        // End SPK - 7
         Route::get('/data-master', [ShiftController::class, 'index'])->name('admin.data-master');
         Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
