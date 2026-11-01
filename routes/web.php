@@ -4,8 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HazardPhotoController;
 use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
-use App\Http\Controllers\SafetyTalkController;
-use App\Http\Controllers\SafetyTalkManagementController;
+// use App\Http\Controllers\SafetyTalkController;
+// use App\Http\Controllers\SafetyTalkManagementController;
 use App\Http\Controllers\SapController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
@@ -65,12 +65,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan-bahaya/{hazardReport}/bukti/{photo}', [HazardPhotoController::class, 'resolution'])
         ->withTrashed()->name('hazards.resolution-photos.show');
 
-    // ---- PBI-21: Pencatatan Safety Talk (route statis SEBELUM {safetyTalk}) ----
-    Route::get('/safety-talk', [SafetyTalkController::class, 'index'])->name('safety-talks.index');
-    Route::get('/safety-talk/create', [SafetyTalkController::class, 'create'])->name('safety-talks.create');
-    Route::post('/safety-talk', [SafetyTalkController::class, 'store'])->name('safety-talks.store');
-    Route::get('/safety-talk/{safetyTalk}', [SafetyTalkController::class, 'show'])
-        ->withTrashed()->name('safety-talks.show');
+    // // ---- PBI-21: Pencatatan Safety Talk (route statis SEBELUM {safetyTalk}) ----
+    // Route::get('/safety-talk', [SafetyTalkController::class, 'index'])->name('safety-talks.index');
+    // Route::get('/safety-talk/create', [SafetyTalkController::class, 'create'])->name('safety-talks.create');
+    // Route::post('/safety-talk', [SafetyTalkController::class, 'store'])->name('safety-talks.store');
+    // Route::get('/safety-talk/{safetyTalk}', [SafetyTalkController::class, 'show'])
+    //     ->withTrashed()->name('safety-talks.show');
 
     // Admin & Super Admin Only Routes (Kelola Shift, Work Areas, & Pencapaian SAP UC-28)
     Route::middleware('admin')->group(function () {
@@ -79,13 +79,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
         Route::post('/sap/recalculate', [SapController::class, 'recalculate'])->name('sap.recalculate');
 
-        // ---- PBI-22: Verifikasi dan Kelola Safety Talk ----
-        Route::post('/safety-talk/{safetyTalk}/verifikasi', [SafetyTalkManagementController::class, 'verify'])
-            ->name('safety-talks.verify');
-        Route::delete('/safety-talk/{safetyTalk}', [SafetyTalkManagementController::class, 'archive'])
-            ->name('safety-talks.archive');
-        Route::post('/safety-talk/{safetyTalk}/pulihkan', [SafetyTalkManagementController::class, 'restore'])
-            ->withTrashed()->name('safety-talks.restore');
+        // // ---- PBI-22: Verifikasi dan Kelola Safety Talk ----
+        // Route::post('/safety-talk/{safetyTalk}/verifikasi', [SafetyTalkManagementController::class, 'verify'])
+        //     ->name('safety-talks.verify');
+        // Route::delete('/safety-talk/{safetyTalk}', [SafetyTalkManagementController::class, 'archive'])
+        //     ->name('safety-talks.archive');
+        // Route::post('/safety-talk/{safetyTalk}/pulihkan', [SafetyTalkManagementController::class, 'restore'])
+        //     ->withTrashed()->name('safety-talks.restore');
 
         Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
             Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
