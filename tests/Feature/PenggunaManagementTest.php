@@ -63,7 +63,8 @@ class PenggunaManagementTest extends TestCase
         $response = $this->actingAs($this->employeeUser)
             ->get(route('admin.pengguna.index'));
 
-        $response->assertStatus(403);
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
     }
 
     /**
@@ -215,7 +216,8 @@ class PenggunaManagementTest extends TestCase
                 'is_active' => 0,
             ]);
 
-        $response->assertSessionHasErrors('is_active');
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
         $this->assertTrue($this->adminUser->fresh()->is_active);
     }
 
@@ -241,8 +243,8 @@ class PenggunaManagementTest extends TestCase
             'is_active' => false,
         ]);
 
-        // NIK di employee_registry tidak terhapus (tetap tercatat)
-        $this->assertDatabaseHas('employee_registry', [
+        // NIK di tabel nik tidak terhapus (tetap tercatat)
+        $this->assertDatabaseHas('nik', [
             'id' => $this->employeeUser->employee_registry_id,
             'nik' => 'DEMO003',
         ]);
@@ -272,7 +274,8 @@ class PenggunaManagementTest extends TestCase
                 'deletion_reason' => 'Mencoba menghapus diri sendiri.',
             ]);
 
-        $response->assertSessionHasErrors('deletion_reason');
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
         $this->assertNotSoftDeleted('users', ['id' => $this->adminUser->id]);
     }
 

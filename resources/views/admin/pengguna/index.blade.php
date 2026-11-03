@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Kelola data karyawan, departemen, status kepegawaian, dan akses akun pengguna SafeTrack.">
     <title>Kelola Karyawan – SafeTrack</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,11 +21,11 @@
             --bg-surface: #ffffff;
             --bg-sidebar: #ffffff;
             --border-light: #e2e8f0;
-            --border-focus: #3b82f6;
+            --border-focus: #2563eb;
             --navy-dark: #0f2a4a;
             --navy-deep: #0a1c32;
-            --navy-btn: #1e293b;
-            --navy-btn-hover: #0f172a;
+            --navy-btn: #102a45;
+            --navy-btn-hover: #163a66;
             --amber-accent: #f59e0b;
             --amber-pale: #fef3c7;
             --amber-active-bg: #fffbeb;
@@ -37,9 +38,9 @@
             --status-green-bg: #dcfce7;
             --status-green-text: #15803d;
             --status-green-dot: #16a34a;
-            --status-gray-bg: #f1f5f9;
-            --status-gray-text: #64748b;
-            --status-gray-dot: #94a3b8;
+            --status-red-bg: #fee2e2;
+            --status-red-text: #b91c1c;
+            --status-red-dot: #dc2626;
             --sidebar-width: 260px;
             --topbar-height: 64px;
             --radius-sm: 6px;
@@ -99,128 +100,257 @@
         .brand-logo-icon svg { width: 20px; height: 20px; color: #f59e0b; }
         .brand-text { display: flex; flex-direction: column; }
         .brand-title {
-            font-size: 18px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; color: #0f2a4a;
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            color: #0f2a4a;
         }
         .brand-title span { color: #d97706; }
         .brand-subtitle {
-            font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.12em;
+            margin-top: 1px;
         }
 
+        /* Workspace Card */
         .workspace-card {
-            margin: 0 16px 16px;
+            margin: 0 12px 16px;
             padding: 10px 12px;
-            background: #ffffff;
+            background: #f8fafc;
             border: 1px solid var(--border-light);
             border-radius: var(--radius-md);
-            display: flex; align-items: center; gap: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .workspace-icon {
-            width: 32px; height: 32px; background: #f1f5f9; border-radius: 7px;
-            display: flex; align-items: center; justify-content: center; color: #475569; flex-shrink: 0;
+            width: 28px; height: 28px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            color: #475569;
+            flex-shrink: 0;
         }
-        .workspace-icon svg { width: 17px; height: 17px; }
-        .workspace-info { display: flex; flex-direction: column; overflow: hidden; }
-        .workspace-name { font-size: 12.5px; font-weight: 700; color: var(--text-heading); }
-        .workspace-desc { font-size: 11px; color: var(--text-light); }
+        .workspace-icon svg { width: 16px; height: 16px; }
+        .workspace-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .workspace-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-heading);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .workspace-desc {
+            font-size: 11px;
+            color: var(--text-light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
+        /* Navigation */
         .nav-section-title {
             padding: 12px 20px 6px;
-            font-size: 11px; font-weight: 700; color: #94a3b8;
-            letter-spacing: 0.08em; text-transform: uppercase;
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
-        .sidebar-menu { list-style: none; padding: 0 12px; margin-bottom: 8px; }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
         .sidebar-menu li { margin-bottom: 2px; }
         .sidebar-link {
-            display: flex; align-items: center; gap: 11px;
-            padding: 9px 12px; font-size: 13.5px; font-weight: 500;
-            color: #475569; text-decoration: none; border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 9px 12px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #475569;
+            text-decoration: none;
+            border-radius: var(--radius-sm);
             transition: all 0.15s ease;
         }
-        .sidebar-link svg { width: 17px; height: 17px; flex-shrink: 0; color: #64748b; }
-        .sidebar-link:hover { background-color: #f1f5f9; color: var(--text-heading); }
+        .sidebar-link svg {
+            width: 19px; height: 19px;
+            color: #64748b;
+            flex-shrink: 0;
+        }
+        .sidebar-link:hover {
+            background-color: #f1f5f9;
+            color: var(--text-heading);
+        }
+        .sidebar-link:hover svg { color: var(--text-heading); }
         .sidebar-link.active-amber {
-            background-color: var(--amber-pale);
+            background-color: var(--amber-active-bg);
             color: var(--amber-text);
             font-weight: 700;
             border-left: 3px solid var(--amber-border);
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            padding-left: 9px;
         }
-        .sidebar-link.active-amber svg { color: var(--amber-text); }
+        .sidebar-link.active-amber svg { color: #d97706; }
 
+        /* Bottom User Footer */
         .sidebar-user-footer {
             margin-top: auto;
-            padding: 14px 16px;
+            padding: 16px;
             border-top: 1px solid var(--border-light);
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .user-meta-wrap { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+        .user-meta-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+        }
         .user-avatar-badge {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: #fef3c7; color: #92400e;
+            width: 32px; height: 32px;
+            background: #e2e8f0;
+            color: #475569;
+            border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 12.5px; font-weight: 700; flex-shrink: 0;
+            font-weight: 700;
+            font-size: 11.5px;
+            flex-shrink: 0;
         }
-        .user-name-title { display: flex; flex-direction: column; overflow: hidden; }
+        .user-name-title {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
         .user-full-name {
-            font-size: 12.5px; font-weight: 700; color: var(--text-heading);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-heading);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .user-role-label { font-size: 11px; color: var(--text-light); }
+        .user-role-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
         .btn-user-exit {
-            background: none; border: none; color: #94a3b8; cursor: pointer; padding: 6px;
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            transition: all 0.15s ease;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.15s ease, background-color 0.15s ease;
         }
-        .btn-user-exit:hover { color: #ef4444; background: #fee2e2; }
+        .btn-user-exit:hover {
+            color: #dc2626;
+            background-color: #fee2e2;
+        }
 
-        /* ── Main Layout ── */
+        /* ── Main Content Area ── */
         .app-main {
             flex: 1;
             margin-left: var(--sidebar-width);
             display: flex;
             flex-direction: column;
-            min-width: 0;
+            min-height: 100vh;
         }
+
+        /* Topbar */
         .app-topbar {
             height: var(--topbar-height);
-            background: var(--bg-surface);
+            background: #ffffff;
             border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 0 32px;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 30;
+            position: sticky;
+            top: 0;
+            z-index: 30;
         }
         .topbar-breadcrumb {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 13.5px; color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
         }
-        .topbar-breadcrumb span.current {
-            color: var(--text-heading); font-weight: 600;
+        .topbar-breadcrumb .current {
+            color: var(--text-heading);
+            font-weight: 600;
         }
-        .btn-mobile-menu {
-            display: none; background: none; border: none; padding: 6px; cursor: pointer; color: #475569;
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-search-input {
+            padding: 6px 12px 6px 32px;
+            font-size: 13px;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            background: #f8fafc;
+            color: var(--text-body);
+            width: 190px;
+        }
+        .topbar-account-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-body);
         }
 
         .content-container {
-            padding: 32px 36px 60px;
-            max-width: 1400px;
+            padding: 32px 32px 48px;
+            max-width: 1240px;
             width: 100%;
+            margin: 0 auto;
         }
 
-        /* ── Header ── */
+        /* Page Headers */
         .page-badge-label {
-            font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-            color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
         }
         .page-title {
-            font-size: 26px; font-weight: 800; color: var(--navy-dark);
-            letter-spacing: -0.02em; margin-bottom: 4px;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            margin-bottom: 4px;
         }
         .page-subtitle {
-            font-size: 14px; color: var(--text-muted); margin-bottom: 24px;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
         }
 
-        /* ── Summary Cards ── */
+        /* ── 3 Summary Cards ── */
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -228,59 +358,64 @@
             margin-bottom: 24px;
         }
         .summary-card {
-            background: var(--bg-surface);
+            background: #ffffff;
             border: 1px solid var(--border-light);
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-md);
             padding: 20px 24px;
             box-shadow: var(--shadow-subtle);
         }
         .summary-card-title {
-            font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
         }
         .summary-card-val {
-            font-size: 32px; font-weight: 800; color: var(--navy-dark); line-height: 1.1;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1;
         }
 
-        /* ── Alerts ── */
-        .alert-box {
-            display: flex; align-items: flex-start; gap: 12px;
-            padding: 14px 18px; border-radius: var(--radius-md);
-            margin-bottom: 20px; font-size: 13.5px;
-        }
-        .alert-box.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-        .alert-box.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-        .alert-box.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-
-        /* ── Table Card & Toolbar ── */
+        /* ── Table Card ── */
         .table-card {
-            background: var(--bg-surface);
+            background: #ffffff;
             border: 1px solid var(--border-light);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-card);
+            border-radius: var(--radius-lg);
             overflow: hidden;
+            box-shadow: var(--shadow-subtle);
         }
+
+        /* Toolbar: Search & Filters */
         .table-toolbar {
-            padding: 18px 24px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-light);
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
             flex-wrap: wrap;
+            background: #ffffff;
         }
         .search-field-wrap {
             position: relative;
             flex: 1;
             min-width: 260px;
-            max-width: 420px;
+            max-width: 380px;
         }
         .search-icon-svg {
-            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-            width: 17px; height: 17px; color: #94a3b8; pointer-events: none;
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 17px;
+            height: 17px;
+            color: #94a3b8;
+            pointer-events: none;
         }
         .search-input {
             width: 100%;
-            padding: 9px 12px 9px 38px;
+            padding: 9px 14px 9px 38px;
             font-size: 13.5px;
             font-family: inherit;
             color: var(--text-heading);
@@ -292,9 +427,8 @@
         .search-input:focus {
             border-color: var(--border-focus);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-
         .filter-group-wrap {
             display: flex;
             align-items: center;
@@ -344,12 +478,10 @@
             text-align: left;
         }
         .safetrack-table thead th {
-            background: #f8fafc;
+            background: #ffffff;
             color: #64748b;
             font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            font-weight: 600;
             padding: 14px 20px;
             border-bottom: 1px solid var(--border-light);
             white-space: nowrap;
@@ -378,16 +510,6 @@
             font-size: 12.5px;
             color: var(--text-muted);
         }
-        .nik-tag {
-            font-family: var(--font-mono);
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #1e293b;
-            background: #f1f5f9;
-            padding: 4px 8px;
-            border-radius: 5px;
-            display: inline-block;
-        }
 
         /* ── Status Badge ── */
         .status-badge {
@@ -405,31 +527,49 @@
             color: var(--status-green-text);
         }
         .status-badge.inactive {
-            background-color: var(--status-gray-bg);
-            color: var(--status-gray-text);
+            background-color: var(--status-red-bg);
+            color: var(--status-red-text);
         }
         .status-dot {
             width: 6px; height: 6px; border-radius: 50%;
         }
         .status-badge.active .status-dot { background-color: var(--status-green-dot); }
-        .status-badge.inactive .status-dot { background-color: var(--status-gray-dot); }
+        .status-badge.inactive .status-dot { background-color: var(--status-red-dot); }
 
-        .btn-kelola-link {
+        /* Actions in Table */
+        .table-action-links {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 14px;
+        }
+        .btn-action-kelola {
             background: none;
             border: none;
             color: var(--navy-dark);
             font-size: 13.5px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
-            text-decoration: underline;
-            text-underline-offset: 3px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: all 0.15s ease;
+            padding: 4px 0;
+            transition: color 0.15s ease;
         }
-        .btn-kelola-link:hover {
-            color: #1d4ed8;
-            background: #eff6ff;
+        .btn-action-kelola:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        .btn-action-hapus {
+            background: none;
+            border: none;
+            color: #dc2626;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 0;
+            transition: color 0.15s ease;
+        }
+        .btn-action-hapus:hover {
+            color: #b91c1c;
+            text-decoration: underline;
         }
 
         /* ── Empty State ── */
@@ -449,7 +589,7 @@
 
         /* ── Table Footer ── */
         .table-card-footer {
-            padding: 16px 24px;
+            padding: 16px 20px;
             border-top: 1px solid var(--border-light);
             display: flex;
             align-items: center;
@@ -462,11 +602,32 @@
             color: var(--text-muted);
         }
 
+        /* ── Page Footer ── */
+        .app-page-footer {
+            margin-top: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-light);
+            padding: 0 4px;
+        }
+        .status-sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #f59e0b;
+            font-weight: 500;
+        }
+        .status-sync-dot {
+            width: 7px; height: 7px; border-radius: 50%; background-color: #f59e0b;
+        }
+
         /* ── Modal Design ── */
         .modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.55);
+            background: rgba(15, 23, 42, 0.45);
             backdrop-filter: blur(4px);
             z-index: 100;
             display: none;
@@ -484,7 +645,7 @@
             background: var(--bg-surface);
             border-radius: var(--radius-xl);
             width: 100%;
-            max-width: 520px;
+            max-width: 580px;
             box-shadow: var(--shadow-modal);
             transform: translateY(10px);
             transition: transform 0.2s ease;
@@ -508,11 +669,11 @@
         .btn-modal-close {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 22px;
             line-height: 1;
             color: #94a3b8;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 4px;
             border-radius: 4px;
             transition: color 0.15s ease;
         }
@@ -524,14 +685,14 @@
 
         /* Info Box inside Modal */
         .modal-info-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: #f0f7ff;
+            border: 1px solid #dbeafe;
             border-radius: var(--radius-md);
-            padding: 14px 16px;
+            padding: 14px 18px;
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 4px;
         }
         .info-box-name {
             font-size: 15px;
@@ -539,13 +700,20 @@
             color: var(--navy-dark);
         }
         .info-box-sub {
-            font-size: 12.5px;
+            font-size: 13px;
             color: var(--text-muted);
-            font-family: var(--font-mono);
         }
 
+        /* 2 Column Modal Grid */
+        .modal-grid-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
         .form-group {
-            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
         }
         .form-label {
             display: block;
@@ -556,7 +724,7 @@
         }
         .form-input-text, .form-select-control {
             width: 100%;
-            padding: 10px 14px;
+            padding: 9px 12px;
             font-size: 13.5px;
             font-family: inherit;
             color: var(--text-heading);
@@ -565,111 +733,73 @@
             border-radius: var(--radius-sm);
             transition: all 0.15s ease;
         }
-        .form-input-text[readonly], .form-select-control[disabled] {
+        .form-input-text[readonly] {
             background: #f8fafc;
             color: #64748b;
             cursor: not-allowed;
+            border-color: #e2e8f0;
         }
         .form-input-text:focus, .form-select-control:focus {
             border-color: var(--border-focus);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-        }
-        .form-hint-text {
-            font-size: 11.5px;
-            color: var(--text-muted);
-            margin-top: 5px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
 
-        /* Reset Password Button inside Modal */
-        .reset-pwd-box {
-            background: #fdfdfd;
-            border: 1px dashed var(--border-light);
-            border-radius: var(--radius-md);
-            padding: 12px 14px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-        .btn-reset-pwd {
-            background: #ffffff;
-            border: 1px solid var(--border-light);
-            color: #1e293b;
-            font-size: 12.5px;
-            font-weight: 600;
-            padding: 7px 12px;
+        .modal-alert-error {
+            display: none;
+            padding: 10px 14px;
             border-radius: var(--radius-sm);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.15s ease;
-        }
-        .btn-reset-pwd:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-        }
-
-        .modal-danger-divider {
-            border-top: 1px solid var(--border-light);
-            padding-top: 16px;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .btn-danger-text {
-            background: none;
-            border: none;
-            color: #dc2626;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
             font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 8px;
-            border-radius: var(--radius-sm);
-            transition: background 0.15s ease;
-        }
-        .btn-danger-text:hover {
-            background: #fee2e2;
+            margin-bottom: 16px;
         }
 
         .modal-footer {
             padding: 16px 24px;
             border-top: 1px solid var(--border-light);
-            background: #fafbfc;
+            background: #ffffff;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: 12px;
         }
         .btn-modal-cancel {
-            background: none;
-            border: none;
-            color: var(--text-muted);
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            color: #475569;
             font-size: 13.5px;
             font-weight: 600;
-            padding: 9px 18px;
+            padding: 9px 20px;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: color 0.15s ease;
+            transition: all 0.15s ease;
         }
-        .btn-modal-cancel:hover { color: var(--text-heading); }
+        .btn-modal-cancel:hover {
+            background: #f8fafc;
+            color: var(--text-heading);
+        }
         .btn-modal-save {
             background: var(--navy-dark);
             border: none;
             color: #ffffff;
             font-size: 13.5px;
             font-weight: 700;
-            padding: 9px 22px;
+            padding: 9px 24px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             box-shadow: 0 1px 2px rgba(15, 42, 74, 0.2);
             transition: background 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .btn-modal-save:hover { background: #163a66; }
+        .btn-modal-save:hover { background: var(--navy-btn-hover); }
+        .btn-modal-save:disabled, .btn-modal-danger-submit:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
 
         .btn-modal-danger-submit {
             background: #dc2626;
@@ -677,14 +807,45 @@
             color: #ffffff;
             font-size: 13.5px;
             font-weight: 700;
-            padding: 9px 22px;
+            padding: 9px 24px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             transition: background 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         .btn-modal-danger-submit:hover { background: #b91c1c; }
 
-        /* ── Responsive ── */
+        /* Floating Toast */
+        .toast-floating {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 120;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 600;
+            box-shadow: var(--shadow-modal);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .toast-floating.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast-floating.success { background: #065f46; color: #ffffff; }
+        .toast-floating.error { background: #991b1b; color: #ffffff; }
+
+        /* Responsive */
         @media (max-width: 900px) {
             .app-sidebar { transform: translateX(-100%); transition: transform 0.2s ease; }
             .app-sidebar.open { transform: translateX(0); }
@@ -692,7 +853,7 @@
             .summary-grid { grid-template-columns: 1fr; }
             .content-container { padding: 20px 16px 40px; }
             .app-topbar { padding: 0 16px; }
-            .btn-mobile-menu { display: inline-flex; }
+            .modal-grid-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -715,7 +876,7 @@
             </div>
         </div>
 
-        <!-- Workspace Demonstrasi -->
+        <!-- Workspace Demonstrasi (PT Banjasari Pribumi) -->
         <div class="workspace-card">
             <div class="workspace-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -723,7 +884,7 @@
                 </svg>
             </div>
             <div class="workspace-info">
-                <span class="workspace-name">PT Sentra Industri</span>
+                <span class="workspace-name">PT Banjasari Pribumi</span>
                 <span class="workspace-desc">Workspace demonstrasi</span>
             </div>
         </div>
@@ -740,7 +901,7 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="sidebar-link">
+                <a href="{{ route('hazards.index') }}" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
@@ -748,7 +909,7 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('daily-inspections.index') }}" class="sidebar-link">
+                <a href="#" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V19.5a2.25 2.25 0 002.25 2.25h.75" />
                     </svg>
@@ -764,7 +925,7 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="sidebar-link">
+                <a href="{{ route('sap.index') }}" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.757l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
                     </svg>
@@ -797,14 +958,6 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Kelola Shift Kerja</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-                    </svg>
                     <span>Data Master</span>
                 </a>
             </li>
@@ -829,11 +982,11 @@
         <!-- Bottom User Profile Card -->
         <div class="sidebar-user-footer">
             <div class="user-meta-wrap">
-                <div class="user-avatar-badge">{{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}</div>
+                <div class="user-avatar-badge">{{ strtoupper(substr(Auth::user()->name ?? 'AU', 0, 2)) }}</div>
                 <div class="user-name-title">
-                    <span class="user-full-name">{{ Auth::user()->name ?? 'Admin HSE' }}</span>
+                    <span class="user-full-name">{{ Auth::user()->name ?? 'Admin Utama' }}</span>
                     <span class="user-role-label">
-                        {{ (Auth::user() && Auth::user()->role === 'super_admin') ? 'Super Admin' : 'Admin / HSE' }}
+                        {{ (Auth::user() && Auth::user()->role === 'super_admin') ? 'Admin Utama' : 'Admin' }}
                     </span>
                 </div>
             </div>
@@ -852,65 +1005,36 @@
     <main class="app-main">
         <!-- Topbar -->
         <header class="app-topbar">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <button type="button" class="btn-mobile-menu" id="btnToggleSidebar" aria-label="Buka menu navigasi">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:20px;height:20px;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            <nav class="topbar-breadcrumb" aria-label="Breadcrumb">
+                <span>Workspace</span>
+                <span>&rsaquo;</span>
+                <span class="current">Kelola Karyawan</span>
+            </nav>
+
+            <div class="topbar-actions">
+                <div style="position:relative;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:#94a3b8;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                    <input type="text" class="topbar-search-input" placeholder="Cari laporan bahaya..." readonly>
+                </div>
+                <div class="topbar-account-pill">
+                    <span style="font-size:10px;color:#94a3b8;font-weight:700;">GANTI AKUN</span>
+                    <span>Admin Utama · Admin</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:12px;height:12px;color:#64748b;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+                <button type="button" style="background:none;border:none;color:#64748b;cursor:pointer;display:flex;align-items:center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                     </svg>
                 </button>
-                <nav class="topbar-breadcrumb" aria-label="Breadcrumb">
-                    <span>Workspace</span>
-                    <span>&rsaquo;</span>
-                    <span class="current">Kelola Karyawan</span>
-                </nav>
+                <div class="user-avatar-badge" style="width:28px;height:28px;font-size:11px;">AU</div>
             </div>
         </header>
 
         <div class="content-container">
-
-            <!-- Flash Alert Messages -->
-            @if (session('success'))
-                <div class="alert-box success" role="alert" id="alertSuccess">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:20px;height:20px;flex-shrink:0;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert-box error" role="alert" id="alertError">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:20px;height:20px;flex-shrink:0;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                    </svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-            @endif
-
-            @if (session('info'))
-                <div class="alert-box info" role="alert" id="alertInfo">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:20px;height:20px;flex-shrink:0;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                    </svg>
-                    <span>{{ session('info') }}</span>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert-box error" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:20px;height:20px;flex-shrink:0;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                    </svg>
-                    <div>
-                        <div style="font-weight:700;margin-bottom:2px;">Terdapat kesalahan pada input:</div>
-                        <ul style="padding-left:18px;margin:0;">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            @endif
 
             <!-- Page Title Section -->
             <div class="page-badge-label">ADMINISTRASI</div>
@@ -989,11 +1113,11 @@
                                 <th>Departemen</th>
                                 <th>Kepegawaian</th>
                                 <th>Peran</th>
-                                <th>Status Akun</th>
+                                <th>Status akun</th>
                                 <th style="text-align:right;">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="userTableBody">
                             @forelse ($users as $user)
                                 @php
                                     $nik = $user->employeeRegistry?->nik ?? '-';
@@ -1002,52 +1126,69 @@
                                     $employmentStatusId = $user->employeeRegistry?->employment_status_id ?? ($employmentStatuses->first()->id ?? 1);
                                     $roleText = match($user->role) {
                                         'super_admin' => 'Admin Utama',
-                                        'admin' => 'Admin / HSE',
+                                        'admin' => 'Admin',
                                         default => 'Karyawan',
                                     };
+                                    $isEmployee = ($user->role === 'employee');
                                 @endphp
-                                <tr id="user-row-{{ $user->id }}">
+                                <tr id="user-row-{{ $user->id }}"
+                                    data-id="{{ $user->id }}"
+                                    data-name="{{ $user->name }}"
+                                    data-nik="{{ $nik }}"
+                                    data-email="{{ $user->email }}"
+                                    data-dept-id="{{ $user->department_id }}"
+                                    data-employment-id="{{ $employmentStatusId }}"
+                                    data-is-active="{{ $user->is_active ? 1 : 0 }}"
+                                    data-is-employee="{{ $isEmployee ? 1 : 0 }}">
                                     <td>
                                         <div class="employee-info-cell">
-                                            <span class="employee-name-bold">{{ $user->name }}</span>
-                                            <span class="employee-email-sub">{{ $user->email }}</span>
+                                            <span class="employee-name-bold row-name">{{ $user->name }}</span>
+                                            <span class="employee-email-sub row-email">{{ $user->email }}</span>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="nik-tag">{{ $nik }}</span>
+                                        <span class="row-nik">{{ $nik }}</span>
                                     </td>
-                                    <td>{{ $deptName }}</td>
-                                    <td>{{ $employmentStatusName }}</td>
+                                    <td class="row-dept">{{ $deptName }}</td>
+                                    <td class="row-employment">{{ $employmentStatusName }}</td>
                                     <td>{{ $roleText }}</td>
                                     <td>
-                                        @if ($user->is_active)
-                                            <span class="status-badge active">
-                                                <span class="status-dot"></span>
-                                                Aktif
-                                            </span>
-                                        @else
-                                            <span class="status-badge inactive">
-                                                <span class="status-dot"></span>
-                                                Nonaktif
-                                            </span>
-                                        @endif
+                                        <div class="row-status-container">
+                                            @if ($user->is_active)
+                                                <span class="status-badge active">
+                                                    <span class="status-dot"></span>
+                                                    Aktif
+                                                </span>
+                                            @else
+                                                <span class="status-badge inactive">
+                                                    <span class="status-dot"></span>
+                                                    Nonaktif
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td style="text-align:right;">
-                                        <button type="button"
-                                                class="btn-kelola-link"
-                                                data-id="{{ $user->id }}"
-                                                data-name="{{ $user->name }}"
-                                                data-nik="{{ $nik }}"
-                                                data-email="{{ $user->email }}"
-                                                data-dept-id="{{ $user->department_id }}"
-                                                data-employment-id="{{ $employmentStatusId }}"
-                                                data-is-active="{{ $user->is_active ? 1 : 0 }}"
-                                                data-role-text="{{ $roleText }}"
-                                                data-is-self="{{ Auth::id() === $user->id ? 1 : 0 }}"
-                                                onclick="openManageModal(this)"
-                                                id="btnKelolaUser{{ $user->id }}">
-                                            Kelola
-                                        </button>
+                                        <div class="table-action-links">
+                                            @if ($isEmployee)
+                                                <button type="button"
+                                                        class="btn-action-kelola"
+                                                        onclick="openManageModal({{ $user->id }})">
+                                                    Kelola
+                                                </button>
+                                                <button type="button"
+                                                        class="btn-action-hapus"
+                                                        onclick="openDeleteModalDirect({{ $user->id }}, '{{ addslashes($user->name) }}')">
+                                                    Hapus
+                                                </button>
+                                            @else
+                                                <button type="button"
+                                                        class="btn-action-kelola"
+                                                        style="opacity:0.6;cursor:default;"
+                                                        title="Akun Admin tidak menjadi target pengelolaan">
+                                                    Kelola
+                                                </button>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -1057,8 +1198,13 @@
                                             <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                             </svg>
-                                            <div class="empty-state-title">Data tidak ditemukan</div>
-                                            <div class="empty-state-desc">Tidak ada karyawan yang sesuai dengan kata kunci pencarian atau filter yang diterapkan.</div>
+                                            @if (!empty($filters['search']) || !empty($filters['department_id']) || ($filters['status'] !== null && $filters['status'] !== ''))
+                                                <div class="empty-state-title">Data tidak ditemukan</div>
+                                                <div class="empty-state-desc">Tidak ada karyawan yang sesuai dengan kata kunci pencarian atau filter yang diterapkan.</div>
+                                            @else
+                                                <div class="empty-state-title">Belum ada data karyawan</div>
+                                                <div class="empty-state-desc">Belum ada akun karyawan yang terdaftar di dalam sistem.</div>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -1069,8 +1215,8 @@
 
                 <!-- Table Card Footer -->
                 <div class="table-card-footer">
-                    <div class="footer-note-text">
-                        Menampilkan {{ $users->count() }} pengguna. Akun baru dibuat melalui registrasi mandiri NIK yang terdaftar.
+                    <div class="footer-note-text" id="footerCountText">
+                        Menampilkan {{ $users->count() }} pengguna. Akun baru dibuat melalui registrasi menggunakan NIK yang terdaftar.
                     </div>
                     <div>
                         {{ $users->links() }}
@@ -1078,8 +1224,22 @@
                 </div>
             </div>
 
+            <!-- Page Bottom Footer -->
+            <div class="app-page-footer">
+                <div>&copy; 2026 SafeTrack. Setiap kepedulian berarti.</div>
+                <div class="status-sync-indicator">
+                    <span class="status-sync-dot"></span>
+                    <span>Sistem aktif - Data tersimpan otomatis</span>
+                </div>
+            </div>
+
         </div>
     </main>
+</div>
+
+<!-- ══ Floating Toast ══ -->
+<div class="toast-floating" id="floatingToast" role="alert">
+    <span id="toastMessageText">-</span>
 </div>
 
 <!-- ══ Modal 1: Kelola Akun Karyawan ══ -->
@@ -1090,82 +1250,60 @@
             <button type="button" class="btn-modal-close" onclick="closeManageModal()" aria-label="Tutup modal">&times;</button>
         </div>
 
-        <form id="formManageUser" method="POST" action="">
-            @csrf
-            @method('PUT')
-
+        <form id="formManageUser" onsubmit="submitManageUser(event)">
             <div class="modal-body">
+                <!-- Error Alert inside Modal -->
+                <div class="modal-alert-error" id="modalManageErrorAlert"></div>
+
                 <!-- Top Info Box (Nama & NIK · Email read-only) -->
                 <div class="modal-info-box">
                     <div class="info-box-name" id="modalInfoName">-</div>
                     <div class="info-box-sub" id="modalInfoMeta">-</div>
                 </div>
 
-                <!-- Field Departemen -->
-                <div class="form-group">
-                    <label class="form-label" for="modalDeptSelect">Departemen</label>
-                    <select name="department_id" id="modalDeptSelect" class="form-select-control" required>
-                        @foreach ($departments as $dept)
-                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Field Status Kepegawaian -->
-                <div class="form-group">
-                    <label class="form-label" for="modalEmploymentSelect">Status kepegawaian</label>
-                    <select name="employment_status_id" id="modalEmploymentSelect" class="form-select-control" required>
-                        @foreach ($employmentStatuses as $empStatus)
-                            <option value="{{ $empStatus->id }}">{{ $empStatus->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Field Status Akun -->
-                <div class="form-group">
-                    <label class="form-label" for="modalStatusSelect">Status akun</label>
-                    <select name="is_active" id="modalStatusSelect" class="form-select-control" required>
-                        <option value="1">Aktif</option>
-                        <option value="0">Nonaktif</option>
-                    </select>
-                    <div class="form-hint-text">Akun nonaktif tidak dapat mengakses sistem.</div>
-                </div>
-
-                <!-- Field Peran (Read-only) -->
-                <div class="form-group">
-                    <label class="form-label" for="modalRoleText">Peran</label>
-                    <input type="text" id="modalRoleText" class="form-input-text" readonly value="Karyawan">
-                    <div class="form-hint-text">Peran ditentukan oleh sistem otorisasi dan tidak dapat diubah di sini.</div>
-                </div>
-
-                <!-- Simulasikan Reset Password -->
-                <div class="reset-pwd-box">
-                    <div>
-                        <div style="font-size:13px;font-weight:700;color:var(--text-heading);">Reset Password</div>
-                        <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">
-                            Demo menampilkan tautan reset tanpa mengirim email sungguhan.
-                        </div>
+                <!-- Row 1: Departemen & Status kepegawaian (2 columns) -->
+                <div class="modal-grid-row">
+                    <div class="form-group">
+                        <label class="form-label" for="modalDeptSelect">Departemen</label>
+                        <select name="department_id" id="modalDeptSelect" class="form-select-control" required>
+                            @foreach ($departments as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <button type="button" class="btn-reset-pwd" onclick="triggerResetPasswordStub()" id="btnTriggerResetPassword">
-                        Simulasikan reset password
-                    </button>
+
+                    <div class="form-group">
+                        <label class="form-label" for="modalEmploymentSelect">Status kepegawaian</label>
+                        <select name="employment_status_id" id="modalEmploymentSelect" class="form-select-control" required>
+                            @foreach ($employmentStatuses as $empStatus)
+                                <option value="{{ $empStatus->id }}">{{ $empStatus->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Aksi Hapus Akun (Soft Delete) -->
-                <div class="modal-danger-divider">
-                    <div style="font-size:12.5px;color:var(--text-muted);">Tindakan berbahaya untuk akun ini</div>
-                    <button type="button" class="btn-danger-text" onclick="openDeleteConfirmModal()" id="btnOpenDeleteModal">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                        </svg>
-                        <span>Hapus akun</span>
-                    </button>
+                <!-- Row 2: Status akun & Peran (2 columns) -->
+                <div class="modal-grid-row">
+                    <div class="form-group">
+                        <label class="form-label" for="modalStatusSelect">Status akun</label>
+                        <select name="is_active" id="modalStatusSelect" class="form-select-control" required>
+                            <option value="1">Aktif</option>
+                            <option value="0">Nonaktif</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="modalRoleText">Peran</label>
+                        <input type="text" id="modalRoleText" class="form-input-text" readonly value="Karyawan">
+                    </div>
                 </div>
             </div>
 
             <div class="modal-footer">
                 <button type="button" class="btn-modal-cancel" onclick="closeManageModal()">Batal</button>
-                <button type="submit" class="btn-modal-save" id="btnSubmitManageUser">Simpan perubahan</button>
+                <button type="submit" class="btn-modal-save" id="btnSubmitManageUser">
+                    <span id="btnSubmitText">Simpan perubahan</span>
+                </button>
             </div>
         </form>
     </div>
@@ -1176,8 +1314,8 @@
     <div class="modal-card">
         <div class="modal-header" style="background:#fef2f2;border-bottom-color:#fecaca;">
             <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;">
+                <div style="width:30px;height:30px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
                 </div>
@@ -1186,11 +1324,10 @@
             <button type="button" class="btn-modal-close" onclick="closeDeleteModal()" aria-label="Tutup modal">&times;</button>
         </div>
 
-        <form id="formDeleteUser" method="POST" action="">
-            @csrf
-            @method('DELETE')
-
+        <form id="formDeleteUser" onsubmit="submitDeleteUser(event)">
             <div class="modal-body">
+                <div class="modal-alert-error" id="modalDeleteErrorAlert"></div>
+
                 <p style="font-size:13.5px;color:#475569;margin-bottom:14px;line-height:1.6;">
                     Anda akan menghapus akun karyawan <strong id="deleteTargetName">-</strong>. Akun yang dihapus tidak akan dapat masuk ke sistem lagi. NIK karyawan akan tetap tersimpan sebagai riwayat.
                 </p>
@@ -1206,102 +1343,241 @@
                               style="resize:vertical;"
                               placeholder="Tuliskan alasan penghapusan akun karyawan ini..."
                               required></textarea>
-                    <div class="form-hint-text">Alasan wajib diisi untuk keperluan rekam audit internal.</div>
+                    <div style="font-size:11.5px;color:var(--text-muted);margin-top:5px;">
+                        Alasan wajib diisi untuk keperluan rekam audit internal.
+                    </div>
                 </div>
             </div>
 
             <div class="modal-footer">
                 <button type="button" class="btn-modal-cancel" onclick="closeDeleteModal()">Batal</button>
-                <button type="submit" class="btn-modal-danger-submit" id="btnConfirmDelete">Hapus akun</button>
+                <button type="submit" class="btn-modal-danger-submit" id="btnConfirmDelete">
+                    <span id="btnDeleteText">Hapus akun</span>
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ══ Modal 3: Reset Password Stub Form ══ -->
-<form id="formResetPasswordStub" method="POST" action="" style="display:none;">
-    @csrf
-</form>
-
 <script>
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     let currentSelectedUserId = null;
-    let currentSelectedUserName = '';
-    let currentSelectedUserIsSelf = false;
 
-    // Mobile Sidebar Toggle
-    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
-    const sidebarNav = document.getElementById('sidebarNav');
-    if (btnToggleSidebar && sidebarNav) {
-        btnToggleSidebar.addEventListener('click', () => {
-            sidebarNav.classList.toggle('open');
-        });
+    // Toast Notification
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('floatingToast');
+        const text = document.getElementById('toastMessageText');
+        text.textContent = message;
+        toast.className = 'toast-floating ' + type + ' show';
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
     }
 
     // Modal Kelola
-    function openManageModal(btn) {
-        currentSelectedUserId = btn.dataset.id;
-        currentSelectedUserName = btn.dataset.name;
-        currentSelectedUserIsSelf = btn.dataset.isSelf === '1';
+    function openManageModal(userId) {
+        const row = document.getElementById('user-row-' + userId);
+        if (!row) return;
 
-        document.getElementById('modalInfoName').textContent = btn.dataset.name;
-        document.getElementById('modalInfoMeta').textContent = `${btn.dataset.nik} · ${btn.dataset.email}`;
-        document.getElementById('modalDeptSelect').value = btn.dataset.deptId;
-        document.getElementById('modalEmploymentSelect').value = btn.dataset.employmentId;
-        document.getElementById('modalStatusSelect').value = btn.dataset.isActive;
-        document.getElementById('modalRoleText').value = btn.dataset.roleText;
-
-        // Aturan keamanan: Admin tidak boleh menonaktifkan atau menghapus dirinya sendiri
-        const statusSelect = document.getElementById('modalStatusSelect');
-        const btnDelete = document.getElementById('btnOpenDeleteModal');
-        if (currentSelectedUserIsSelf) {
-            statusSelect.disabled = true;
-            statusSelect.title = "Anda tidak dapat menonaktifkan akun Anda sendiri.";
-            btnDelete.style.display = 'none';
-        } else {
-            statusSelect.disabled = false;
-            statusSelect.title = "";
-            btnDelete.style.display = 'inline-flex';
+        if (row.dataset.isEmployee !== '1') {
+            showToast('Hanya akun karyawan yang dapat dikelola. Akun Admin bukan target pengelolaan.', 'error');
+            return;
         }
 
-        const updateUrl = "{{ url('admin/pengguna') }}/" + currentSelectedUserId;
-        document.getElementById('formManageUser').action = updateUrl;
+        currentSelectedUserId = userId;
 
-        const modal = document.getElementById('modalManagePengguna');
-        modal.classList.add('open');
+        document.getElementById('modalManageErrorAlert').style.display = 'none';
+        document.getElementById('modalManageErrorAlert').textContent = '';
+
+        document.getElementById('modalInfoName').textContent = row.dataset.name;
+        document.getElementById('modalInfoMeta').textContent = `${row.dataset.nik} · ${row.dataset.email}`;
+        document.getElementById('modalDeptSelect').value = row.dataset.deptId;
+        document.getElementById('modalEmploymentSelect').value = row.dataset.employmentId;
+        document.getElementById('modalStatusSelect').value = row.dataset.isActive;
+
+        document.getElementById('modalManagePengguna').classList.add('open');
     }
 
     function closeManageModal() {
         document.getElementById('modalManagePengguna').classList.remove('open');
+        currentSelectedUserId = null;
+    }
+
+    // Submit Kelola Form via Fetch
+    async function submitManageUser(event) {
+        event.preventDefault();
+        if (!currentSelectedUserId) return;
+
+        const btn = document.getElementById('btnSubmitManageUser');
+        const btnText = document.getElementById('btnSubmitText');
+        const errorAlert = document.getElementById('modalManageErrorAlert');
+
+        errorAlert.style.display = 'none';
+        errorAlert.textContent = '';
+        btn.disabled = true;
+        btnText.textContent = 'Menyimpan...';
+
+        const payload = {
+            department_id: parseInt(document.getElementById('modalDeptSelect').value, 10),
+            employment_status_id: parseInt(document.getElementById('modalEmploymentSelect').value, 10),
+            is_active: parseInt(document.getElementById('modalStatusSelect').value, 10) === 1
+        };
+
+        try {
+            const response = await fetch("{{ url('admin/pengguna') }}/" + currentSelectedUserId, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                let errorMsg = data.message || 'Terjadi kesalahan saat menyimpan data.';
+                if (data.errors) {
+                    const firstKey = Object.keys(data.errors)[0];
+                    if (firstKey && data.errors[firstKey][0]) {
+                        errorMsg = data.errors[firstKey][0];
+                    }
+                }
+                errorAlert.textContent = errorMsg;
+                errorAlert.style.display = 'block';
+                btn.disabled = false;
+                btnText.textContent = 'Simpan perubahan';
+                return;
+            }
+
+            // Update row in DOM
+            const row = document.getElementById('user-row-' + currentSelectedUserId);
+            if (row && data.user) {
+                row.dataset.deptId = data.user.department_id;
+                row.dataset.employmentId = data.user.employment_status_id;
+                row.dataset.isActive = data.user.is_active ? 1 : 0;
+
+                const deptCell = row.querySelector('.row-dept');
+                if (deptCell) deptCell.textContent = data.user.department_name;
+
+                const empCell = row.querySelector('.row-employment');
+                if (empCell) empCell.textContent = data.user.employment_status_name;
+
+                const statusContainer = row.querySelector('.row-status-container');
+                if (statusContainer) {
+                    if (data.user.is_active) {
+                        statusContainer.innerHTML = '<span class="status-badge active"><span class="status-dot"></span>Aktif</span>';
+                    } else {
+                        statusContainer.innerHTML = '<span class="status-badge inactive"><span class="status-dot"></span>Nonaktif</span>';
+                    }
+                }
+            }
+
+            // Update stats
+            if (data.stats) {
+                const statActive = document.getElementById('statActiveUsers');
+                if (statActive) statActive.textContent = data.stats.activeUsers;
+                const statTotal = document.getElementById('statTotalUsers');
+                if (statTotal) statTotal.textContent = data.stats.totalUsers;
+            }
+
+            closeManageModal();
+            showToast(data.message || 'Data akun karyawan berhasil diperbarui.', 'success');
+        } catch (err) {
+            errorAlert.textContent = 'Gagal menghubungi server: ' + err.message;
+            errorAlert.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btnText.textContent = 'Simpan perubahan';
+        }
     }
 
     // Modal Delete
-    function openDeleteConfirmModal() {
-        if (currentSelectedUserIsSelf) {
-            alert("Anda tidak dapat menghapus akun Anda sendiri.");
-            return;
-        }
-
-        closeManageModal();
-        document.getElementById('deleteTargetName').textContent = currentSelectedUserName;
+    function openDeleteModalDirect(userId, userName) {
+        currentSelectedUserId = userId;
+        document.getElementById('deleteTargetName').textContent = userName;
         document.getElementById('inputDeletionReason').value = '';
+        document.getElementById('modalDeleteErrorAlert').style.display = 'none';
+        document.getElementById('modalDeleteErrorAlert').textContent = '';
 
-        const deleteUrl = "{{ url('admin/pengguna') }}/" + currentSelectedUserId;
-        document.getElementById('formDeleteUser').action = deleteUrl;
-
-        const modal = document.getElementById('modalDeletePengguna');
-        modal.classList.add('open');
+        document.getElementById('modalDeletePengguna').classList.add('open');
     }
 
     function closeDeleteModal() {
         document.getElementById('modalDeletePengguna').classList.remove('open');
+        currentSelectedUserId = null;
     }
 
-    // Trigger Reset Password (Stub PBI-08)
-    function triggerResetPasswordStub() {
+    // Submit Delete Form via Fetch
+    async function submitDeleteUser(event) {
+        event.preventDefault();
         if (!currentSelectedUserId) return;
-        const form = document.getElementById('formResetPasswordStub');
-        form.action = "{{ url('admin/pengguna') }}/" + currentSelectedUserId + "/reset-password";
-        form.submit();
+
+        const reason = document.getElementById('inputDeletionReason').value.trim();
+        const btn = document.getElementById('btnConfirmDelete');
+        const btnText = document.getElementById('btnDeleteText');
+        const errorAlert = document.getElementById('modalDeleteErrorAlert');
+
+        if (!reason) {
+            errorAlert.textContent = 'Alasan penghapusan akun wajib diisi.';
+            errorAlert.style.display = 'block';
+            return;
+        }
+
+        errorAlert.style.display = 'none';
+        btn.disabled = true;
+        btnText.textContent = 'Menghapus...';
+
+        try {
+            const response = await fetch("{{ url('admin/pengguna') }}/" + currentSelectedUserId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ deletion_reason: reason })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                let errorMsg = data.message || 'Terjadi kesalahan saat menghapus akun.';
+                if (data.errors && data.errors.deletion_reason) {
+                    errorMsg = data.errors.deletion_reason[0];
+                }
+                errorAlert.textContent = errorMsg;
+                errorAlert.style.display = 'block';
+                btn.disabled = false;
+                btnText.textContent = 'Hapus akun';
+                return;
+            }
+
+            // Remove row from table
+            const row = document.getElementById('user-row-' + currentSelectedUserId);
+            if (row) {
+                row.remove();
+            }
+
+            // Update stats
+            if (data.stats) {
+                const statActive = document.getElementById('statActiveUsers');
+                if (statActive) statActive.textContent = data.stats.activeUsers;
+                const statTotal = document.getElementById('statTotalUsers');
+                if (statTotal) statTotal.textContent = data.stats.totalUsers;
+            }
+
+            closeDeleteModal();
+            showToast(data.message || 'Akun karyawan berhasil dihapus.', 'success');
+        } catch (err) {
+            errorAlert.textContent = 'Gagal menghubungi server: ' + err.message;
+            errorAlert.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btnText.textContent = 'Hapus akun';
+        }
     }
 
     // Close on Escape or click outside

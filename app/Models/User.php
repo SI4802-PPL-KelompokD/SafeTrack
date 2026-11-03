@@ -15,23 +15,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name','username','email','password','profile_photo_path'])]
-#[Hidden(['password','remember_token'])]
-class User extends Authenticatable {
- /** @use HasFactory<UserFactory> */
- use HasApiTokens,HasFactory,Notifiable,SoftDeletes;
- protected function casts(): array {
-  return ['email_verified_at'=>'datetime','password'=>'hashed','is_active'=>'boolean'];
- }
- /** Admin/HSE = role super_admin atau admin (sama dengan middleware EnsureAdmin). */
- public function isAdmin(): bool {return in_array($this->role,['super_admin','admin'],true);}
- public function department(){return $this->belongsTo(Department::class);}
- public function employeeRegistry(){return $this->belongsTo(EmployeeRegistry::class);}
- public function reports(){return $this->hasMany(HazardReport::class,'reporter_id');}
- public function sapMonthlySummaries(){return $this->hasMany(SapMonthlySummary::class);}
- public function sapEntries(){return $this->hasMany(SapEntry::class);}
- public function sapTargets(){return $this->hasMany(SapTarget::class);}
-
 #[Fillable([
     'name',
     'username',
@@ -49,7 +32,7 @@ class User extends Authenticatable {
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected function casts(): array
     {
@@ -58,6 +41,14 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Admin/HSE = role super_admin atau admin (sama dengan middleware EnsureAdmin).
+     */
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, ['super_admin', 'admin'], true);
     }
 
     public function department(): BelongsTo
@@ -73,6 +64,21 @@ class User extends Authenticatable
     public function reports(): HasMany
     {
         return $this->hasMany(HazardReport::class, 'reporter_id');
+    }
+
+    public function sapMonthlySummaries(): HasMany
+    {
+        return $this->hasMany(SapMonthlySummary::class);
+    }
+
+    public function sapEntries(): HasMany
+    {
+        return $this->hasMany(SapEntry::class);
+    }
+
+    public function sapTargets(): HasMany
+    {
+        return $this->hasMany(SapTarget::class);
     }
 
     public function deletedByAdmin(): BelongsTo
