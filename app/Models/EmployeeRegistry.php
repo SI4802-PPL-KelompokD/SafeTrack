@@ -3,19 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-class EmployeeRegistry extends Model {
- 
- protected $table='nik';
- protected $guarded=['*'];
- 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Schema;
 
 class EmployeeRegistry extends Model
 {
-    protected $table = 'employee_registry';
-
     protected $guarded = ['*'];
+
+    public function getTable()
+    {
+        return $this->table ?? (Schema::hasTable('nik') ? 'nik' : 'employee_registry');
+    }
 
     public function department(): BelongsTo
     {

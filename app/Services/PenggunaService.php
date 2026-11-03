@@ -18,9 +18,16 @@ class PenggunaService
      */
     public function update(User $user, array $data, User $actor): User
     {
+        // Aturan: Hanya akun karyawan yang dapat dikelola
+        if ($user->role !== 'employee') {
+            throw ValidationException::withMessages([
+                'target' => 'Hanya akun karyawan yang dapat dikelola. Akun Admin bukan merupakan target pengelolaan.',
+            ]);
+        }
+
         $isActive = filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN);
 
-        // Aturan keamanan: Admin tidak boleh menonaktifkan akunnya sendiri
+        // Aturan keamanan: Pengguna tidak boleh menonaktifkan akunnya sendiri
         if ($actor->id === $user->id && ! $isActive) {
             throw ValidationException::withMessages([
                 'is_active' => 'Anda tidak dapat menonaktifkan akun Anda sendiri.',
@@ -31,9 +38,14 @@ class PenggunaService
             // Perbarui data pada tabel users
             $user->department_id = $data['department_id'];
             $user->is_active = $isActive;
+
+            if (Schema::hasColumn('users', 'status_karyawan_id')) {
+                $user->status_karyawan_id = $data['employment_status_id'];
+            }
+
             $user->save();
 
-            // Sinkronkan data ke tabel employee_registry jika terkait
+            // Sinkronkan data ke tabel employee_registry / nik jika terkait
             if ($user->employeeRegistry) {
                 $registry = $user->employeeRegistry;
                 $registry->department_id = $data['department_id'];
@@ -42,7 +54,7 @@ class PenggunaService
                 $registry->save();
             }
 
-            // Jika akun dinonaktifkan, akhiri sesi aktif yang tersimpan
+            // Jika akun dinonaktifkan, akhiri semua sesi aktif yang tersimpan
             if (! $isActive) {
                 $this->revokeUserSessions($user);
             }
@@ -58,6 +70,13 @@ class PenggunaService
      */
     public function delete(User $user, string $reason, User $actor): bool
     {
+        // Aturan: Hanya akun karyawan yang dapat dihapus
+        if ($user->role !== 'employee') {
+            throw ValidationException::withMessages([
+                'deletion_reason' => 'Hanya akun karyawan yang dapat dihapus. Akun Admin tidak dapat dihapus di sini.',
+            ]);
+        }
+
         $trimmedReason = trim($reason);
         if ($trimmedReason === '') {
             throw ValidationException::withMessages([
@@ -79,6 +98,11 @@ class PenggunaService
             $user->is_active = false;
             $user->save();
 
+            if ($user->employeeRegistry) {
+                $user->employeeRegistry->is_active = false;
+                $user->employeeRegistry->save();
+            }
+
             // Jalankan SoftDeletes Eloquent
             $deleted = (bool) $user->delete();
 
@@ -90,11 +114,15 @@ class PenggunaService
     }
 
     /**
-     * Menghapus sesi aktif pengguna dari database dan menghapus remember token.
+     * Menghapus sesi aktif pengguna dari database dan mengosongkan remember token.
      */
-    protected function revokeUserSessions(User $user): void
+    public function revokeUserSessions(User $user): void
     {
         $user->forceFill(['remember_token' => null])->saveQuietly();
+
+        if (Schema::hasTable('user_sessions')) {
+            DB::table('user_sessions')->where('user_id', $user->id)->delete();
+        }
 
         if (Schema::hasTable('sessions')) {
             DB::table('sessions')->where('user_id', $user->id)->delete();

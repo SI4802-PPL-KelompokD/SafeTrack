@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Models\EmploymentStatus;
 use App\Models\User;
 use App\Services\PenggunaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,21 +70,68 @@ class PenggunaController extends Controller
     /**
      * Perbarui departemen, status kepegawaian, dan status akun karyawan (FR-06 / UC-33).
      */
-    public function update(UpdatePenggunaRequest $request, User $pengguna): RedirectResponse
+    public function update(UpdatePenggunaRequest $request, User $pengguna): JsonResponse|RedirectResponse
     {
         $this->authorizeAdmin();
+
+        if ($pengguna->role !== 'employee') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Hanya akun karyawan yang dapat dikelola. Akun Admin bukan merupakan target pengelolaan.',
+                ], 422);
+            }
+
+            return redirect()->back()->with('error', 'Hanya akun karyawan yang dapat dikelola.');
+        }
 
         try {
             /** @var User $actor */
             $actor = Auth::user();
-            $this->penggunaService->update($pengguna, $request->validated(), $actor);
+            $updatedUser = $this->penggunaService->update($pengguna, $request->validated(), $actor);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data akun karyawan berhasil diperbarui.',
+                    'user' => [
+                        'id' => $updatedUser->id,
+                        'name' => $updatedUser->name,
+                        'email' => $updatedUser->email,
+                        'nik' => $updatedUser->employeeRegistry?->nik ?? '-',
+                        'department_id' => $updatedUser->department_id,
+                        'department_name' => $updatedUser->department?->name ?? '-',
+                        'employment_status_id' => $updatedUser->employeeRegistry?->employment_status_id ?? null,
+                        'employment_status_name' => $updatedUser->employeeRegistry?->employmentStatus?->name ?? 'Tetap',
+                        'is_active' => (bool) $updatedUser->is_active,
+                        'role' => $updatedUser->role,
+                    ],
+                    'stats' => [
+                        'totalUsers' => User::count(),
+                        'activeUsers' => User::where('is_active', true)->count(),
+                        'totalDepartments' => Department::where('is_active', true)->count(),
+                    ],
+                ]);
+            }
 
             return redirect()->back()->with('success', 'Data akun karyawan berhasil diperbarui.');
         } catch (ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+
             return redirect()->back()
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Throwable $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Terjadi kesalahan sistem saat memperbarui data: '.$e->getMessage(),
+                ], 500);
+            }
+
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan sistem saat memperbarui data: '.$e->getMessage())
                 ->withInput();
@@ -93,21 +141,57 @@ class PenggunaController extends Controller
     /**
      * Soft delete akun karyawan dengan mencatat alasan penghapusan (FR-07 / UC-33).
      */
-    public function destroy(DeletePenggunaRequest $request, User $pengguna): RedirectResponse
+    public function destroy(DeletePenggunaRequest $request, User $pengguna): JsonResponse|RedirectResponse
     {
         $this->authorizeAdmin();
+
+        if ($pengguna->role !== 'employee') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Hanya akun karyawan yang dapat dihapus. Akun Admin tidak dapat dihapus di sini.',
+                ], 422);
+            }
+
+            return redirect()->back()->with('error', 'Hanya akun karyawan yang dapat dihapus.');
+        }
 
         try {
             /** @var User $actor */
             $actor = Auth::user();
             $this->penggunaService->delete($pengguna, $request->validated('deletion_reason'), $actor);
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Akun karyawan berhasil dihapus.',
+                    'deleted_id' => $pengguna->id,
+                    'stats' => [
+                        'totalUsers' => User::count(),
+                        'activeUsers' => User::where('is_active', true)->count(),
+                        'totalDepartments' => Department::where('is_active', true)->count(),
+                    ],
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Akun karyawan berhasil dihapus.');
         } catch (ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+
             return redirect()->back()
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Throwable $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Terjadi kesalahan sistem saat menghapus akun: '.$e->getMessage(),
+                ], 500);
+            }
+
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan sistem saat menghapus akun: '.$e->getMessage())
                 ->withInput();
@@ -115,24 +199,7 @@ class PenggunaController extends Controller
     }
 
     /**
-     * Simulasi reset password oleh admin (FR-06 / FR-08 Stub).
-     *
-     * TODO(PBI-08): integrasikan dengan pembuatan token PasswordResetToken setelah PBI-08 di-merge.
-     */
-    public function resetPassword(User $pengguna): RedirectResponse
-    {
-        $this->authorizeAdmin();
-
-        return redirect()->back()->with(
-            'info',
-            'Fitur simulasi reset password akan tersedia penuh setelah modul PBI-08 selesai diintegrasikan. Admin tidak menetapkan password secara langsung.'
-        );
-    }
-
-    /**
      * Helper otorisasi internal untuk peran admin / super_admin.
-     *
-     * // TODO(PBI-07): ganti dengan middleware role setelah PBI-07 di-merge.
      */
     private function authorizeAdmin(): void
     {

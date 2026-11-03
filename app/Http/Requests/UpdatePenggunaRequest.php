@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Schema;
 
 class UpdatePenggunaRequest extends FormRequest
 {
@@ -23,9 +24,11 @@ class UpdatePenggunaRequest extends FormRequest
      */
     public function rules(): array
     {
+        $statusTable = Schema::hasTable('status_karyawan') ? 'status_karyawan' : 'employment_statuses';
+
         return [
             'department_id' => ['required', 'integer', 'exists:departments,id'],
-            'employment_status_id' => ['required', 'integer', 'exists:employment_statuses,id'],
+            'employment_status_id' => ['required', 'integer', "exists:{$statusTable},id"],
             'is_active' => ['required', 'boolean'],
         ];
     }

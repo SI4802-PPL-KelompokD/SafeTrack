@@ -101,14 +101,12 @@ Route::middleware('auth')->group(function () {
             Route::delete('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'destroy'])
                 ->name('work-areas.questions.destroy');
         });
-    });
 
-    // ── Kelola Pengguna (PBI-10 / FR-06, FR-07) ──
-    // TODO(PBI-07): tambahkan middleware role setelah PBI-07 di-merge.
-    Route::prefix('admin/pengguna')->name('admin.pengguna.')->group(function () {
-        Route::get('/', [PenggunaController::class, 'index'])->name('index');
-        Route::put('/{pengguna}', [PenggunaController::class, 'update'])->name('update');
-        Route::delete('/{pengguna}', [PenggunaController::class, 'destroy'])->name('destroy');
-        Route::post('/{pengguna}/reset-password', [PenggunaController::class, 'resetPassword'])->name('reset-password');
+        // ── Kelola Karyawan (PBI 9 / FR-06, FR-07) ──
+        Route::prefix('admin/pengguna')->name('admin.pengguna.')->group(function () {
+            Route::get('/', [PenggunaController::class, 'index'])->name('index');
+            Route::put('/{pengguna}', [PenggunaController::class, 'update'])->name('update');
+            Route::delete('/{pengguna}', [PenggunaController::class, 'destroy'])->name('destroy');
+        });
     });
 });
