@@ -132,8 +132,7 @@ class AuthTest extends TestCase
 
         $response = $this->actingAs($employee)->get('/shifts');
 
-        $response->assertRedirect(route('dashboard'));
-        $response->assertSessionHas('error');
+        $response->assertForbidden();
     }
 
     /**
@@ -147,6 +146,23 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Kelola shift kerja');
+    }
+
+    public function test_employee_dashboard_hides_administrative_controls(): void
+    {
+        $employee = User::where('username', 'karyawan')->firstOrFail();
+        $this->actingAs($employee)->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('href="'.route('shifts.index').'"', false)
+            ->assertDontSee('Akses Cepat Admin/HSE');
+    }
+
+    public function test_admin_role_can_access_administration(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+        $this->actingAs($admin)->get(route('shifts.index'))->assertOk();
+        $this->actingAs($admin)->get(route('admin.work-areas.index'))->assertOk();
+        $this->actingAs($admin)->postJson(route('daily-inspections.store'), [])->assertForbidden();
     }
 
     /**
