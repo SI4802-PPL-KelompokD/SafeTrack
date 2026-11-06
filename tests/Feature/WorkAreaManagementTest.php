@@ -92,29 +92,29 @@ class WorkAreaManagementTest extends TestCase
         ]);
 
         $response->assertRedirect()->assertSessionHas('success');
-        $this->assertDatabaseHas('work_areas', ['id' => $area->id, 'name' => 'Area Produksi Utama']);
+        $this->assertDatabaseHas('area_kerja', ['id' => $area->id, 'name' => 'Area Produksi Utama']);
     }
 
     public function test_admin_can_delete_work_area(): void
     {
         $admin = User::where('username', 'admin')->firstOrFail();
-        $area = WorkArea::factory()->create(['department_id' => $admin->department_id]);
+        $area = WorkArea::factory()->create();
 
         $this->actingAs($admin)->delete(route('admin.work-areas.destroy', $area))
             ->assertRedirect(route('admin.work-areas.index'))
             ->assertSessionHas('success');
 
-        $this->assertSoftDeleted('work_areas', ['id' => $area->id]);
+        $this->assertSoftDeleted('area_kerja', ['id' => $area->id]);
     }
 
     public function test_used_work_area_can_be_deactivated_without_deletion(): void
     {
         $admin = User::where('username', 'admin')->firstOrFail();
         $area = WorkArea::where('name', 'PIT/Front Loading')->firstOrFail();
-        DB::table('daily_inspections')->insert([
+        DB::table('daily_inspection')->insert([
             'client_request_id' => Str::uuid(),
             'inspector_id' => User::where('username', 'karyawan')->value('id'),
-            'department_id' => $area->department_id,
+            'department_id' => $admin->department_id,
             'work_area_id' => $area->id,
             'shift_id' => Shift::firstOrFail()->id,
             'inspection_date' => now()->toDateString(),
@@ -124,17 +124,13 @@ class WorkAreaManagementTest extends TestCase
 
         $this->actingAs($admin)->patch(route('admin.work-areas.toggle-status', $area))->assertSessionHas('success');
 
-        $this->assertDatabaseHas('work_areas', ['id' => $area->id, 'is_active' => false, 'deleted_at' => null]);
+        $this->assertDatabaseHas('area_kerja', ['id' => $area->id, 'is_active' => false, 'deleted_at' => null]);
     }
 
     public function test_admin_can_create_and_update_question(): void
     {
         $admin = User::where('username', 'admin')->firstOrFail();
-        $area = WorkArea::factory()->create([
-            'department_id' => $admin->department_id,
-            'name' => 'Area Pertanyaan Test',
-            'code' => 'QUESTION-TEST',
-        ]);
+        $area = WorkArea::factory()->create(['name' => 'Area Pertanyaan Test']);
 
         $this->actingAs($admin)->post(route('admin.work-areas.questions.store', $area), [
             'question' => 'Apakah alat pemadam tersedia?', 'sort_order' => 2, 'is_active' => '1',

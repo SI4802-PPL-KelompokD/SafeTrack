@@ -32,3 +32,11 @@ Thumbs.db
 !.env.testing.example
 /backups/
 /SafeTrack*.zip
+
+# Selenium lokal
+.venv-selenium/
+tests-selenium/screenshots/
+tests-selenium/reports/
+.pytest_cache/
+__pycache__/
+*.pyc

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
 use App\Models\WorkArea;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,11 +16,8 @@ class WorkAreaController extends Controller
     public function index(Request $request): Response
     {
         $workAreas = WorkArea::query()
-            ->with('department:id,name')
             ->withCount('questions')
             ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%'.$request->string('search')->trim().'%'))
-            ->when($request->status === 'active', fn ($query) => $query->where('is_active', true))
-            ->when($request->status === 'inactive', fn ($query) => $query->where('is_active', false))
             ->orderBy('name')
             ->orderBy('id')
             ->paginate(10)
@@ -29,7 +25,7 @@ class WorkAreaController extends Controller
 
         return Inertia::render('WorkAreas/Index', [
             'workAreas' => $workAreas,
-            'filters' => $request->only(['search', 'status']),
+            'filters' => $request->only(['search']),
             'endpoints' => [
                 'index' => route('admin.work-areas.index'),
                 'store' => route('admin.work-areas.store'),
@@ -40,15 +36,9 @@ class WorkAreaController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validateWorkArea($request, withQuestions: true);
-        $departmentId = Department::query()->where('code', 'OPS')->value('id')
-            ?? Department::query()->where('is_active', true)->value('id');
-        abort_unless($departmentId, 422, 'Departemen operasional belum tersedia.');
-
-        $workArea = DB::transaction(function () use ($validated, $departmentId): WorkArea {
+        $workArea = DB::transaction(function () use ($validated): WorkArea {
             $workArea = WorkArea::create([
-                'department_id' => $departmentId,
                 'name' => $validated['name'],
-                'code' => Str::upper(Str::limit(Str::slug($validated['name'], ''), 30, '')),
                 'description' => $validated['description'] ?? null,
                 'is_active' => true,
             ]);
@@ -70,7 +60,6 @@ class WorkAreaController extends Controller
 
     public function show(WorkArea $workArea): Response
     {
-        $workArea->load('department:id,name');
         $questions = $workArea->questions()->orderBy('sort_order')->orderBy('id')->paginate(15);
 
         return Inertia::render('WorkAreas/Show', [
@@ -115,7 +104,7 @@ class WorkAreaController extends Controller
     private function validateWorkArea(Request $request, ?WorkArea $workArea = null, bool $withQuestions = false): array
     {
         $rules = [
-            'name' => ['required', 'string', 'max:255', Rule::unique('work_areas', 'name')->ignore($workArea)],
+            'name' => ['required', 'string', 'max:255', Rule::unique('area_kerja', 'name')->ignore($workArea)],
             'description' => ['nullable', 'string', 'max:2000'],
         ];
 

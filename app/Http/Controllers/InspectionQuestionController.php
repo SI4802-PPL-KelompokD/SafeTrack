@@ -51,7 +51,7 @@ class InspectionQuestionController extends Controller
     {
         $this->ensureOwner($workArea, $question);
 
-        if (DB::table('inspection_answers')->where('inspection_question_id', $question->id)->exists()) {
+        if (DB::table('inspection_answer')->where('inspection_question_id', $question->id)->exists()) {
             $question->update(['is_active' => false]);
 
             return back()->with('error', 'Pertanyaan sudah pernah digunakan dan hanya dapat dinonaktifkan.');

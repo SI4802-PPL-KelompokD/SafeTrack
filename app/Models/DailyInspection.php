@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class DailyInspection extends Model
 {
-    protected $table = 'daily_inspections';
+    protected $table = 'daily_inspection';
 
-    protected $guarded = ['*'];
+    protected $guarded = ['id'];
 
     public function answers()
     {

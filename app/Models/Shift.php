@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shift extends Model
 {
-    protected $table = 'shifts';
+    protected $table = 'shift';
 
     protected $fillable = [
         'code',

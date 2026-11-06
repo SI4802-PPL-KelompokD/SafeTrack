@@ -22,7 +22,7 @@ class EnsureAdmin
             }
 
             return redirect()->route('dashboard')
-                ->with('error', 'Akses ditolak. Fitur Kelola Shift Kerja hanya dapat diakses oleh Admin/HSE.');
+                ->with('error', 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.');
         }
 
         return $next($request);
