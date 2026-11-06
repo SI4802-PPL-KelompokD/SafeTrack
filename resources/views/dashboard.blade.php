@@ -195,15 +195,21 @@
         @endif
 
         <div class="sidebar-footer">
-            <div style="display:flex;align-items:center;gap:10px;">
-                <div class="user-avatar-badge">{{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}</div>
-                <div>
-                    <div style="font-size:13px;font-weight:700;color:#0f172a;">{{ Auth::user()->name ?? 'Pengguna' }}</div>
+            <a href="{{ route('profile.edit') }}" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;flex:1;overflow:hidden;" title="Buka Profil Saya">
+                <div class="user-avatar-badge">
+                    @if (Auth::user()->profile_photo_url)
+                        <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    @else
+                        {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}
+                    @endif
+                </div>
+                <div style="overflow:hidden;">
+                    <div style="font-size:13px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ Auth::user()->name ?? 'Pengguna' }}</div>
                     <div style="font-size:11px;color:#64748b;">
-                        {{ Auth::user()->role === 'super_admin' ? 'Super Admin' : (Auth::user()->role === 'admin' ? 'Admin / HSE' : 'Karyawan') }}
+                        {{ Auth::user()->role_label ?? 'Karyawan' }}
                     </div>
                 </div>
-            </div>
+            </a>
             <!-- Logout Button (UC-03) -->
             <form method="POST" action="{{ route('logout') }}" class="btn-exit-form">
                 @csrf
@@ -217,15 +223,8 @@
     </aside>
 
     <main class="app-main">
-        <header class="app-topbar">
-            <div style="font-size:13.5px;color:#64748b;">
-                Workspace &gt; <strong style="color:#0f172a;">Ringkasan</strong>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-                <span style="font-size:12.5px;color:#64748b;">Halo, <strong>{{ Auth::user()->name ?? 'Pengguna' }}</strong></span>
-                <div class="user-avatar-badge" style="width:30px;height:30px;font-size:11px;">{{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}</div>
-            </div>
-        </header>
+        <!-- Topbar Component (Shared) -->
+        @include('partials.topbar', ['currentTitle' => 'Ringkasan'])
 
         <div class="content-area">
             @if (session('success'))

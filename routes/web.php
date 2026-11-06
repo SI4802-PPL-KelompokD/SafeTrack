@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DailyInspectionController;
 use App\Http\Controllers\InspectionQuestionController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
 use Illuminate\Support\Facades\Auth;
@@ -40,6 +41,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    // PBI-08: Kelola Profil
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Demo Account Switcher (Khusus local & testing)
+    if (app()->environment(['local', 'testing'])) {
+        Route::post('/demo/switch-account', [AuthController::class, 'switchDemoAccount'])->name('demo.switch-account');
+    }
 
     Route::middleware('inspection.inertia')->group(function () {
         Route::get('/daily-inspections', [DailyInspectionController::class, 'index'])->name('daily-inspections.index');

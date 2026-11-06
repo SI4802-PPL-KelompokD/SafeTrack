@@ -96,4 +96,33 @@ class AuthController extends Controller
         return redirect()->route('login')
             ->with('success', 'Anda telah berhasil keluar dari sistem.');
     }
+
+    /**
+     * Beralih ke akun demo lain (Khusus environment local / testing).
+     */
+    public function switchDemoAccount(Request $request): RedirectResponse
+    {
+        if (! app()->environment(['local', 'testing'])) {
+            abort(404);
+        }
+
+        $request->validate([
+            'username' => ['required', 'string'],
+        ]);
+
+        $allowedUsernames = ['admin', 'hse', 'karyawan'];
+        $username = $request->input('username');
+
+        if (! in_array($username, $allowedUsernames, true)) {
+            abort(403, 'Akun demo tidak valid.');
+        }
+
+        $user = User::where('username', $username)->where('is_active', true)->firstOrFail();
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Berhasil beralih ke akun demo: ' . $user->name . ' (' . $user->role_label . ').');
+    }
 }

@@ -31,7 +31,7 @@
     <div class="sidebar-user"><div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div><div><strong>{{ auth()->user()->name }}</strong><br><small>{{ $isAdmin ? 'Admin' : 'Karyawan' }}</small></div><form method="POST" action="{{ route('logout') }}" style="margin-left:auto">@csrf<button class="logout" title="Keluar">&#10162;</button></form></div>
 </aside>
 <div class="main-shell">
-<header class="topbar"><div class="muted">Workspace &gt; <strong style="color:#0f172a">Inspeksi Harian</strong></div><div class="row"><span class="muted">Halo, <strong>{{ auth()->user()->name }}</strong></span><div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div></div></header>
+<header class="topbar"><div class="muted">Workspace &gt; <strong style="color:#0f172a">Inspeksi Harian</strong></div><a href="{{ route('profile.edit') }}" class="row" style="text-decoration:none;color:inherit;cursor:pointer;" title="Buka Profil Saya"><span class="muted">Halo, <strong>{{ auth()->user()->name }}</strong></span><div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div></a></header>
 <main class="page">
     <div class="head">
         <div><div class="muted">Workspace › Inspeksi Harian</div><h1>Inspeksi Harian</h1><p class="muted">{{ $isAdmin ? 'Verifikasi hasil inspeksi yang dikirim akun pribadi pengguna.' : 'Isi checklist keselamatan berdasarkan area kerja.' }}</p></div>

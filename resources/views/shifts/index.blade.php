@@ -1364,15 +1364,21 @@
 
         <!-- Bottom User Profile Card (Referencing Foto 1) -->
         <div class="sidebar-user-footer">
-            <div class="user-meta-wrap">
-                <div class="user-avatar-badge">{{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}</div>
+            <a href="{{ route('profile.edit') }}" class="user-meta-wrap" style="text-decoration:none;color:inherit;" title="Buka Profil Saya">
+                <div class="user-avatar-badge">
+                    @if (Auth::user()->profile_photo_url)
+                        <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    @else
+                        {{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}
+                    @endif
+                </div>
                 <div class="user-name-title">
                     <span class="user-full-name">{{ Auth::user()->name ?? 'Admin HSE' }}</span>
                     <span class="user-role-label">
-                        {{ (Auth::user() && Auth::user()->role === 'super_admin') ? 'Super Admin' : 'Admin / HSE' }}
+                        {{ Auth::user()->role_label }}
                     </span>
                 </div>
-            </div>
+            </a>
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                 @csrf
                 <button type="submit" class="btn-user-exit" title="Keluar / Logout" id="btnLogoutSidebar">
@@ -1387,41 +1393,8 @@
     <!-- ══ Canvas Main Content ══ -->
     <main class="app-main">
 
-        <!-- Topbar (Referencing Foto 1) -->
-        <header class="app-topbar">
-            <!-- Breadcrumbs -->
-            <nav class="topbar-breadcrumbs" aria-label="Breadcrumb">
-                <a href="#">Workspace</a>
-                <span class="sep">&gt;</span>
-                <span class="current">Kelola Shift Kerja</span>
-            </nav>
-
-            <!-- Actions & User Profile -->
-            <div class="topbar-actions">
-                <div class="topbar-search-box">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                    </svg>
-                    <input type="text" placeholder="Cari laporan bahaya..." aria-label="Cari laporan">
-                </div>
-
-                <div class="account-switch-btn" title="Ganti Akun">
-                    <span class="account-switch-label">Ganti Akun</span>
-                    <span class="account-switch-name">{{ Auth::user()->name ?? 'Admin HSE' }}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:12px;height:12px;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
-                </div>
-
-                <button class="topbar-icon-btn" aria-label="Notifikasi">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                    </svg>
-                </button>
-
-                <div class="user-avatar-badge" style="width:32px;height:32px;font-size:11px;">{{ strtoupper(substr(Auth::user()->name ?? 'AH', 0, 2)) }}</div>
-            </div>
-        </header>
+        <!-- Topbar Component (Shared) -->
+        @include('partials.topbar', ['currentTitle' => 'Kelola Shift Kerja'])
 
         <!-- Page Main Canvas Area -->
         <div class="content-container">
