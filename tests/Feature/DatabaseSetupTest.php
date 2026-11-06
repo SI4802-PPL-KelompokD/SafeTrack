@@ -12,14 +12,14 @@ class DatabaseSetupTest extends TestCase {
  use RefreshDatabase;
  public function test_default_seeder_is_repeatable_and_does_not_create_test_accounts(): void {
   $this->seed(DatabaseSeeder::class);$this->seed(DatabaseSeeder::class);
-  $this->assertDatabaseCount('hazard_categories',2);
-  $this->assertDatabaseCount('employment_statuses',2);
+  $this->assertDatabaseCount('kategori_temuan',2);
+  $this->assertDatabaseCount('status_karyawan',2);
   $this->assertDatabaseCount('users',0);
  }
  public function test_demo_seeder_is_repeatable_and_passwords_are_hashed(): void {
   $this->seed(DemoSeeder::class);$this->seed(DemoSeeder::class);
   $this->assertDatabaseCount('users',3);
-  $this->assertDatabaseCount('companies',1);
+  $this->assertDatabaseCount('company',1);
   $this->assertTrue(Hash::check('DemoOnly!2026',User::where('username','karyawan')->firstOrFail()->password));
  }
  public function test_database_rejects_a_second_super_admin(): void {
@@ -35,7 +35,7 @@ class DatabaseSetupTest extends TestCase {
  }
  public function test_user_factory_can_create_users_with_required_identity_data(): void {
   $user=User::factory()->create();
-  $this->assertDatabaseHas('employee_registry',['id'=>$user->employee_registry_id]);
+  $this->assertDatabaseHas('nik',['id'=>$user->employee_registry_id]);
   $this->assertDatabaseHas('departments',['id'=>$user->department_id]);
  }
 }

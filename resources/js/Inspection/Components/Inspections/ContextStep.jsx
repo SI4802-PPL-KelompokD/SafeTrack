@@ -1,9 +1,0 @@
-import React from 'react';
-
-export default function ContextStep({ data, setData, workAreas, shifts, errors, onNext }) {
-    const submit = (event) => { event.preventDefault(); onNext(); };
-    return <form onSubmit={submit}><div className="form-grid"><label>Area kerja *<select value={data.work_area_id} onChange={(event) => setData('work_area_id', event.target.value)} required><option value="">Pilih area yang diperiksa</option>{workAreas.map((area) => <option key={area.id} value={area.id}>{area.name}</option>)}</select><Error value={errors.work_area_id} /></label><label>Shift kerja *<select value={data.shift_id} onChange={(event) => setData('shift_id', event.target.value)} required><option value="">Pilih shift</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name}</option>)}</select><Error value={errors.shift_id} /></label><label>Tanggal inspeksi *<input type="date" max={todayInJakarta()} value={data.inspection_date} onChange={(event) => setData('inspection_date', event.target.value)} required /><Error value={errors.inspection_date} /></label><label className="full">Keterangan area kerja<textarea value={data.notes} onChange={(event) => setData('notes', event.target.value)} placeholder="Opsional: lokasi spesifik atau kondisi umum area" /></label></div><div className="notice"><strong>Checklist mengikuti area Anda</strong><p>Pertanyaan aktif dimuat dari data master. Form dan upload foto memerlukan koneksi.</p></div><div className="wizard-actions"><span /><button className="btn primary">Lanjut ke checklist →</button></div></form>;
-}
-
-function Error({ value }) { return value && <small className="field-error">{value}</small>; }
-export function todayInJakarta() { return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Jakarta' }).format(new Date()); }

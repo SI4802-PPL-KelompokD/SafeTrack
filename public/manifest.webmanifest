@@ -2,7 +2,7 @@
   "name": "SafeTrack",
   "short_name": "SafeTrack",
   "description": "Sistem manajemen keselamatan kerja SafeTrack",
-  "start_url": "/daily-inspections",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f6f8fa",

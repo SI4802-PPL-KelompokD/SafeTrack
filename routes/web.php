@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DailyInspectionController;
 use App\Http\Controllers\InspectionQuestionController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
 use Illuminate\Support\Facades\Auth;
@@ -28,13 +28,18 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-// Guest Authentication Routes (UC-02 Login)
+// Guest Authentication Routes (UC-01 Registrasi, UC-02 Login)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+
+    Route::get('/register', [RegisterController::class, 'create'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('register.store');
 });
 
-// Authenticated Routes (UC-03 Logout & Dashboards)
+// Authenticated Routes UC-03 Logout & Dashboards
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::middleware('can:access-application')->group(function () {

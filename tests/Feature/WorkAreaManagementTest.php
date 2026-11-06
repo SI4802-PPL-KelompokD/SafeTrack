@@ -31,8 +31,7 @@ class WorkAreaManagementTest extends TestCase
 
         $response->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('WorkAreas/Index', false)
-            ->has('workAreas.data')
-            ->has('departments'));
+            ->has('workAreas.data'));
     }
 
     public function test_hse_and_non_hse_employees_cannot_open_work_area_management_page(): void
@@ -101,15 +100,19 @@ class WorkAreaManagementTest extends TestCase
         $admin = User::where('username', 'admin')->firstOrFail();
 
         $response = $this->actingAs($admin)->post(route('admin.work-areas.store'), [
-            'department_id' => $admin->department_id,
             'name' => 'Laboratorium',
-            'code' => 'LAB',
             'description' => 'Area pengujian sampel.',
-            'is_active' => '1',
+            'questions' => [
+                'Apakah meja kerja dalam kondisi bersih?',
+                'Apakah alat keselamatan tersedia?',
+                'Apakah jalur evakuasi dapat digunakan?',
+            ],
         ]);
 
         $response->assertRedirect(route('admin.work-areas.index'))->assertSessionHas('success');
-        $this->assertDatabaseHas('work_areas', ['name' => 'Laboratorium', 'code' => 'LAB', 'is_active' => true]);
+        $area = WorkArea::where('name', 'Laboratorium')->firstOrFail();
+        $this->assertTrue($area->is_active);
+        $this->assertSame(3, $area->questions()->count());
         $this->assertDatabaseHas('audit_logs', ['actor_id' => $admin->id, 'action' => 'work_area.created']);
     }
 
@@ -119,9 +122,8 @@ class WorkAreaManagementTest extends TestCase
         $existing = WorkArea::firstOrFail();
 
         $response = $this->actingAs($admin)->post(route('admin.work-areas.store'), [
-            'department_id' => $admin->department_id,
             'name' => $existing->name,
-            'code' => 'OTHER',
+            'questions' => ['Pertanyaan satu?', 'Pertanyaan dua?', 'Pertanyaan tiga?'],
         ]);
 
         $response->assertSessionHasErrors(['name']);
@@ -133,25 +135,34 @@ class WorkAreaManagementTest extends TestCase
         $area = WorkArea::firstOrFail();
 
         $response = $this->actingAs($admin)->put(route('admin.work-areas.update', $area), [
-            'department_id' => $area->department_id,
             'name' => 'Area Produksi Utama',
-            'code' => 'PROD-UTAMA',
             'description' => 'Deskripsi baru',
-            'is_active' => '1',
         ]);
 
         $response->assertRedirect()->assertSessionHas('success');
-        $this->assertDatabaseHas('work_areas', ['id' => $area->id, 'name' => 'Area Produksi Utama']);
+        $this->assertDatabaseHas('area_kerja', ['id' => $area->id, 'name' => 'Area Produksi Utama']);
+    }
+
+    public function test_admin_can_delete_work_area(): void
+    {
+        $admin = User::where('username', 'admin')->firstOrFail();
+        $area = WorkArea::factory()->create();
+
+        $this->actingAs($admin)->delete(route('admin.work-areas.destroy', $area))
+            ->assertRedirect(route('admin.work-areas.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSoftDeleted('area_kerja', ['id' => $area->id]);
     }
 
     public function test_used_work_area_can_be_deactivated_without_deletion(): void
     {
         $admin = User::where('username', 'admin')->firstOrFail();
         $area = WorkArea::where('name', 'PIT/Front Loading')->firstOrFail();
-        DB::table('daily_inspections')->insert([
+        DB::table('daily_inspection')->insert([
             'client_request_id' => Str::uuid(),
             'inspector_id' => User::where('username', 'karyawan')->value('id'),
-            'department_id' => $area->department_id,
+            'department_id' => $admin->department_id,
             'work_area_id' => $area->id,
             'shift_id' => Shift::firstOrFail()->id,
             'inspection_date' => now()->toDateString(),
@@ -161,17 +172,13 @@ class WorkAreaManagementTest extends TestCase
 
         $this->actingAs($admin)->patch(route('admin.work-areas.toggle-status', $area))->assertSessionHas('success');
 
-        $this->assertDatabaseHas('work_areas', ['id' => $area->id, 'is_active' => false, 'deleted_at' => null]);
+        $this->assertDatabaseHas('area_kerja', ['id' => $area->id, 'is_active' => false, 'deleted_at' => null]);
     }
 
     public function test_admin_can_create_and_update_question(): void
     {
         $admin = User::where('username', 'admin')->firstOrFail();
-        $area = WorkArea::factory()->create([
-            'department_id' => $admin->department_id,
-            'name' => 'Area Pertanyaan Test',
-            'code' => 'QUESTION-TEST',
-        ]);
+        $area = WorkArea::factory()->create(['name' => 'Area Pertanyaan Test']);
 
         $this->actingAs($admin)->post(route('admin.work-areas.questions.store', $area), [
             'question' => 'Apakah alat pemadam tersedia?', 'sort_order' => 2, 'is_active' => '1',
@@ -195,32 +202,5 @@ class WorkAreaManagementTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['question']);
-    }
-
-    public function test_questions_endpoint_only_returns_active_questions_in_order(): void
-    {
-        $user = User::where('username', 'karyawan')->firstOrFail();
-        $area = WorkArea::where('name', 'PIT/Front Loading')->firstOrFail();
-        InspectionQuestion::factory()->for($area)->create(['question' => 'Pertanyaan terakhir?', 'sort_order' => 20]);
-        InspectionQuestion::factory()->inactive()->for($area)->create(['question' => 'Pertanyaan nonaktif?', 'sort_order' => 1]);
-
-        $response = $this->actingAs($user)->getJson(route('work-areas.active-questions', $area));
-
-        $response->assertOk()->assertJsonMissing(['question' => 'Pertanyaan nonaktif?']);
-        $orders = collect($response->json('data'))->pluck('sort_order')->all();
-        $this->assertSame(collect($orders)->sort()->values()->all(), $orders);
-    }
-
-    public function test_inactive_area_is_not_available_for_new_inspection(): void
-    {
-        $user = User::where('username', 'karyawan')->firstOrFail();
-        $inactive = WorkArea::factory()->inactive()->create(['department_id' => $user->department_id, 'name' => 'Area Nonaktif']);
-
-        $this->actingAs($user)->get(route('daily-inspections.create'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('DailyInspections/Index', false)
-                ->where('workAreas', fn ($areas) => collect($areas)->doesntContain('name', $inactive->name)));
-        $this->actingAs($user)->getJson(route('work-areas.active-questions', $inactive))->assertNotFound();
     }
 }
