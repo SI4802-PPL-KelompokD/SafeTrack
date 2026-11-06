@@ -5,29 +5,31 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Facades\Schema;
 
 class EmployeeRegistry extends Model
 {
+    protected $table = 'employee_registry';
     protected $guarded = ['*'];
 
-    public function getTable()
+    protected function casts(): array
     {
-        return $this->table ?? (Schema::hasTable('nik') ? 'nik' : 'employee_registry');
+        return [
+            'is_active' => 'boolean',
+        ];
     }
 
     public function department(): BelongsTo
     {
-        return $this->belongsTo(Department::class, 'department_id');
+        return $this->belongsTo(Department::class);
     }
 
     public function employmentStatus(): BelongsTo
     {
-        return $this->belongsTo(EmploymentStatus::class, 'employment_status_id');
+        return $this->belongsTo(EmploymentStatus::class);
     }
 
     public function user(): HasOne
     {
-        return $this->hasOne(User::class, 'employee_registry_id');
+        return $this->hasOne(User::class);
     }
 }
