@@ -39,7 +39,7 @@ Route::middleware('guest')->group(function () {
         ->name('register.store');
 });
 
-// Authenticated Routes (UC-03 Logout & Dashboards)
+// Authenticated Routes UC-03 Logout & Dashboards
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', function () {
