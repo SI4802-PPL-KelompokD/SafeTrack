@@ -16,7 +16,7 @@ class RegisterController extends Controller
     ) {}
 
     /**
-     * Tampilkan formulir registrasi karyawan (UC-01).
+     * Tampilkan formulir registrasi karyawan (UC-01)
      */
     public function create(): View
     {
