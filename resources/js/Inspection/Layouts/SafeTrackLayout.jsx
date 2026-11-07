@@ -15,11 +15,11 @@ const icons = {
     export: 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3',
 };
 
-const mainMenu = [['dashboard', 'Ringkasan', 'dashboard'], ['hazard', 'Laporan Bahaya'], ['inspection', 'Inspeksi Harian'], ['talk', 'Safety Talk'], ['sap', 'Pencapaian SAP'], ['bell', 'Notifikasi']];
-const adminMenu = [['users', 'Kelola Karyawan'], ['data', 'Data Master', 'dataMaster'], ['export', 'Ekspor Laporan'], ['clock', 'Jejak Audit']];
+const mainMenu = [['dashboard', 'Ringkasan', 'dashboard'], ['hazard', 'Laporan Bahaya', 'hazards'], ['inspection', 'Inspeksi Harian', 'inspections'], ['talk', 'Safety Talk'], ['sap', 'Pencapaian SAP'], ['bell', 'Notifikasi']];
+const adminMenu = [['users', 'Kelola Karyawan', 'employees'], ['data', 'Data Master', 'dataMaster'], ['export', 'Ekspor Laporan'], ['clock', 'Jejak Audit']];
 
 export default function SafeTrackLayout({ title, children }) {
-    const { auth, navigation } = usePage().props;
+    const { auth, navigation, demoLogin } = usePage().props;
     const user = auth.user;
     const initials = user.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase();
     return <div className="app-shell">
@@ -28,13 +28,13 @@ export default function SafeTrackLayout({ title, children }) {
             <div className="workspace-card"><div className="workspace-icon"><Icon type="building" /></div><div className="workspace-info"><span className="workspace-name">PT Sentra Industri</span><span className="workspace-desc">Workspace demonstrasi</span></div></div>
             <Menu title="Utama" items={mainMenu} navigation={navigation} />
             {user.isAdmin && <Menu title="Administrasi" items={adminMenu} navigation={navigation} active="Data Master" />}
-            <div className="sidebar-user-footer"><div className="user-meta-wrap"><div className="user-avatar-badge">{initials}</div><div className="user-name-title"><span className="user-full-name">{user.name}</span><span className="user-role-label">{user.role === 'super_admin' ? 'Super Admin' : 'Admin'}</span></div></div><button type="button" className="btn-user-exit" title="Keluar / Logout" onClick={() => router.post(navigation.logout)}><Icon type="export" /></button></div>
+            <div className="sidebar-user-footer"><div className="user-meta-wrap"><div className="user-avatar-badge">{initials}</div><div className="user-name-title"><span className="user-full-name">{user.name}</span><span className="user-role-label">{user.roleLabel}</span></div></div><button type="button" className="btn-user-exit" title="Keluar / Logout" onClick={() => router.post(navigation.logout)}><Icon type="export" /></button></div>
         </aside>
         <main className="app-main">
-            <header className="app-topbar"><nav className="topbar-breadcrumbs"><a href={navigation.dashboard}>Workspace</a><span className="sep">›</span><span className="current">{title}</span></nav><div className="topbar-actions"><label className="topbar-search-box"><Icon type="search" /><input type="text" placeholder="Cari laporan bahaya..." aria-label="Cari laporan" /></label><button type="button" className="account-switch-btn"><span className="account-switch-label">Ganti Akun</span><span className="account-switch-name">{user.name}</span><span>⌄</span></button><button type="button" className="topbar-icon-btn" aria-label="Notifikasi"><Icon type="bell" /></button><div className="user-avatar-badge top-avatar">{initials}</div></div></header>
+            <header className="app-topbar"><nav className="topbar-breadcrumbs"><a href={navigation.dashboard}>Workspace</a><span className="sep">›</span><span className="current">{title}</span></nav><div className="topbar-actions"><span className="badge" style={{ background: user.isAdmin ? '#0f2a4a' : '#f1f5f9', color: user.isAdmin ? '#fff' : '#0f2a4a' }}>{user.roleLabel}</span><label className="topbar-search-box"><Icon type="search" /><input type="text" placeholder="Cari laporan bahaya..." aria-label="Cari laporan" /></label>{demoLogin && <button type="button" className="account-switch-btn"><span className="account-switch-label">Ganti Akun</span><span className="account-switch-name">{user.name}</span><span>⌄</span></button>}<button type="button" className="topbar-icon-btn" aria-label="Notifikasi"><Icon type="bell" /></button><div className="user-avatar-badge top-avatar">{initials}</div></div></header>
             <div className="content">{children}</div>
         </main>
-        <nav className="mobile-nav" aria-label="Navigasi utama"><a href={navigation.dashboard}><span>▦</span>Beranda</a><a className="active" href={navigation.dataMaster}><span>▤</span>Data Master</a></nav>
+        <nav className="mobile-nav" aria-label="Navigasi utama"><a href={navigation.dashboard}><span>▦</span>Beranda</a>{user.isAdmin && <a className="active" href={navigation.dataMaster}><span>▤</span>Data Master</a>}</nav>
     </div>;
 }
 

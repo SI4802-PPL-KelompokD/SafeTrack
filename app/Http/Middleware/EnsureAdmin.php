@@ -2,33 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureAdmin
+class EnsureAdmin extends EnsureUserHasRole
 {
-    /**
-     * Handle an incoming request.
-     * Restricts access to admin and super_admin roles.
-     */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-<<<<<<< HEAD
-        abort_unless($request->user()?->can('manage-administration'), 403, 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.');
-=======
-        $user = $request->user();
-
-        if (! $user || ! in_array($user->role, ['super_admin', 'admin'], true)) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.'], 403);
-            }
-
-            return redirect()->route('dashboard')
-                ->with('error', 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.');
-        }
->>>>>>> origin/main
-
-        return $next($request);
+        return parent::handle($request, $next, ...User::ADMIN_ROLES);
     }
 }

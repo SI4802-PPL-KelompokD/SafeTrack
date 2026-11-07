@@ -54,7 +54,7 @@ class WorkAreaManagementTest extends TestCase
         $question = InspectionQuestion::where('work_area_id', $area->id)->firstOrFail();
         $shift = Shift::firstOrFail();
         $before = [];
-        foreach (['work_areas', 'inspection_questions', 'shifts', 'audit_logs'] as $table) {
+        foreach (['area_kerja', 'inspection_questions', 'shift', 'audit_logs'] as $table) {
             $before[$table] = DB::table($table)->orderBy('id')->get()->toJson();
         }
         $this->actingAs($employee);
