@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class RegistrationService
@@ -12,8 +13,6 @@ class RegistrationService
     /**
      * Daftarkan akun karyawan baru berdasarkan data registrasi dan data employee registry.
      *
-     * @param array $data
-     * @return User
      *
      * @throws ValidationException
      * @throws \Throwable
@@ -23,12 +22,13 @@ class RegistrationService
         try {
             return DB::transaction(function () use ($data) {
                 // Kunci baris registry untuk mencegah race condition (pendaftaran bersamaan)
-                $employee = DB::table('employee_registry')
+                $table = Schema::hasTable('nik') ? 'nik' : 'employee_registry';
+                $employee = DB::table($table)
                     ->where('nik', $data['nik'])
                     ->lockForUpdate()
                     ->first();
 
-                // Validasi keberadaan NIK dan status aktif registry 
+                // Validasi keberadaan NIK dan status aktif registry
                 if (! $employee || ! $employee->is_active) {
                     throw ValidationException::withMessages([
                         'nik' => 'NIK tidak terdaftar pada daftar karyawan. Hubungi Admin/HSE.',
@@ -47,7 +47,7 @@ class RegistrationService
                 }
 
                 // Simpan akun baru (username diperbolehkan sama, NIK dan email unik)
-                $user = new User();
+                $user = new User;
                 $user->username = $data['username'];
                 $user->email = $data['email'];
                 $user->password = $data['password']; // Model User memiliki cast 'password' => 'hashed'
