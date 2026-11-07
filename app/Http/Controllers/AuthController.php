@@ -18,15 +18,17 @@ class AuthController extends Controller
     {
         if (Auth::check()) {
             $user = Auth::user();
-            if (in_array($user->role, ['super_admin', 'admin'], true)) {
+            if ($user->can('manage-administration')) {
                 return redirect()->route('shifts.index');
             }
+
             return redirect()->route('dashboard');
         }
 
         return view('auth.login');
     }
 
+    
     /**
      * Proses autentikasi login (UC-02).
      * Mendukung login dengan username atau email dan password,
@@ -69,6 +71,8 @@ class AuthController extends Controller
                 ]);
         }
 
+        abort_unless($user->can('access-application'), 403, 'Akses ditolak.');
+
         // 3. Mulai sesi pengguna
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
@@ -76,11 +80,11 @@ class AuthController extends Controller
         // 4. Arahkan pengguna sesuai dengan role masing-masing
         if ($user->role === 'employee') {
             return redirect()->route('dashboard')
-                ->with('success', 'Selamat datang di SafeTrack, ' . $user->name . '.');
+                ->with('success', 'Selamat datang di SafeTrack, '.$user->name.'.');
         }
 
         return redirect()->route('shifts.index')
-            ->with('success', 'Selamat datang di SafeTrack, ' . $user->name . '.');
+            ->with('success', 'Selamat datang di SafeTrack, '.$user->name.'.');
     }
 
     public function demoLogin(Request $request, string $account): RedirectResponse
