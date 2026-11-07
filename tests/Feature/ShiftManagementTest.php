@@ -2,11 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Company;
 use App\Models\DailyInspection;
-use App\Models\Department;
-use App\Models\EmployeeRegistry;
-use App\Models\EmploymentStatus;
 use App\Models\Shift;
 use App\Models\User;
 use App\Models\WorkArea;
@@ -20,6 +16,7 @@ class ShiftManagementTest extends TestCase
     use RefreshDatabase;
 
     private User $adminUser;
+
     private User $employeeUser;
 
     protected function setUp(): void
@@ -46,8 +43,7 @@ class ShiftManagementTest extends TestCase
     {
         $response = $this->actingAs($this->employeeUser)->get(route('shifts.index'));
 
-        $response->assertRedirect(route('dashboard'));
-        $response->assertSessionHas('error');
+        $response->assertForbidden()->assertViewIs('errors.403');
     }
 
     public function test_admin_can_create_shift_with_auto_generated_code(): void

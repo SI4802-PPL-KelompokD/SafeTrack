@@ -15,7 +15,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'nik' => ['required', 'string', 'max:40'],
-            'username' => ['required', 'string', 'min:3', 'max:60', 'regex:/^[a-zA-Z0-9._-]+$/'],
+            'username' => ['required', 'string', 'min:3', 'max:60', 'regex:/^[a-zA-Z0-9._-]+$/', 'unique:users,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
         ];
@@ -33,6 +33,7 @@ class RegisterRequest extends FormRequest
             'username.min' => 'Username minimal 3 karakter.',
             'username.max' => 'Username tidak boleh lebih dari 60 karakter.',
             'username.regex' => 'Format username tidak valid.',
+            'username.unique' => 'Username sudah digunakan.',
             'email.required' => 'Email wajib diisi.',
             'email.string' => 'Email harus berupa teks.',
             'email.email' => 'Format email tidak valid.',
@@ -52,3 +53,4 @@ class RegisterRequest extends FormRequest
         ]);
     }
 }
+

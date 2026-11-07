@@ -10,9 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsActive
 {
-    /**
-     * Memastikan akun pengguna yang mengakses endpoint autentikasi berstatus aktif dan tidak di-soft-delete.
-     */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->is('api/*') ? Auth::guard('sanctum')->user() : $request->user();

@@ -9,10 +9,8 @@ use App\Models\HazardReport;
 use App\Models\HazardResolution;
 use App\Models\Reward;
 use App\Models\SafetyTalk;
-use App\Models\SapEntry;
 use App\Models\SapMonthlySummary;
 use App\Models\SapPointRule;
-use App\Models\SapTarget;
 use App\Models\Shift;
 use App\Models\User;
 use App\Models\WorkArea;
@@ -29,8 +27,11 @@ class SapCalculationTest extends TestCase
     use RefreshDatabase;
 
     protected SapCalculationService $sapService;
+
     protected User $adminUser;
+
     protected User $employeeUser;
+
     protected Department $opsDept;
 
     protected function setUp(): void
@@ -461,8 +462,7 @@ class SapCalculationTest extends TestCase
     {
         // Web request di-redirect ke dashboard dengan notifikasi error
         $response = $this->actingAs($this->employeeUser)->get(route('sap.index'));
-        $response->assertRedirect(route('dashboard'));
-        $response->assertSessionHas('error');
+        $response->assertForbidden()->assertViewIs('errors.403');
 
         // JSON request mengembalikan 403 Forbidden
         $jsonResponse = $this->actingAs($this->employeeUser)->getJson(route('sap.index'));
@@ -571,4 +571,3 @@ class SapCalculationTest extends TestCase
         $response->assertSessionHas('error', 'Terjadi kesalahan sistem saat memproses hitung ulang SAP. Hitung ulang dibatalkan dan data rekap tetap seperti semula.');
     }
 }
-
