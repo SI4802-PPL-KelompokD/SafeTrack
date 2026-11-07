@@ -32,13 +32,13 @@ class HandleInspectionInertiaRequests extends Middleware
                 'dashboard' => route('dashboard'),
                 'inspections' => route('daily-inspections.index'),
                 'dataMaster' => $user && $user->can('manage-administration')
-                    ? route('admin.departments.index')
-                    : null,
-                'departments' => $user && $user->can('manage-administration')
-                    ? route('admin.departments.index')
+                    ? route('shifts.index')
                     : null,
                 'workAreas' => $user && $user->can('manage-administration')
                     ? route('admin.work-areas.index')
+                    : null,
+                'departments' => $user && in_array($user->role, ['super_admin', 'admin'], true)
+                    ? route('admin.departments.index')
                     : null,
                 'shifts' => $user && $user->can('manage-administration')
                     ? route('shifts.index')
