@@ -10,7 +10,6 @@ use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class WorkAreaManagementTest extends TestCase
@@ -20,41 +19,145 @@ class WorkAreaManagementTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         $this->seed(DemoSeeder::class);
     }
 
-    public function test_admin_can_open_work_area_management_page(): void
+    private function identity(array $data = []): array
     {
-        $response = $this->actingAs(User::where('username', 'admin')->firstOrFail())
-            ->get(route('admin.work-areas.index'));
-
-        $response->assertOk()->assertInertia(fn (Assert $page) => $page
-            ->component('WorkAreas/Index', false)
-            ->has('workAreas.data'));
+        return [...$data, 'admin_name' => 'Petugas Test', 'action_reason' => 'Penyesuaian checklist keselamatan kerja.'];
     }
 
-    public function test_hse_and_non_hse_employees_cannot_open_work_area_management_page(): void
+    private function admin(): User
     {
-        $nonHseEmployee = User::where('username', 'karyawan')->firstOrFail();
-        $hseEmployee = User::factory()->create(['role' => 'employee']);
-        $hseEmployee->update(['department_id' => User::where('username', 'admin')->value('department_id')]);
+        return User::where('username', 'admin')->firstOrFail();
+    }
 
-        foreach ([$hseEmployee, $nonHseEmployee] as $employee) {
-            $response = $this->actingAs($employee)->get(route('admin.work-areas.index'));
+    public function test_admin_opens_blade_pages_without_delete_buttons(): void
+    {
+        $area = WorkArea::firstOrFail();
+        $this->actingAs($this->admin())->get(route('admin.work-areas.index'))->assertOk()->assertViewIs('work-areas.index')->assertSee('role="switch"', false)->assertDontSee('Hapus');
+        $this->get(route('admin.work-areas.show', $area))->assertOk()->assertViewIs('work-areas.show')->assertSee('Alasan perubahan')->assertDontSee('Hapus');
+    }
 
-            $response->assertForbidden();
+    public function test_employee_roles_cannot_access_or_change_master_data(): void
+    {
+        $hse = User::factory()->create(['role' => 'employee', 'department_id' => $this->admin()->department_id]);
+        foreach ([$hse, User::where('username', 'karyawan')->firstOrFail()] as $user) {
+            $this->actingAs($user)->get(route('admin.work-areas.index'))->assertForbidden();
+            $this->post(route('admin.work-areas.store'), $this->identity(['name' => 'Terlarang']))->assertForbidden();
+        }
+        $this->assertDatabaseMissing('area_kerja', ['name' => 'Terlarang']);
+    }
+
+    public function test_create_area_saves_three_questions_and_operator_audit(): void
+    {
+        $this->actingAs($this->admin())->post(route('admin.work-areas.store'), $this->identity(['name' => 'Laboratorium', 'description' => 'Area sampel.', 'questions' => ['Meja bersih?', 'APD tersedia?', 'Jalur aman?']]))->assertRedirect(route('admin.work-areas.index'))->assertSessionHas('success');
+        $area = WorkArea::where('name', 'Laboratorium')->firstOrFail();
+        $this->assertSame(3, $area->questions()->count());
+        $this->assertTrue($area->is_active);
+        $this->assertAudit('work_area.created', $area->id);
+    }
+
+    public function test_duplicate_area_and_invalid_initial_questions_are_rejected(): void
+    {
+        $this->actingAs($this->admin())->post(route('admin.work-areas.store'), $this->identity(['name' => WorkArea::firstOrFail()->name, 'questions' => ['Satu?', 'Dua?', 'Tiga?']]))->assertSessionHasErrors('name');
+        foreach ([['Satu?', 'Dua?'], ['Sama?', 'Sama?', 'Tiga?']] as $questions) {
+            $this->post(route('admin.work-areas.store'), $this->identity(['name' => 'Area Invalid', 'questions' => $questions]))->assertSessionHasErrors();
+        }
+        $this->assertDatabaseMissing('area_kerja', ['name' => 'Area Invalid']);
+    }
+
+    public function test_update_area_records_identity_and_reason(): void
+    {
+        $area = WorkArea::firstOrFail();
+        $this->actingAs($this->admin())->put(route('admin.work-areas.update', $area), $this->identity(['name' => 'Area Diperbarui', 'description' => 'Deskripsi baru.']))->assertSessionHas('success');
+        $this->assertSame('Area Diperbarui', $area->fresh()->name);
+        $this->assertAudit('work_area.updated', $area->id);
+    }
+
+    public function test_missing_or_short_operator_and_reason_leave_data_unchanged(): void
+    {
+        $area = WorkArea::firstOrFail();
+        foreach ([['admin_name' => '', 'action_reason' => 'Alasan lengkap perubahan.'], ['admin_name' => '  ', 'action_reason' => 'Alasan lengkap perubahan.'], ['admin_name' => 'Admin Test', 'action_reason' => ''], ['admin_name' => 'Admin Test', 'action_reason' => 'pendek']] as $identity) {
+            $this->actingAs($this->admin())->put(route('admin.work-areas.update', $area), [...$identity, 'name' => 'Tidak Tersimpan'])->assertSessionHasErrors();
+        }
+        $this->assertDatabaseMissing('area_kerja', ['name' => 'Tidak Tersimpan']);
+        $this->assertDatabaseMissing('audit_logs', ['action' => 'work_area.updated']);
+    }
+
+    public function test_used_area_can_be_disabled_and_enabled_with_history_intact(): void
+    {
+        $area = WorkArea::firstOrFail();
+        $inspection = DB::table('daily_inspection')->insertGetId(['client_request_id' => Str::uuid(), 'inspector_id' => User::where('username', 'karyawan')->value('id'), 'department_id' => $this->admin()->department_id, 'work_area_id' => $area->id, 'shift_id' => Shift::firstOrFail()->id, 'inspection_date' => now()->toDateString(), 'created_at' => now(), 'updated_at' => now()]);
+        foreach ([false, true] as $enabled) {
+            $this->actingAs($this->admin())->patch(route('admin.work-areas.toggle-status', $area), $this->identity(['is_active' => $enabled]))->assertSessionHas('success');
+            $this->assertSame($enabled, $area->fresh()->is_active);
+            $this->assertNull($area->fresh()->deleted_at);
+            $this->assertDatabaseHas('daily_inspection', ['id' => $inspection, 'work_area_id' => $area->id]);
         }
     }
 
-    public function test_employee_cannot_call_any_administrative_endpoint_or_change_data(): void
+    public function test_repeated_status_request_does_not_toggle_back(): void
+    {
+        $area = WorkArea::firstOrFail();
+        $this->actingAs($this->admin())->patch(route('admin.work-areas.toggle-status', $area), $this->identity())->assertSessionHasErrors('is_active');
+        for ($i = 0; $i < 2; $i++) {
+            $this->patch(route('admin.work-areas.toggle-status', $area), $this->identity(['is_active' => false]))->assertSessionHas('success');
+        }
+        $this->assertFalse($area->fresh()->is_active);
+    }
+
+    public function test_inactive_records_are_listed_last(): void
+    {
+        WorkArea::factory()->create(['name' => 'AAA Nonaktif', 'is_active' => false]);
+        $enabled = WorkArea::factory()->create(['name' => 'AAA Aktif', 'is_active' => true]);
+        $this->actingAs($this->admin())->get(route('admin.work-areas.index'))->assertViewHas('workAreas', fn ($areas) => $areas->first()->is_active);
+        $off = InspectionQuestion::factory()->create(['work_area_id' => $enabled->id, 'sort_order' => 1, 'is_active' => false]);
+        $on = InspectionQuestion::factory()->create(['work_area_id' => $enabled->id, 'sort_order' => 9, 'is_active' => true]);
+        $this->get(route('admin.work-areas.show', $enabled))->assertViewHas('questions', fn ($questions) => $questions->pluck('id')->all() === [$on->id, $off->id]);
+    }
+
+    public function test_add_update_and_disable_question_preserves_record_and_audit(): void
+    {
+        $area = WorkArea::factory()->create();
+        $this->actingAs($this->admin())->post(route('admin.work-areas.questions.store', $area), $this->identity(['question' => 'APAR tersedia?', 'sort_order' => 1]))->assertSessionHas('success');
+        $question = $area->questions()->firstOrFail();
+        $this->patch(route('admin.work-areas.questions.toggle-status', [$area, $question]), $this->identity(['is_active' => false]))->assertSessionHas('success');
+        $this->put(route('admin.work-areas.questions.update', [$area, $question]), $this->identity(['question' => 'APAR layak?', 'sort_order' => 2]))->assertSessionHas('success');
+        $this->assertFalse($question->fresh()->is_active);
+        $this->assertNull($question->fresh()->deleted_at);
+        $this->assertAudit('inspection_question.status_changed', $question->id);
+    }
+
+    public function test_duplicate_question_order_and_owner_validation(): void
+    {
+        $question = InspectionQuestion::firstOrFail();
+        $data = $this->identity(['question' => $question->question, 'sort_order' => 1]);
+        $this->actingAs($this->admin())->post(route('admin.work-areas.questions.store', $question->workArea), $data)->assertSessionHasErrors('question');
+        $other = WorkArea::factory()->create();
+        $this->post(route('admin.work-areas.questions.store', $other), $data)->assertSessionHas('success');
+        $this->put(route('admin.work-areas.questions.update', [$question->workArea, $question]), $this->identity(['question' => 'Test?', 'sort_order' => 0]))->assertSessionHasErrors('sort_order');
+        $this->put(route('admin.work-areas.questions.update', [$other, $question]), $data)->assertNotFound();
+    }
+
+    public function test_delete_endpoints_are_unavailable_and_records_remain(): void
+    {
+        $area = WorkArea::factory()->create();
+        $question = InspectionQuestion::factory()->create(['work_area_id' => $area->id]);
+        $this->actingAs($this->admin())->delete('/admin/work-areas/'.$area->id, $this->identity())->assertStatus(405);
+        $this->delete('/admin/work-areas/'.$area->id.'/questions/'.$question->id, $this->identity())->assertStatus(405);
+        $this->assertNotSoftDeleted('area_kerja', ['id' => $area->id]);
+        $this->assertNotSoftDeleted('inspection_questions', ['id' => $question->id]);
+    }
+
+    public function test_employee_cannot_call_administrative_endpoints_or_change_data(): void
     {
         $employee = User::where('username', 'karyawan')->firstOrFail();
         $area = WorkArea::firstOrFail();
-        $question = InspectionQuestion::where('work_area_id', $area->id)->firstOrFail();
+        $question = $area->questions()->firstOrFail();
         $shift = Shift::firstOrFail();
         $before = [];
-        foreach (['work_areas', 'inspection_questions', 'shifts', 'audit_logs'] as $table) {
+        foreach (['area_kerja', 'inspection_questions', 'shift', 'audit_logs'] as $table) {
             $before[$table] = DB::table($table)->orderBy('id')->get()->toJson();
         }
         $this->actingAs($employee);
@@ -71,7 +174,6 @@ class WorkAreaManagementTest extends TestCase
             ['POST', route('admin.work-areas.questions.store', $area)],
             ['PUT', route('admin.work-areas.questions.update', [$area, $question])],
             ['PATCH', route('admin.work-areas.questions.toggle-status', [$area, $question])],
-            ['DELETE', route('admin.work-areas.questions.destroy', [$area, $question])],
         ] as [$method, $url]) {
             $this->json($method, $url, ['role' => 'super_admin', 'userId' => $employee->id + 1])->assertForbidden();
         }
@@ -80,127 +182,13 @@ class WorkAreaManagementTest extends TestCase
         }
     }
 
-    public function test_admin_cannot_mutate_a_question_through_another_area(): void
+    private function assertAudit(string $action, int $id): void
     {
-        $admin = User::where('username', 'admin')->firstOrFail();
-        $question = InspectionQuestion::firstOrFail();
-        $otherArea = WorkArea::where('id', '!=', $question->work_area_id)->firstOrFail();
-        $before = $question->toArray();
-        $this->actingAs($admin);
-        $this->putJson(route('admin.work-areas.questions.update', [$otherArea, $question]), [
-            'question' => 'Tidak boleh berubah', 'sort_order' => 1,
-        ])->assertNotFound();
-        $this->patchJson(route('admin.work-areas.questions.toggle-status', [$otherArea, $question]))->assertNotFound();
-        $this->deleteJson(route('admin.work-areas.questions.destroy', [$otherArea, $question]))->assertNotFound();
-        $this->assertSame($before, $question->fresh()->toArray());
-    }
-
-    public function test_admin_can_create_valid_work_area(): void
-    {
-        $admin = User::where('username', 'admin')->firstOrFail();
-
-        $response = $this->actingAs($admin)->post(route('admin.work-areas.store'), [
-            'name' => 'Laboratorium',
-            'description' => 'Area pengujian sampel.',
-            'questions' => [
-                'Apakah meja kerja dalam kondisi bersih?',
-                'Apakah alat keselamatan tersedia?',
-                'Apakah jalur evakuasi dapat digunakan?',
-            ],
-        ]);
-
-        $response->assertRedirect(route('admin.work-areas.index'))->assertSessionHas('success');
-        $area = WorkArea::where('name', 'Laboratorium')->firstOrFail();
-        $this->assertTrue($area->is_active);
-        $this->assertSame(3, $area->questions()->count());
-        $this->assertDatabaseHas('audit_logs', ['actor_id' => $admin->id, 'action' => 'work_area.created']);
-    }
-
-    public function test_duplicate_work_area_is_rejected(): void
-    {
-        $admin = User::where('username', 'admin')->firstOrFail();
-        $existing = WorkArea::firstOrFail();
-
-        $response = $this->actingAs($admin)->post(route('admin.work-areas.store'), [
-            'name' => $existing->name,
-            'questions' => ['Pertanyaan satu?', 'Pertanyaan dua?', 'Pertanyaan tiga?'],
-        ]);
-
-        $response->assertSessionHasErrors(['name']);
-    }
-
-    public function test_admin_can_update_work_area(): void
-    {
-        $admin = User::where('username', 'admin')->firstOrFail();
-        $area = WorkArea::firstOrFail();
-
-        $response = $this->actingAs($admin)->put(route('admin.work-areas.update', $area), [
-            'name' => 'Area Produksi Utama',
-            'description' => 'Deskripsi baru',
-        ]);
-
-        $response->assertRedirect()->assertSessionHas('success');
-        $this->assertDatabaseHas('area_kerja', ['id' => $area->id, 'name' => 'Area Produksi Utama']);
-    }
-
-    public function test_admin_can_delete_work_area(): void
-    {
-        $admin = User::where('username', 'admin')->firstOrFail();
-        $area = WorkArea::factory()->create();
-
-        $this->actingAs($admin)->delete(route('admin.work-areas.destroy', $area))
-            ->assertRedirect(route('admin.work-areas.index'))
-            ->assertSessionHas('success');
-
-        $this->assertSoftDeleted('area_kerja', ['id' => $area->id]);
-    }
-
-    public function test_used_work_area_can_be_deactivated_without_deletion(): void
-    {
-        $admin = User::where('username', 'admin')->firstOrFail();
-        $area = WorkArea::where('name', 'PIT/Front Loading')->firstOrFail();
-        DB::table('daily_inspection')->insert([
-            'client_request_id' => Str::uuid(),
-            'inspector_id' => User::where('username', 'karyawan')->value('id'),
-            'department_id' => $admin->department_id,
-            'work_area_id' => $area->id,
-            'shift_id' => Shift::firstOrFail()->id,
-            'inspection_date' => now()->toDateString(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->actingAs($admin)->patch(route('admin.work-areas.toggle-status', $area))->assertSessionHas('success');
-
-        $this->assertDatabaseHas('area_kerja', ['id' => $area->id, 'is_active' => false, 'deleted_at' => null]);
-    }
-
-    public function test_admin_can_create_and_update_question(): void
-    {
-        $admin = User::where('username', 'admin')->firstOrFail();
-        $area = WorkArea::factory()->create(['name' => 'Area Pertanyaan Test']);
-
-        $this->actingAs($admin)->post(route('admin.work-areas.questions.store', $area), [
-            'question' => 'Apakah alat pemadam tersedia?', 'sort_order' => 2, 'is_active' => '1',
-        ])->assertSessionHas('success');
-        $question = InspectionQuestion::where('work_area_id', $area->id)->firstOrFail();
-
-        $this->actingAs($admin)->put(route('admin.work-areas.questions.update', [$area, $question]), [
-            'question' => 'Apakah alat pemadam tersedia dan layak?', 'sort_order' => 1, 'is_active' => '1',
-        ])->assertSessionHas('success');
-
-        $this->assertDatabaseHas('inspection_questions', ['id' => $question->id, 'sort_order' => 1]);
-    }
-
-    public function test_duplicate_question_in_same_area_is_rejected(): void
-    {
-        $admin = User::where('username', 'admin')->firstOrFail();
-        $question = InspectionQuestion::firstOrFail();
-
-        $response = $this->actingAs($admin)->post(route('admin.work-areas.questions.store', $question->workArea), [
-            'question' => $question->question, 'sort_order' => 10,
-        ]);
-
-        $response->assertSessionHasErrors(['question']);
+        $audit = DB::table('audit_logs')->where('action', $action)->where('entity_id', $id)->latest('id')->first();
+        $this->assertNotNull($audit);
+        $values = json_decode($audit->after_values, true);
+        $this->assertSame('Petugas Test', $values['admin_name']);
+        $this->assertSame('Penyesuaian checklist keselamatan kerja.', $values['action_reason']);
+        $this->assertEquals($this->admin()->id, $audit->actor_id);
     }
 }

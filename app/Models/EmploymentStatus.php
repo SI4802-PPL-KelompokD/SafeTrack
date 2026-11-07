@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmploymentStatus extends Model
 {
-    protected $table = 'employment_statuses';
+    protected $table = 'status_karyawan';
+
     protected $guarded = ['*'];
 
     public function employeeRegistries(): HasMany
     {
         return $this->hasMany(EmployeeRegistry::class);
     }
-    
 }

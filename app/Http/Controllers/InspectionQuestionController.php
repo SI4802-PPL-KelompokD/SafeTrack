@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InspectionQuestion;
 use App\Models\WorkArea;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,15 @@ use Illuminate\Validation\Rule;
 
 class InspectionQuestionController extends Controller
 {
+    public function index(WorkArea $workArea): JsonResponse
+    {
+        abort_unless($workArea->is_active, 404);
+
+        return response()->json([
+            'data' => $workArea->questions()->activeOrdered()->get(['id', 'question', 'sort_order']),
+        ]);
+    }
+
     public function store(Request $request, WorkArea $workArea): RedirectResponse
     {
         $validated = $this->validateQuestion($request, $workArea);
@@ -27,7 +37,6 @@ class InspectionQuestionController extends Controller
         $this->ensureOwner($workArea, $question);
         $before = $question->toArray();
         $validated = $this->validateQuestion($request, $workArea, $question);
-        $validated['is_active'] = $request->boolean('is_active');
         $question->update($validated);
         $action = $before['sort_order'] !== $question->sort_order
             ? 'inspection_question.order_changed'
@@ -40,28 +49,12 @@ class InspectionQuestionController extends Controller
     public function toggleStatus(Request $request, WorkArea $workArea, InspectionQuestion $question): RedirectResponse
     {
         $this->ensureOwner($workArea, $question);
+        $request->validate(['is_active' => ['required', 'boolean']]);
         $before = $question->toArray();
-        $question->update(['is_active' => ! $question->is_active]);
+        $question->update(['is_active' => $request->boolean('is_active')]);
         $this->audit($request, 'inspection_question.status_changed', $question, $before, $question->fresh()->toArray());
 
         return back()->with('success', 'Status pertanyaan berhasil diperbarui.');
-    }
-
-    public function destroy(Request $request, WorkArea $workArea, InspectionQuestion $question): RedirectResponse
-    {
-        $this->ensureOwner($workArea, $question);
-
-        if (DB::table('inspection_answer')->where('inspection_question_id', $question->id)->exists()) {
-            $question->update(['is_active' => false]);
-
-            return back()->with('error', 'Pertanyaan sudah pernah digunakan dan hanya dapat dinonaktifkan.');
-        }
-
-        $before = $question->toArray();
-        $question->delete();
-        $this->audit($request, 'inspection_question.deleted', $question, $before, []);
-
-        return back()->with('success', 'Pertanyaan inspeksi berhasil dihapus.');
     }
 
     private function validateQuestion(Request $request, WorkArea $workArea, ?InspectionQuestion $question = null): array
@@ -74,7 +67,6 @@ class InspectionQuestionController extends Controller
                 Rule::unique('inspection_questions', 'question')->where('work_area_id', $workArea->id)->ignore($question),
             ],
             'sort_order' => ['required', 'integer', 'min:1'],
-            'is_active' => ['sometimes', 'boolean'],
         ], [
             'question.required' => 'Teks pertanyaan wajib diisi.',
             'question.unique' => 'Pertanyaan yang sama sudah tersedia pada area ini.',
@@ -97,7 +89,7 @@ class InspectionQuestionController extends Controller
             'entity_type' => InspectionQuestion::class,
             'entity_id' => $question->id,
             'before_values' => $before ? json_encode($before) : null,
-            'after_values' => json_encode($after),
+            'after_values' => json_encode([...$after, 'admin_name' => $request->input('admin_name'), 'action_reason' => $request->input('action_reason')]),
             'ip_address' => $request->ip(),
             'user_agent' => Str::limit((string) $request->userAgent(), 1000),
             'created_at' => now(),
