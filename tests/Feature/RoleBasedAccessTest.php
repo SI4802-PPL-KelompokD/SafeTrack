@@ -48,11 +48,11 @@ class RoleBasedAccessTest extends TestCase
         }
     }
 
-    public function test_invalid_roles_are_denied_before_reading_data(): void
+    public function test_invalid_roles_and_inactive_users_are_denied_before_reading_data(): void
     {
-        foreach ([null, '', 'unknown', 'hse'] as $role) {
+        foreach ([null, '', 'unknown', 'hse', 'employee'] as $role) {
             $user = new User;
-            $user->forceFill(['id' => 1, 'role' => $role, 'is_active' => true]);
+            $user->forceFill(['id' => 1, 'role' => $role, 'is_active' => $role !== 'employee']);
             $this->actingAs($user);
             foreach (['/dashboard', '/daily-inspections', '/daily-inspections/create', '/shifts', '/admin/work-areas'] as $url) {
                 $this->getJson($url)->assertForbidden();

@@ -46,8 +46,8 @@ class DailyInspectionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'work_area_id' => ['required', Rule::exists(WorkArea::class, 'id')->where('is_active', true)],
-            'shift_id' => ['required', Rule::exists(Shift::class, 'id')->where('is_active', true)],
+            'work_area_id' => ['required', Rule::exists('work_areas', 'id')->where('is_active', true)],
+            'shift_id' => ['required', Rule::exists('shifts', 'id')->where('is_active', true)],
             'inspection_date' => ['required', 'date', 'before_or_equal:today'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'answers' => ['required', 'array', 'min:1'],
