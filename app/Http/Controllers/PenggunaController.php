@@ -199,16 +199,6 @@ class PenggunaController extends Controller
     }
 
     /**
-     * Simulasi reset password karyawan (stub PBI-08).
-     */
-    public function resetPassword(User $pengguna): RedirectResponse
-    {
-        $this->authorizeAdmin();
-
-        return redirect()->back()->with('info', 'Tautan instruksi setel ulang kata sandi telah disiapkan untuk dikirimkan ke email karyawan.');
-    }
-
-    /**
      * Helper otorisasi internal untuk peran admin / super_admin.
      */
     private function authorizeAdmin(): void
