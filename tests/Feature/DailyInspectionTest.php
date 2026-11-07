@@ -39,7 +39,7 @@ class DailyInspectionTest extends TestCase
             ->post(route('daily-inspections.store'), $this->validInspectionPayload())
             ->assertForbidden();
 
-        $this->assertDatabaseCount('daily_inspection', 0);
+        $this->assertDatabaseCount('daily_inspections', 0);
     }
 
     public function test_admin_can_view_inspections_without_create_action(): void
@@ -70,7 +70,7 @@ class DailyInspectionTest extends TestCase
             ->assertRedirect(route('daily-inspections.index'))
             ->assertSessionHas('success');
 
-        $this->assertDatabaseHas('daily_inspection', ['inspector_id' => $hse->id]);
+        $this->assertDatabaseHas('daily_inspections', ['inspector_id' => $hse->id]);
     }
 
     public function test_non_hse_employee_can_open_and_store_daily_inspection(): void
@@ -89,7 +89,7 @@ class DailyInspectionTest extends TestCase
             ->assertRedirect(route('daily-inspections.index'))
             ->assertSessionHas('success');
 
-        $this->assertDatabaseHas('daily_inspection', ['inspector_id' => $employee->id]);
+        $this->assertDatabaseHas('daily_inspections', ['inspector_id' => $employee->id]);
     }
 
     public function test_no_answer_requires_photo_and_description(): void
@@ -106,7 +106,7 @@ class DailyInspectionTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['answers.0.description', 'answers.0.photo']);
-        $this->assertDatabaseCount('daily_inspection', 0);
+        $this->assertDatabaseCount('daily_inspections', 0);
     }
 
     public function test_yes_answers_are_saved_with_question_snapshots(): void
@@ -118,7 +118,7 @@ class DailyInspectionTest extends TestCase
         $response = $this->actingAs($user)->post(route('daily-inspections.store'), $payload);
 
         $response->assertRedirect(route('daily-inspections.index'))->assertSessionHas('success');
-        $this->assertDatabaseHas('inspection_answer', [
+        $this->assertDatabaseHas('inspection_answers', [
             'inspection_question_id' => $firstQuestion->id,
             'question_snapshot' => $firstQuestion->question,
             'answer' => 'yes',
@@ -136,7 +136,7 @@ class DailyInspectionTest extends TestCase
             ...$payload, 'inspector_id' => $other->id, 'department_id' => $other->department_id,
             'role' => 'admin',
         ])->assertRedirect(route('daily-inspections.index'));
-        $this->assertDatabaseHas('daily_inspection', ['inspector_id' => $employee->id, 'department_id' => $employee->department_id]);
+        $this->assertDatabaseHas('daily_inspections', ['inspector_id' => $employee->id, 'department_id' => $employee->department_id]);
         $this->get(route('daily-inspections.index', ['inspector_id' => $other->id, 'role' => 'admin']))
             ->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('DailyInspections/Index', false)

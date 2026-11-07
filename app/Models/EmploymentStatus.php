@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Schema;
 
 class EmploymentStatus extends Model
 {
-    protected $table = 'status_karyawan';
-
     protected $guarded = ['*'];
 
     public function getTable()

@@ -83,25 +83,6 @@ class AuthController extends Controller
             ->with('success', 'Selamat datang di SafeTrack, ' . $user->name . '.');
     }
 
-    public function demoLogin(Request $request, string $account): RedirectResponse
-    {
-        abort_unless(config('app.demo_login') === true, 404);
-        if (Auth::check()) {
-            return redirect()->route('dashboard');
-        }
-        $email = match ($account) {
-            'karyawan' => 'karyawan@safetrack.test',
-            'admin' => 'admin@safetrack.test',
-            default => abort(404),
-        };
-        $user = User::where('email', $email)->firstOrFail();
-        abort_unless($user->can('access-application'), 403);
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route('dashboard');
-    }
-
     /**
      * Proses mengakhiri sesi pengguna / logout (UC-03).
      */

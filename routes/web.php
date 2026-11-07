@@ -35,7 +35,17 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-// Guest Authentication Routes (UC-02 Login)
+// Shortcut Dev: Akses langsung sebagai Admin (Kelola Departemen) saat login dalam pengembangan
+Route::get('/dev-login', function () {
+    $admin = \App\Models\User::where('username', 'admin')->first();
+    if ($admin) {
+        \Illuminate\Support\Facades\Auth::login($admin);
+        return redirect()->route('admin.departments.index');
+    }
+    return 'User admin belum ada. Jalankan: php artisan db:seed --class=DemoSeeder';
+})->name('dev.login');
+
+// Guest Authentication Routes (UC-01 Registrasi, UC-02 Login)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
@@ -58,7 +68,7 @@ Route::middleware(['auth', 'active'])->group(function () {
                 ->where('period', $currentPeriod)
                 ->first();
         } catch (\Throwable) {
-            // Fallback aman jika tabel atau relasi reward belum ter-migrasi penuh
+            // Fallback aman jika tabel atau kolom reward belum ter-migrasi penuh
         }
 
         return view('dashboard', [
@@ -108,7 +118,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         });
 
         Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
-            Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update']);
+            Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
             Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
                 ->name('work-areas.toggle-status');
             Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
