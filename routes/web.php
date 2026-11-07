@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\InspectionQuestionController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ShiftController;
@@ -46,9 +47,17 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+     Route::prefix('admin')->name('admin.')->group(function () {
+            Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
+        });
+
     // Admin & Super Admin Only Routes (Kelola Shift Kerja)
     Route::middleware('admin')->group(function () {
         Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
+
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
+        });
 
         Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
             Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
