@@ -14,4 +14,5 @@ class EmploymentStatus extends Model
     {
         return $this->hasMany(EmployeeRegistry::class);
     }
+    
 }

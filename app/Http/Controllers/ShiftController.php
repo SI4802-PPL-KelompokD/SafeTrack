@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class ShiftController extends Controller
 {
@@ -19,6 +20,7 @@ class ShiftController extends Controller
     public function index(): View
     {
         $shifts = Shift::withCount('dailyInspections')
+            ->orderBy('starts_at')
             ->orderBy('id')
             ->get();
 
@@ -37,8 +39,11 @@ class ShiftController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // Auto-generate code if omitted
+        // Rapikan nama agar spasi di awal/akhir tidak membuat nama tampak berbeda.
         $name = trim((string) $request->input('name', ''));
+        $request->merge(['name' => $name]);
+
+        // Auto-generate code if omitted.
         $code = trim((string) $request->input('code', ''));
         if ($code === '') {
             $code = Str::slug($name);
@@ -48,7 +53,7 @@ class ShiftController extends Controller
         }
         $code = Str::limit($code, 30, '');
 
-        // Resolve collision
+        // Resolve code collision.
         $originalCode = $code;
         $counter = 1;
         while (Shift::where('code', $code)->exists()) {
@@ -59,14 +64,20 @@ class ShiftController extends Controller
         $request->merge(['code' => $code]);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:30|unique:shift,code',
-            'starts_at' => 'required|date_format:H:i',
-            'ends_at' => 'required|date_format:H:i',
-            'is_active' => 'boolean',
+            'name' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('shift', 'name'),
+            ],
+            'code' => ['required', 'string', 'max:30', Rule::unique('shift', 'code')],
+            'starts_at' => ['required', 'date_format:H:i'],
+            'ends_at' => ['required', 'date_format:H:i'],
+            'is_active' => ['boolean'],
         ], [
             'name.required' => 'Nama shift wajib diisi.',
-            'name.max' => 'Nama shift maksimal 255 karakter.',
+            'name.max' => 'Nama shift maksimal 50 karakter.',
+            'name.unique' => 'Nama shift sudah ada.',
             'code.unique' => 'Kode shift sudah digunakan.',
             'starts_at.required' => 'Jam mulai wajib diisi.',
             'starts_at.date_format' => 'Format jam mulai tidak valid (HH:MM).',
@@ -75,7 +86,9 @@ class ShiftController extends Controller
         ]);
 
         if ($validated['starts_at'] === $validated['ends_at']) {
-            return back()->withErrors(['ends_at' => 'Jam selesai tidak boleh sama persis dengan jam mulai.'])->withInput();
+            return back()
+                ->withErrors(['ends_at' => 'Jam selesai tidak boleh sama dengan jam mulai.'])
+                ->withInput();
         }
 
         $validated['is_active'] = $request->boolean('is_active', true);
@@ -91,6 +104,10 @@ class ShiftController extends Controller
      */
     public function update(Request $request, Shift $shift): RedirectResponse
     {
+        // Rapikan nama dan pertahankan kode lama jika form tidak mengirim kode.
+        $name = trim((string) $request->input('name', ''));
+        $request->merge(['name' => $name]);
+
         $code = trim((string) $request->input('code', ''));
         if ($code === '') {
             $code = $shift->code;
@@ -98,14 +115,25 @@ class ShiftController extends Controller
         $request->merge(['code' => $code]);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:30|unique:shift,code,' . $shift->id,
-            'starts_at' => 'required|date_format:H:i',
-            'ends_at' => 'required|date_format:H:i',
-            'is_active' => 'boolean',
+            'name' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('shift', 'name')->ignore($shift->id),
+            ],
+            'code' => [
+                'required',
+                'string',
+                'max:30',
+                Rule::unique('shift', 'code')->ignore($shift->id),
+            ],
+            'starts_at' => ['required', 'date_format:H:i'],
+            'ends_at' => ['required', 'date_format:H:i'],
+            'is_active' => ['boolean'],
         ], [
             'name.required' => 'Nama shift wajib diisi.',
-            'name.max' => 'Nama shift maksimal 255 karakter.',
+            'name.max' => 'Nama shift maksimal 50 karakter.',
+            'name.unique' => 'Nama shift sudah ada.',
             'code.unique' => 'Kode shift sudah digunakan.',
             'starts_at.required' => 'Jam mulai wajib diisi.',
             'starts_at.date_format' => 'Format jam mulai tidak valid (HH:MM).',
@@ -114,13 +142,15 @@ class ShiftController extends Controller
         ]);
 
         if ($validated['starts_at'] === $validated['ends_at']) {
-            return back()->withErrors(['ends_at' => 'Jam selesai tidak boleh sama persis dengan jam mulai.'])->withInput();
+            return back()
+                ->withErrors(['ends_at' => 'Jam selesai tidak boleh sama dengan jam mulai.'])
+                ->withInput();
         }
 
-        // Jika data sudah dirujuk aktivitas, kunci perubahan nama agar riwayat tetap konsisten
+        // Jika data sudah dirujuk aktivitas, kunci perubahan nama agar riwayat tetap konsisten.
         if ($shift->dailyInspections()->exists() && $shift->name !== $validated['name']) {
             return back()->withErrors([
-                'name' => 'Nama shift yang sudah dirujuk inspeksi tidak dapat diganti namanya agar riwayat tetap konsisten.'
+                'name' => 'Nama shift yang sudah dirujuk inspeksi tidak dapat diganti namanya agar riwayat tetap konsisten.',
             ])->withInput();
         }
 
@@ -133,7 +163,7 @@ class ShiftController extends Controller
     }
 
     /**
-     * Hapus shift kerja. Tolak jika masih dirujuk daily_inspections.
+     * Hapus shift kerja. Tolak jika masih dirujuk daily_inspection.
      */
     public function destroy(Shift $shift): RedirectResponse
     {
@@ -148,4 +178,3 @@ class ShiftController extends Controller
             ->with('success', 'Shift kerja berhasil dihapus.');
     }
 }
-

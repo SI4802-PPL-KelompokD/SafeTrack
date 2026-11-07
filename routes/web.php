@@ -47,10 +47,6 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-     Route::prefix('admin')->name('admin.')->group(function () {
-            Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
-        });
-
     // Admin & Super Admin Only Routes (Kelola Shift Kerja)
     Route::middleware('admin')->group(function () {
         Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);

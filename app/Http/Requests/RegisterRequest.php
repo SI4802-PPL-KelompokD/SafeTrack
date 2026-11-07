@@ -20,6 +20,7 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'string', 'min:8'],
         ];
     }
+    
 
     public function messages(): array
     {
