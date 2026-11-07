@@ -9,7 +9,7 @@ return new class extends Migration
 {
     /** @var array<string, string> */
     private array $tableRenames = [
-        'companies' => 'company',
+       // 'companies' => 'company',
         'employment_statuses' => 'status_karyawan',
         'employee_registry' => 'nik',
         'hazard_categories' => 'kategori_temuan',
@@ -32,7 +32,9 @@ return new class extends Migration
     public function up(): void
     {
         foreach ($this->tableRenames as $currentName => $erdName) {
-            Schema::rename($currentName, $erdName);
+            if (Schema::hasTable($currentName)) {
+                Schema::rename($currentName, $erdName);
+            }
         }
 
         Schema::create('status_company', function (Blueprint $table) {
@@ -110,3 +112,4 @@ return new class extends Migration
         }
     }
 };
+

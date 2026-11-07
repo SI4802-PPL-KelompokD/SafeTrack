@@ -10,7 +10,7 @@ class HazardReportPolicy
 {
     public function viewAny(User $user): bool
     {
-        return (bool) $user->is_active;
+        return $user->can('access-application');
     }
 
     /**
@@ -20,6 +20,10 @@ class HazardReportPolicy
      */
     public function view(User $user, HazardReport $report): Response
     {
+        if (! $user->can('access-application')) {
+            return Response::deny();
+        }
+
         if ($user->isAdmin()) {
             return Response::allow();
         }
