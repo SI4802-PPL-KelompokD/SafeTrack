@@ -44,6 +44,7 @@ class RegisterController extends Controller
                 // Jangan biarkan kegagalan logging menghentikan redirect error ke pengguna
             }
 
+            
             return back()
                 ->withInput($request->except('password'))
                 ->withErrors([

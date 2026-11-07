@@ -51,7 +51,7 @@
                 autofocus
             >
             @error('nik')
-                <div class="error-text" role="alert">
+                <div id="error-nik" class="error-text" role="alert">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:3px;">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
@@ -77,7 +77,7 @@
                 autocomplete="username"
             >
             @error('username')
-                <div class="error-text" role="alert">
+                <div id="error-username" class="error-text" role="alert">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:3px;">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
@@ -100,7 +100,7 @@
                 maxlength="255"
             >
             @error('email')
-                <div class="error-text" role="alert">
+                <div id="error-email" class="error-text" role="alert">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:3px;">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
@@ -123,7 +123,7 @@
                 autocomplete="new-password"
             >
             @error('password')
-                <div class="error-text" role="alert">
+                <div id="error-password" class="error-text" role="alert">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:3px;">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
@@ -139,3 +139,4 @@
 
     <p class="auth-note">Sudah terdaftar? <a href="{{ route('login') }}">Masuk ke akun</a></p>
 @endsection
+
