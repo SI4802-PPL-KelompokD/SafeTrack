@@ -29,6 +29,16 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+// Shortcut Dev: Akses langsung sebagai Admin (Kelola Departemen) saat login dalam pengembangan
+Route::get('/dev-login', function () {
+    $admin = \App\Models\User::where('username', 'admin')->first();
+    if ($admin) {
+        \Illuminate\Support\Facades\Auth::login($admin);
+        return redirect()->route('admin.departments.index');
+    }
+    return 'User admin belum ada. Jalankan: php artisan db:seed --class=DemoSeeder';
+})->name('dev.login');
+
 // Guest Authentication Routes (UC-01 Registrasi, UC-02 Login)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -46,10 +56,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
-
-     Route::prefix('admin')->name('admin.')->group(function () {
-            Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
-        });
 
     // Admin & Super Admin Only Routes (Kelola Shift Kerja)
     Route::middleware('admin')->group(function () {

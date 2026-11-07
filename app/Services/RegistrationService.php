@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class RegistrationService
@@ -22,8 +23,11 @@ class RegistrationService
     {
         try {
             return DB::transaction(function () use ($data) {
+                // Tentukan nama tabel registry secara dinamis ('nik' jika sudah migrasi ERD, atau 'employee_registry')
+                $registryTable = Schema::hasTable('nik') ? 'nik' : 'employee_registry';
+
                 // Kunci baris registry untuk mencegah race condition (pendaftaran bersamaan)
-                $employee = DB::table('employee_registry')
+                $employee = DB::table($registryTable)
                     ->where('nik', $data['nik'])
                     ->lockForUpdate()
                     ->first();
@@ -70,6 +74,11 @@ class RegistrationService
             if (str_contains($message, 'users_employee_registry_id_unique') || str_contains($message, 'employee_registry_id')) {
                 throw ValidationException::withMessages([
                     'nik' => 'NIK sudah digunakan. Silakan masuk ke akun Anda.',
+                ]);
+            }
+            if (str_contains($message, 'users_username_unique') || str_contains($message, 'users.username')) {
+                throw ValidationException::withMessages([
+                    'username' => 'Username sudah digunakan.',
                 ]);
             }
 

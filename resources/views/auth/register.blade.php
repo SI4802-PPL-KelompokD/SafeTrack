@@ -139,4 +139,3 @@
 
     <p class="auth-note">Sudah terdaftar? <a href="{{ route('login') }}">Masuk ke akun</a></p>
 @endsection
-
