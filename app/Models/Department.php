@@ -1,9 +1,23 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
-class Department extends Model {
- 
- protected $table='departments';
- protected $guarded=['*'];
- public function company(){return $this->belongsTo(Company::class);}
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Department extends Model
+{
+    protected $table = 'departments';
+    protected $guarded = ['*'];
+
+    public function employeeRegistries(): HasMany
+    {
+        return $this->hasMany(EmployeeRegistry::class);
+    }
+
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+    
 }

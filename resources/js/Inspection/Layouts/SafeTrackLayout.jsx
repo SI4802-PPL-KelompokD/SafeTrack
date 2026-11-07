@@ -10,6 +10,7 @@ const icons = {
     bell: 'M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9a6 6 0 0 0-12 0v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0',
     users: 'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z',
     clock: 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+    building: 'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21',
     data: 'M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125S3.75 14.278 3.75 12m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125',
     export: 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3',
 };
@@ -24,7 +25,7 @@ export default function SafeTrackLayout({ title, children }) {
     return <div className="app-shell">
         <aside className="app-sidebar" role="navigation" aria-label="Navigasi SafeTrack">
             <div className="brand-container"><div className="brand-logo-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6.5c0 5 3.4 9.6 8 10.8 4.6-1.2 8-5.8 8-10.8V5l-8-3Z" fill="currentColor" fillOpacity=".2" stroke="currentColor" strokeWidth="2"/><path d="m9 12 2 2 4-4.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/></svg></div><div className="brand-text"><div className="brand-title">safe<span>Track</span></div><div className="brand-subtitle">SAFETY MANAGEMENT</div></div></div>
-            <div className="workspace-card"><div className="workspace-icon"><Icon type="data" /></div><div className="workspace-info"><span className="workspace-name">PT Sentra Industri</span><span className="workspace-desc">Workspace demonstrasi</span></div></div>
+            <div className="workspace-card"><div className="workspace-icon"><Icon type="building" /></div><div className="workspace-info"><span className="workspace-name">PT Sentra Industri</span><span className="workspace-desc">Workspace demonstrasi</span></div></div>
             <Menu title="Utama" items={mainMenu} navigation={navigation} />
             {user.isAdmin && <Menu title="Administrasi" items={adminMenu} navigation={navigation} active="Data Master" />}
             <div className="sidebar-user-footer"><div className="user-meta-wrap"><div className="user-avatar-badge">{initials}</div><div className="user-name-title"><span className="user-full-name">{user.name}</span><span className="user-role-label">{user.role === 'super_admin' ? 'Super Admin' : 'Admin'}</span></div></div><button type="button" className="btn-user-exit" title="Keluar / Logout" onClick={() => router.post(navigation.logout)}><Icon type="export" /></button></div>
