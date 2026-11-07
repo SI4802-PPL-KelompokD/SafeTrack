@@ -32,7 +32,7 @@
             ['Notifikasi', 'bell', '#', false],
         ],
         'ADMINISTRASI' => [
-            ['Kelola Karyawan', 'users', route('admin.pengguna.index'), false],
+            ['Kelola Karyawan', 'users', '#', false],
             ['Data Master', 'database', route('admin.departments.index'), true],
             ['Ekspor Laporan', 'download', '#', false],
             ['Jejak Audit', 'history', '#', false],

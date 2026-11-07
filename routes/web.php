@@ -51,15 +51,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $currentPeriod = now()->format('Y-m-01');
-        $sapSummary = null;
-        try {
-            $sapSummary = SapMonthlySummary::with('eligibleReward')
-                ->where('user_id', $user->id)
-                ->where('period', $currentPeriod)
-                ->first();
-        } catch (\Throwable) {
-            // Fallback aman jika tabel atau relasi reward belum ter-migrasi penuh
-        }
+        $sapSummary = SapMonthlySummary::with('eligibleReward')
+            ->where('user_id', $user->id)
+            ->where('period', $currentPeriod)
+            ->first();
 
         return view('dashboard', [
             'sapSummary' => $sapSummary,
@@ -87,6 +82,13 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/laporan-bahaya/{hazardReport}/bukti/{photo}', [HazardPhotoController::class, 'resolution'])
         ->withTrashed()->name('hazards.resolution-photos.show');
 
+    // // ---- PBI-21: Pencatatan Safety Talk ----
+    // Route::get('/safety-talk', [SafetyTalkController::class, 'index'])->name('safety-talks.index');
+    // Route::get('/safety-talk/create', [SafetyTalkController::class, 'create'])->name('safety-talks.create');
+    // Route::post('/safety-talk', [SafetyTalkController::class, 'store'])->name('safety-talks.store');
+    // Route::get('/safety-talk/{safetyTalk}', [SafetyTalkController::class, 'show'])
+    //     ->withTrashed()->name('safety-talks.show');
+
     // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {
         Route::get('/data-master', [ShiftController::class, 'index'])->name('admin.data-master');
@@ -96,12 +98,19 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
         Route::post('/sap/recalculate', [SapController::class, 'recalculate'])->name('sap.recalculate');
 
+        // // ---- PBI-22: Verifikasi dan Kelola Safety Talk ----
+        // Route::post('/safety-talk/{safetyTalk}/verifikasi', [SafetyTalkManagementController::class, 'verify'])
+        //     ->name('safety-talks.verify');
+        // Route::delete('/safety-talk/{safetyTalk}', [SafetyTalkManagementController::class, 'archive'])
+        //     ->name('safety-talks.archive');
+        // Route::post('/safety-talk/{safetyTalk}/pulihkan', [SafetyTalkManagementController::class, 'restore'])
+        //     ->withTrashed()->name('safety-talks.restore');
+
         Route::prefix('admin')->name('admin.')->group(function () {
             // Pengguna Management
             Route::get('pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
             Route::put('pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
             Route::delete('pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
-            Route::post('pengguna/{pengguna}/reset-password', [PenggunaController::class, 'resetPassword'])->name('pengguna.reset-password');
 
             // Departments
             Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
