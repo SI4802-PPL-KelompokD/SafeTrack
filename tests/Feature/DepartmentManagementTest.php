@@ -47,7 +47,7 @@ class DepartmentManagementTest extends TestCase
 
         $response = $this->actingAs($nonAdmin)->get(route('admin.departments.index'));
 
-        $response->assertRedirect(route('dashboard'))->assertSessionHas('error');
+        $response->assertForbidden();
     }
 
     public function test_admin_can_create_valid_department(): void
