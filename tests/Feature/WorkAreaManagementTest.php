@@ -43,8 +43,8 @@ class WorkAreaManagementTest extends TestCase
     {
         $hse = User::factory()->create(['role' => 'employee', 'department_id' => $this->admin()->department_id]);
         foreach ([$hse, User::where('username', 'karyawan')->firstOrFail()] as $user) {
-            $this->actingAs($user)->get(route('admin.work-areas.index'))->assertRedirect(route('dashboard'));
-            $this->post(route('admin.work-areas.store'), $this->identity(['name' => 'Terlarang']))->assertRedirect(route('dashboard'));
+            $this->actingAs($user)->get(route('admin.work-areas.index'))->assertForbidden();
+            $this->post(route('admin.work-areas.store'), $this->identity(['name' => 'Terlarang']))->assertForbidden();
         }
         $this->assertDatabaseMissing('area_kerja', ['name' => 'Terlarang']);
     }

@@ -148,3 +148,4 @@ class User extends Authenticatable
         return $query->where('is_active', $isActive);
     }
 }
+

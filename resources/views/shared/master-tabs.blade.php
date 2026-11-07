@@ -1,8 +1,8 @@
 <div class="master-tabs-bar">
-                <button type="button" class="tab-pill" onclick="alert('Modul Departemen dalam integrasi Data Master.')">
+                <a href="{{ route('admin.departments.index') }}" class="tab-pill" style="text-decoration:none;">
                     <span>Departemen</span>
                     <span class="tab-pill-badge">{{ $tabCounts['departments'] ?? 2 }}</span>
-                </button>
+                </a>
                 <a href="{{ route('shifts.index') }}" class="tab-pill {{ $activeMasterTab === 'shifts' ? 'active' : '' }}" style="text-decoration:none;">
                     <span>Shift kerja</span>
                     <span class="tab-pill-badge">{{ $tabCounts['shifts'] ?? 0 }}</span>

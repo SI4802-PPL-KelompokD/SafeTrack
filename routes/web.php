@@ -1,13 +1,15 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\HazardPhotoController;
 use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
+use App\Http\Controllers\PenggunaController;
 // use App\Http\Controllers\SafetyTalkController;
 // use App\Http\Controllers\SafetyTalkManagementController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SapController;
-use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
 use App\Http\Middleware\RequireAdminActionIdentity;
@@ -39,6 +41,8 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    Route::get('/register', [RegisterController::class, 'create'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:6,1')->name('register.store');
 });
 
 // Authenticated Routes (UC-03 Logout & Dashboards)
@@ -78,6 +82,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::get('/data-master', [ShiftController::class, 'index'])->name('admin.data-master');
         Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
+        });
         Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
         Route::post('/sap/recalculate', [SapController::class, 'recalculate'])->name('sap.recalculate');
 

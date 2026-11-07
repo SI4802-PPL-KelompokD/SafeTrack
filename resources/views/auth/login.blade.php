@@ -512,7 +512,7 @@
 
         <!-- Footer Link -->
         <div class="register-footer-text">
-            Belum punya akun? <a href="#">Daftar akun</a>
+            Belum punya akun? <a href="{{ route('register') }}">Daftar akun</a>
         </div>
     </div>
 
@@ -536,3 +536,4 @@
 
 </body>
 </html>
+
