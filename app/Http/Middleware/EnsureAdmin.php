@@ -14,20 +14,7 @@ class EnsureAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-<<<<<<< HEAD
         abort_unless($request->user()?->can('manage-administration'), 403, 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.');
-=======
-        $user = $request->user();
-
-        if (! $user || ! in_array($user->role, ['super_admin', 'admin'], true)) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.'], 403);
-            }
-
-            return redirect()->route('dashboard')
-                ->with('error', 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.');
-        }
->>>>>>> origin/main
 
         return $next($request);
     }

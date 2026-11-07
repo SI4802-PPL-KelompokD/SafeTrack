@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class EmployeeRegistry extends Model
 {
-    protected $table = 'employee_registry';
+    protected $table = 'nik';
+
     protected $guarded = ['*'];
 
     protected function casts(): array
@@ -32,5 +33,4 @@ class EmployeeRegistry extends Model
     {
         return $this->hasOne(User::class);
     }
-    
 }
