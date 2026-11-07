@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Schema;
 
 class EmployeeRegistry extends Model
 {
+    protected $table = 'nik';
+
     protected $guarded = ['*'];
 
     public function getTable()

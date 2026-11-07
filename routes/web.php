@@ -1,13 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DailyInspectionController;
 use App\Http\Controllers\HazardPhotoController;
 use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
 use App\Http\Controllers\PenggunaController;
-// use App\Http\Controllers\SafetyTalkController;
-// use App\Http\Controllers\SafetyTalkManagementController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SapController;
 use App\Http\Controllers\ShiftController;
@@ -98,23 +96,41 @@ Route::middleware(['auth', 'active'])->group(function () {
         // Route::post('/safety-talk/{safetyTalk}/pulihkan', [SafetyTalkManagementController::class, 'restore'])
         //     ->withTrashed()->name('safety-talks.restore');
 
-        Route::prefix('admin')->name('admin.')->middleware(RequireAdminActionIdentity::class)->group(function () {
-            Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update']);
-            Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
-                ->name('work-areas.toggle-status');
-            Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
-                ->name('work-areas.questions.store');
-            Route::put('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'update'])
-                ->name('work-areas.questions.update');
-            Route::patch('work-areas/{workArea}/questions/{question}/toggle-status', [InspectionQuestionController::class, 'toggleStatus'])
-                ->name('work-areas.questions.toggle-status');
-        });
+        // Hazard Reports (Laporan Bahaya)
+        Route::get('/hazards', [HazardReportController::class, 'index'])->name('hazards.index');
+        Route::get('/hazards/mine', [HazardReportController::class, 'mine'])->name('hazards.mine');
+        Route::get('/hazards/{hazardReport}', [HazardReportController::class, 'show'])->name('hazards.show');
+        Route::get('/hazards/{hazardReport}/photos/{photo}', [HazardPhotoController::class, 'hazard'])->name('hazards.photos.show');
+        Route::get('/hazards/{hazardReport}/resolution-photos/{photo}', [HazardPhotoController::class, 'resolution'])->name('hazards.resolution-photos.show');
 
-        // â”€â”€ Kelola Karyawan (PBI 9 / FR-06, FR-07) â”€â”€
-        Route::prefix('admin/pengguna')->name('admin.pengguna.')->group(function () {
-            Route::get('/', [PenggunaController::class, 'index'])->name('index');
-            Route::put('/{pengguna}', [PenggunaController::class, 'update'])->name('update');
-            Route::delete('/{pengguna}', [PenggunaController::class, 'destroy'])->name('destroy');
+        // Admin & Super Admin Only Routes (Kelola Shift Kerja)
+        Route::middleware('admin')->group(function () {
+            Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
+
+            // SAP (Pencapaian SAP)
+            Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
+            Route::post('/sap/recalculate', [SapController::class, 'recalculate'])->name('sap.recalculate');
+
+            Route::prefix('admin')->name('admin.')->group(function () {
+                // Pengguna Management
+                Route::get('pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
+                Route::put('pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
+                Route::delete('pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+            });
+
+            Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
+                Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update']);
+                Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
+                    ->name('work-areas.toggle-status');
+                Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
+                    ->name('work-areas.questions.store');
+                Route::put('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'update'])
+                    ->name('work-areas.questions.update');
+                Route::patch('work-areas/{workArea}/questions/{question}/toggle-status', [InspectionQuestionController::class, 'toggleStatus'])
+                    ->name('work-areas.questions.toggle-status');
+                Route::delete('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'destroy'])
+                    ->name('work-areas.questions.destroy');
+            });
         });
     });
 });
