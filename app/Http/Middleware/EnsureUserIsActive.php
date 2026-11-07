@@ -6,8 +6,6 @@ use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsActive
@@ -18,12 +16,6 @@ class EnsureUserIsActive
         $sessionUserId = $request->hasSession()
             ? $request->session()->get(Auth::guard('web')->getName())
             : null;
-
-        if ($sessionUserId && Schema::hasTable('user_sessions')
-            && DB::table('user_sessions')->where('id', $request->session()->getId())
-                ->where('is_active', false)->exists()) {
-            return $this->endSession($request, $user, $sessionUserId);
-        }
 
         if ($user?->exists || $sessionUserId) {
             $storedUser = User::withTrashed()->find($user?->id ?? $sessionUserId);
@@ -48,11 +40,6 @@ class EnsureUserIsActive
 
     private function endSession(Request $request, ?User $user, int|string|null $userId): Response
     {
-        if (Schema::hasTable('user_sessions')) {
-            DB::table('user_sessions')->where('user_id', $userId)->where('is_active', true)
-                ->update(['is_active' => false, 'logout_at' => now()]);
-        }
-
         $user?->tokens()->delete();
         Auth::guard('web')->logout();
 
