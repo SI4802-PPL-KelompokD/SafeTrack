@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Root redirect
+// PUBLIK: autentikasi dan pengalihan awal.
 Route::get('/', function () {
     if (! Auth::check()) {
         return redirect()->route('login');
@@ -46,7 +46,9 @@ Route::middleware('guest')->group(function () {
 });
 
 // Authenticated Routes (UC-03 Logout & Dashboards)
-Route::middleware('auth')->group(function () {
+Route::post('/demo/login/{account}', [AuthController::class, 'demoLogin'])->middleware('throttle:6,1')->name('demo.login');
+
+Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', function () {
         $user = Auth::user();
@@ -108,7 +110,7 @@ Route::middleware('auth')->group(function () {
                 ->name('work-areas.questions.toggle-status');
         });
 
-        // ── Kelola Karyawan (PBI 9 / FR-06, FR-07) ──
+        // â”€â”€ Kelola Karyawan (PBI 9 / FR-06, FR-07) â”€â”€
         Route::prefix('admin/pengguna')->name('admin.pengguna.')->group(function () {
             Route::get('/', [PenggunaController::class, 'index'])->name('index');
             Route::put('/{pengguna}', [PenggunaController::class, 'update'])->name('update');

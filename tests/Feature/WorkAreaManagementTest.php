@@ -150,6 +150,38 @@ class WorkAreaManagementTest extends TestCase
         $this->assertNotSoftDeleted('inspection_questions', ['id' => $question->id]);
     }
 
+    public function test_employee_cannot_call_administrative_endpoints_or_change_data(): void
+    {
+        $employee = User::where('username', 'karyawan')->firstOrFail();
+        $area = WorkArea::firstOrFail();
+        $question = $area->questions()->firstOrFail();
+        $shift = Shift::firstOrFail();
+        $before = [];
+        foreach (['area_kerja', 'inspection_questions', 'shift', 'audit_logs'] as $table) {
+            $before[$table] = DB::table($table)->orderBy('id')->get()->toJson();
+        }
+        $this->actingAs($employee);
+        foreach ([
+            ['GET', route('shifts.index')],
+            ['POST', route('shifts.store')],
+            ['PUT', route('shifts.update', $shift)],
+            ['DELETE', route('shifts.destroy', $shift)],
+            ['GET', route('admin.work-areas.index')],
+            ['GET', route('admin.work-areas.show', $area)],
+            ['POST', route('admin.work-areas.store')],
+            ['PUT', route('admin.work-areas.update', $area)],
+            ['PATCH', route('admin.work-areas.toggle-status', $area)],
+            ['POST', route('admin.work-areas.questions.store', $area)],
+            ['PUT', route('admin.work-areas.questions.update', [$area, $question])],
+            ['PATCH', route('admin.work-areas.questions.toggle-status', [$area, $question])],
+        ] as [$method, $url]) {
+            $this->json($method, $url, ['role' => 'super_admin', 'userId' => $employee->id + 1])->assertForbidden();
+        }
+        foreach ($before as $table => $snapshot) {
+            $this->assertSame($snapshot, DB::table($table)->orderBy('id')->get()->toJson());
+        }
+    }
+
     private function assertAudit(string $action, int $id): void
     {
         $audit = DB::table('audit_logs')->where('action', $action)->where('entity_id', $id)->latest('id')->first();

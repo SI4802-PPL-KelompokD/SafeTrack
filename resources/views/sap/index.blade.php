@@ -730,7 +730,7 @@
         </ul>
 
         <!-- ADMINISTRASI -->
-        @if (Auth::user() && in_array(Auth::user()->role, ['super_admin', 'admin'], true))
+        @can('access-admin')
             <div class="nav-section-title">Administrasi</div>
             <ul class="sidebar-menu">
                 <li>
@@ -742,7 +742,7 @@
                     </a>
                 </li>
             </ul>
-        @endif
+        @endcan
 
         <div class="sidebar-footer">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -770,6 +770,7 @@
         <!-- Topbar -->
         <header class="app-topbar">
             <div>
+                @include('partials.role-badge')
                 <a href="{{ route('dashboard') }}" class="breadcrumb-item">Workspace</a>
                 <span class="breadcrumb-sep">&gt;</span>
                 <span class="breadcrumb-item active">Pencapaian SAP</span>
@@ -840,6 +841,7 @@
                 </form>
 
                 <!-- Trigger Hitung Ulang SAP (UC-28) -->
+                @can('access-admin')
                 <form method="POST" action="{{ route('sap.recalculate') }}" onsubmit="return confirm('Jalankan hitung ulang poin SAP untuk periode {{ Carbon\Carbon::createFromDate($selectedYear, $selectedMonth, 1)->translatedFormat('F Y') }}? Semua aktivitas valid akan disinkronkan ke ledger.');">
                     @csrf
                     <input type="hidden" name="month" value="{{ $selectedMonth }}">
@@ -851,6 +853,7 @@
                         <span>Hitung Ulang SAP</span>
                     </button>
                 </form>
+                @endcan
             </div>
 
             <!-- Stats Grid -->

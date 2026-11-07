@@ -1,7 +1,4 @@
 {
-<<<<<<< HEAD
-    "guidelines": true
-=======
     "agents": [
         "antigravity"
     ],
@@ -17,5 +14,4 @@
         "testing-best-practices",
         "tailwindcss-development"
     ]
->>>>>>> origin/main
 }

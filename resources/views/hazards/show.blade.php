@@ -37,13 +37,13 @@
             <div class="detail-item"><dt>Departemen pelapor</dt><dd>{{ $report->reporterDepartment?->name ?? '—' }}</dd></div>
             <div class="detail-item"><dt>PIC perbaikan</dt><dd>{{ $report->repairDepartment?->name ?? 'Belum ditetapkan' }}</dd></div>
             <div class="detail-item"><dt>Ditangani oleh</dt><dd>{{ $report->repairPic?->name ?? 'Belum diambil' }}</dd></div>
-            @if ($isAdmin)
+            @can('access-admin')
                 <div class="detail-item"><dt>Admin penanggung jawab</dt><dd>{{ $report->assignedAdmin?->name ?? '—' }}</dd></div>
                 <div class="detail-item">
                     <dt>Diverifikasi oleh</dt>
                     <dd>{{ $report->verifier?->name ?? '—' }}@if ($report->verified_at) <span class="muted">· {{ \App\Support\IdFormat::dateTime($report->verified_at) }}</span>@endif</dd>
                 </div>
-            @endif
+            @endcan
             @if ($report->closed_at)
                 <div class="detail-item"><dt>Ditutup pada</dt><dd>{{ \App\Support\IdFormat::dateTime($report->closed_at) }}</dd></div>
             @endif

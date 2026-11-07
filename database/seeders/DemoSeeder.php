@@ -19,6 +19,7 @@ class DemoSeeder extends Seeder
 
             $insert = function ($table, $key, $values) {
                 $id = DB::table($table)->where($key)->value('id');
+
                 return $id ?: DB::table($table)->insertGetId($key + $values + ['created_at' => now(), 'updated_at' => now()]);
             };
 
@@ -52,7 +53,7 @@ class DemoSeeder extends Seeder
                         'department_id' => $dept,
                         'name' => $name,
                         'username' => $username,
-                        'email' => $username . '@safetrack.test',
+                        'email' => $username.'@safetrack.test',
                         'password' => Hash::make('DemoOnly!2026'),
                         'role' => $role,
                         'is_active' => true,

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DailyInspection extends Model
 {
@@ -10,7 +12,22 @@ class DailyInspection extends Model
 
     protected $guarded = ['id'];
 
-    public function answers()
+    public function inspector(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'inspector_id');
+    }
+
+    public function workArea(): BelongsTo
+    {
+        return $this->belongsTo(WorkArea::class);
+    }
+
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    public function answers(): HasMany
     {
         return $this->hasMany(InspectionAnswer::class);
     }
