@@ -32,7 +32,7 @@ class RegistrationService
                     ->lockForUpdate()
                     ->first();
 
-                // Validasi keberadaan NIK dan status aktif registry
+                // Validasi keberadaan NIK dan status aktif registry 
                 if (! $employee || ! $employee->is_active) {
                     throw ValidationException::withMessages([
                         'nik' => 'NIK tidak terdaftar pada daftar karyawan. Hubungi Admin/HSE.',

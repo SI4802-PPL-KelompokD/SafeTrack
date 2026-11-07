@@ -320,6 +320,7 @@ button:disabled {
     margin-top: 1px;
 }
 
+
 .btn-primary {
     width: 100%;
     border: 1px solid var(--primary);

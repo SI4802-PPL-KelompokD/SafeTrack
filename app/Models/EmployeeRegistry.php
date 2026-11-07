@@ -37,4 +37,5 @@ class EmployeeRegistry extends Model
     {
         return $this->hasOne(User::class);
     }
+    
 }

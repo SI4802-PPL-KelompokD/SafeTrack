@@ -86,6 +86,7 @@
             @enderror
         </div>
 
+        
         {{-- Email --}}
         <div class="field">
             <label for="email">Email <span class="required">*</span></label>
