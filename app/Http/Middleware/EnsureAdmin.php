@@ -11,6 +11,8 @@ class EnsureAdmin extends EnsureUserHasRole
 {
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        return parent::handle($request, $next, ...User::ADMIN_ROLES);
+        abort_unless($request->user()?->can('manage-administration'), 403, 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.');
+
+        return $next($request);
     }
 }

@@ -28,6 +28,7 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
+    
     /**
      * Proses autentikasi login (UC-02).
      * Mendukung login dengan username atau email dan password,

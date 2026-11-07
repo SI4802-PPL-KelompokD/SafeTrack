@@ -20,8 +20,7 @@ class HandleInspectionInertiaRequests extends Middleware
                     'id' => $user->id,
                     'name' => $user->name,
                     'role' => $user->role,
-                    'roleLabel' => $user->roleLabel(),
-                    'isAdmin' => $user->can('manage-administration'),
+                    'isAdmin' => (bool) $user->can('manage-administration'),
                 ] : null,
             ],
             'demoLogin' => config('app.demo_login') === true,
@@ -31,12 +30,17 @@ class HandleInspectionInertiaRequests extends Middleware
             ],
             'navigation' => [
                 'dashboard' => route('dashboard'),
-                'employees' => $user?->can('access-admin') ? route('admin.pengguna.index') : null,
-                'hazards' => route('hazards.index'),
                 'inspections' => route('daily-inspections.index'),
-                'dataMaster' => $user?->can('access-admin') ? route('shifts.index') : null,
-                'workAreas' => $user && $user->can('access-admin')
+                'dataMaster' => $user && $user->can('manage-administration')
+                    ? route('shifts.index')
+                'workAreas' => $user && $user->can('manage-administration')
                     ? route('admin.work-areas.index')
+                    : null,
+                'dataMaster' => $user && in_array($user->role, ['super_admin', 'admin'], true)
+                    ? route('admin.departments.index')
+                    : null,
+                'departments' => $user && in_array($user->role, ['super_admin', 'admin'], true)
+                    ? route('admin.departments.index')
                     : null,
                 'shifts' => $user && $user->can('manage-administration')
                     ? route('shifts.index')

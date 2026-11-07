@@ -32,7 +32,9 @@ return new class extends Migration
     public function up(): void
     {
         foreach ($this->tableRenames as $currentName => $erdName) {
-            Schema::rename($currentName, $erdName);
+            if (Schema::hasTable($currentName)) {
+                Schema::rename($currentName, $erdName);
+            }
         }
 
         Schema::create('status_company', function (Blueprint $table) {
