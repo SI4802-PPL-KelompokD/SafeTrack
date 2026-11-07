@@ -3,9 +3,13 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\InspectionQuestionController;
+use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\SapController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
+use App\Models\SapMonthlySummary;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Root redirect
+// PUBLIK: autentikasi dan pengalihan awal.
 Route::get('/', function () {
     if (! Auth::check()) {
         return redirect()->route('login');
@@ -50,8 +54,11 @@ Route::middleware('guest')->group(function () {
         ->name('register.store');
 });
 
-// Authenticated Routes UC-03 Logout & Dashboards
-Route::middleware('auth')->group(function () {
+// PUBLIK: demo tetap terdaftar agar flag diperiksa sebelum pengalihan pengguna login.
+Route::post('/demo/login/{account}', [AuthController::class, 'demoLogin'])->middleware('throttle:6,1')->name('demo.login');
+
+// SEMUA ROLE: identitas dan status akun selalu diperiksa di server.
+Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', function () {
         return view('dashboard');
