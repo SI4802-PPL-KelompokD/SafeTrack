@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureInspectionUser;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleInspectionInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdmin::class,
             'active' => EnsureUserIsActive::class,
             'inspection.inertia' => HandleInspectionInertiaRequests::class,
+            'inspection-user' => EnsureInspectionUser::class,
         ]);
         $middleware->appendToGroup('web', EnsureUserIsActive::class);
     })
