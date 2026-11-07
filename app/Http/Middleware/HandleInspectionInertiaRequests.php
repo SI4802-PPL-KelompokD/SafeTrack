@@ -34,7 +34,10 @@ class HandleInspectionInertiaRequests extends Middleware
                 'workAreas' => $user && $user->can('manage-administration')
 =======
                 'dataMaster' => $user && in_array($user->role, ['super_admin', 'admin'], true)
-                    ? route('shifts.index')
+                    ? route('admin.departments.index')
+                    : null,
+                'departments' => $user && in_array($user->role, ['super_admin', 'admin'], true)
+                    ? route('admin.departments.index')
                     : null,
                 'workAreas' => $user && in_array($user->role, ['super_admin', 'admin'], true)
 >>>>>>> origin/main
