@@ -4,7 +4,6 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureInspectionUser;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsActive;
-use App\Http\Middleware\HandleInspectionInertiaRequests;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -27,7 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'inspection-user' => EnsureInspectionUser::class,
             'admin' => EnsureAdmin::class,
             'active' => EnsureUserIsActive::class,
-            'inspection.inertia' => HandleInspectionInertiaRequests::class,
         ]);
         $middleware->redirectUsersTo(fn () => route('dashboard'));
         $middleware->prependToPriorityList(AuthenticatesRequests::class, EnsureUserIsActive::class);
