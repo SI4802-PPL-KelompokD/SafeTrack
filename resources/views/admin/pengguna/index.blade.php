@@ -943,6 +943,7 @@
         </ul>
 
         <!-- ADMINISTRASI Menu Group -->
+        @can('access-admin')
         <div class="nav-section-title">Administrasi</div>
         <ul class="sidebar-menu">
             <li>
@@ -978,6 +979,7 @@
                 </a>
             </li>
         </ul>
+        @endcan
 
         <!-- Bottom User Profile Card -->
         <div class="sidebar-user-footer">
@@ -1012,6 +1014,7 @@
             </nav>
 
             <div class="topbar-actions">
+                @include('partials.role-badge')
                 <div style="position:relative;">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:#94a3b8;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />

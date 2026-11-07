@@ -63,7 +63,7 @@ class PenggunaManagementTest extends TestCase
         $response = $this->actingAs($this->employeeUser)
             ->get(route('admin.pengguna.index'));
 
-        $response->assertForbidden();
+        $response->assertForbidden()->assertViewIs('errors.403');
     }
 
     /**

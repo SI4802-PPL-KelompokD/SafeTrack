@@ -441,6 +441,13 @@
             </div>
         @endif
 
+        @if (session('status') === 'session_ended')
+            <div class="mb-6 flex gap-3 rounded-lg border-l-4 border-amber-500 bg-amber-50 p-4 text-sm text-amber-900" role="status">
+                <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></svg>
+                <div><strong>Sesi Anda telah berakhir.</strong><p>Akun Anda sudah tidak aktif. Silakan hubungi Admin/HSE untuk informasi lebih lanjut.</p></div>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login.submit') }}">
             @csrf
 
@@ -478,7 +485,7 @@
 
             <!-- Sublinks: Akun demonstrasi & Lupa password -->
             <div class="form-sublinks">
-                <span class="demo-hint-text">Akun demonstrasi</span>
+                @if (config('app.demo_login') === true)<span class="demo-hint-text">Akun demonstrasi</span>@endif
                 <a href="#" class="link-forgot-pass" onclick="alert('Silakan hubungi tim Admin/HSE untuk reset password akun lokal.')">Lupa password?</a>
             </div>
 
@@ -489,26 +496,13 @@
             </button>
         </form>
 
-        <!-- Demo Divider -->
-        <div class="demo-divider">
-            <span>atau jelajahi dengan akun demo</span>
-        </div>
-
-        <!-- Demo Account Quick Helpers (Referencing Screenshot) -->
-        <div class="demo-actions-grid">
-            <button type="button" class="btn-demo-pill" onclick="fillDemo('karyawan')" title="Gunakan akun demo Karyawan">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-                <span>Karyawan</span>
-            </button>
-            <button type="button" class="btn-demo-pill" onclick="fillDemo('admin')" title="Gunakan akun demo Admin/HSE">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                </svg>
-                <span>Admin / HSE</span>
-            </button>
-        </div>
+        @if (config('app.demo_login') === true)
+            <div class="demo-divider"><span>atau jelajahi dengan akun demo</span></div>
+            <div class="demo-actions-grid">
+                <form method="POST" action="{{ route('demo.login', 'karyawan') }}">@csrf<button type="submit" class="btn-demo-pill">Karyawan</button></form>
+                <form method="POST" action="{{ route('demo.login', 'admin') }}">@csrf<button type="submit" class="btn-demo-pill">Admin / HSE</button></form>
+            </div>
+        @endif
 
         <!-- Footer Link -->
         <div class="register-footer-text">
@@ -518,21 +512,7 @@
 
 </div>
 
-<script>
-    function fillDemo(type) {
-        var loginInput = document.getElementById('login');
-        var passInput = document.getElementById('password');
 
-        if (type === 'karyawan') {
-            loginInput.value = 'karyawan';
-            passInput.value = 'DemoOnly!2026';
-        } else if (type === 'admin') {
-            loginInput.value = 'admin';
-            passInput.value = 'DemoOnly!2026';
-        }
-        loginInput.focus();
-    }
-</script>
 
 </body>
 </html>

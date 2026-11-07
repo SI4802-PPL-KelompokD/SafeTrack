@@ -23,6 +23,7 @@ class HandleInspectionInertiaRequests extends Middleware
                     'isAdmin' => (bool) $user->can('manage-administration'),
                 ] : null,
             ],
+            'demoLogin' => config('app.demo_login') === true,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
