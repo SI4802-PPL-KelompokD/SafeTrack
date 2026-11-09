@@ -13,12 +13,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 class DailyInspectionController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $isAdmin = $request->user()->can('manage-administration');
         $inspections = DailyInspection::query()
@@ -31,7 +30,7 @@ class DailyInspectionController extends Controller
         return $this->inspectionView($request, $inspections, false);
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request): View
     {
         $inspections = DailyInspection::query()
             ->with(['inspector:id,name', 'workArea:id,name', 'shift:id,name'])
@@ -46,8 +45,8 @@ class DailyInspectionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'work_area_id' => ['required', Rule::exists('work_areas', 'id')->where('is_active', true)],
-            'shift_id' => ['required', Rule::exists('shifts', 'id')->where('is_active', true)],
+            'work_area_id' => ['required', Rule::exists('area_kerja', 'id')->where('is_active', true)],
+            'shift_id' => ['required', Rule::exists('shift', 'id')->where('is_active', true)],
             'inspection_date' => ['required', 'date', 'before_or_equal:today'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'answers' => ['required', 'array', 'min:1'],
@@ -116,20 +115,14 @@ class DailyInspectionController extends Controller
         return redirect()->route('daily-inspections.index')->with('success', 'Inspeksi harian berhasil disimpan.');
     }
 
-    private function inspectionView(Request $request, LengthAwarePaginator $inspections, bool $openCreateModal): Response
+    private function inspectionView(Request $request, LengthAwarePaginator $inspections, bool $openCreateModal): View
     {
-        return Inertia::render('DailyInspections/Index', [
+        return view('daily-inspections.index', [
             'inspections' => $inspections,
-            'isAdmin' => $request->user()->can('manage-administration'),
+            'isAdmin' => (bool) $request->user()->can('manage-administration'),
             'openCreateModal' => $openCreateModal || $request->session()->has('errors'),
             'workAreas' => WorkArea::query()->active()->orderBy('name')->get(['id', 'name']),
             'shifts' => Shift::query()->where('is_active', true)->orderBy('code')->get(['id', 'name']),
-            'endpoints' => [
-                'index' => route('daily-inspections.index'),
-                'create' => route('daily-inspections.create'),
-                'store' => route('daily-inspections.store'),
-                'questions' => route('work-areas.active-questions', ['workArea' => '__AREA__']),
-            ],
         ]);
     }
 }

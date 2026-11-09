@@ -8,12 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 class WorkAreaController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $workAreas = WorkArea::query()
             ->withCount('questions')
@@ -23,13 +22,9 @@ class WorkAreaController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('WorkAreas/Index', [
+        return view('work-areas.index', [
             'workAreas' => $workAreas,
             'filters' => $request->only(['search']),
-            'endpoints' => [
-                'index' => route('admin.work-areas.index'),
-                'store' => route('admin.work-areas.store'),
-            ],
         ]);
     }
 
@@ -58,18 +53,13 @@ class WorkAreaController extends Controller
         return redirect()->route('admin.work-areas.index')->with('success', 'Area kerja berhasil ditambahkan.');
     }
 
-    public function show(WorkArea $workArea): Response
+    public function show(WorkArea $workArea): View
     {
         $questions = $workArea->questions()->orderBy('sort_order')->orderBy('id')->paginate(15);
 
-        return Inertia::render('WorkAreas/Show', [
+        return view('work-areas.show', [
             'workArea' => $workArea,
             'questions' => $questions,
-            'endpoints' => [
-                'index' => route('admin.work-areas.index'),
-                'update' => route('admin.work-areas.update', $workArea),
-                'questionsStore' => route('admin.work-areas.questions.store', $workArea),
-            ],
         ]);
     }
 
