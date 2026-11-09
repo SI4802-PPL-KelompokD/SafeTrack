@@ -1,26 +1,233 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kelola Area Kerja – SafeTrack</title>
-    <style>
-        *{box-sizing:border-box}body{margin:0;background:#f8fafc;color:#334155;font:14px system-ui,sans-serif}.shell{display:flex;min-height:100vh}.side{width:245px;background:#fff;border-right:1px solid #e2e8f0;padding:24px 16px}.brand{font-size:21px;font-weight:800;color:#0f2a4a;margin-bottom:28px}.brand span{color:#d97706}.nav{display:block;padding:10px 12px;border-radius:7px;color:#475569;text-decoration:none;margin-bottom:5px}.nav.active{background:#0f2a4a;color:#fff}.main{flex:1}.top{height:64px;background:#fff;border-bottom:1px solid #e2e8f0;padding:21px 32px}.content{max-width:1200px;padding:30px 36px}.header,.toolbar{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}.title{font-size:26px;color:#0f172a;margin:0}.muted{color:#64748b}.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-top:20px;overflow:hidden}.toolbar{padding:16px}.input,.select,.textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#fff}.filters{display:flex;gap:10px;flex:1}.btn{display:inline-block;padding:9px 14px;border:0;border-radius:6px;background:#1e293b;color:#fff;text-decoration:none;cursor:pointer}.btn.alt{background:#fff;color:#334155;border:1px solid #cbd5e1}.btn.warn{background:#b45309}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:13px 16px;text-align:left;border-top:1px solid #e2e8f0}th{background:#f8fafc;font-size:12px;text-transform:uppercase}.badge{padding:4px 9px;border-radius:999px;font-size:12px;background:#dcfce7;color:#15803d}.badge.off{background:#f1f5f9;color:#64748b}.actions{display:flex;gap:6px;align-items:center}.alert{padding:12px 15px;border-radius:6px;margin-top:16px;background:#ecfdf5;color:#065f46}.alert.error{background:#fef2f2;color:#991b1b}.modal{border:0;border-radius:12px;width:min(520px,92vw);padding:0}.modal::backdrop{background:#0f172a99}.modal-body{padding:24px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:6px}.full{grid-column:1/-1}.pagination{padding:16px}.empty{text-align:center;padding:46px;color:#64748b}@media(max-width:800px){.side{display:none}.content{padding:22px 16px}.filters,.grid{display:grid;grid-template-columns:1fr}.full{grid-column:auto}}
-    </style>
-</head>
-<body><div class="shell">
-<aside class="side"><div class="brand">safe<span>Track</span></div><a class="nav" href="{{ route('dashboard') }}">Ringkasan</a><a class="nav" href="{{ route('shifts.index') }}">Kelola Shift Kerja</a><a class="nav active" href="{{ route('admin.work-areas.index') }}">Area & Pertanyaan</a></aside>
-<main class="main"><div class="top">Administrasi &gt; <strong>Area Kerja</strong></div><div class="content">
-    <div class="header"><div><h1 class="title">Kelola area kerja</h1><div class="muted">Atur area dan pertanyaan inspeksi yang berlaku.</div></div><button class="btn" onclick="document.getElementById('createArea').showModal()">+ Tambah area</button></div>
-    @if(session('success'))<div class="alert">{{ session('success') }}</div>@endif
-    @if(session('error'))<div class="alert error">{{ session('error') }}</div>@endif
-    @if($errors->any())<div class="alert error">{{ $errors->first() }}</div>@endif
-    <div class="card"><form class="toolbar" method="GET"><div class="filters"><input class="input" name="search" value="{{ request('search') }}" placeholder="Cari nama area..."><select class="select" name="status"><option value="">Semua status</option><option value="active" @selected(request('status')==='active')>Aktif</option><option value="inactive" @selected(request('status')==='inactive')>Nonaktif</option></select><button class="btn alt">Terapkan</button></div></form>
-        @if($workAreas->isEmpty())<div class="empty">Belum ada area kerja yang sesuai.</div>@else<div class="table-wrap"><table><thead><tr><th>Area kerja</th><th>Departemen</th><th>Pertanyaan</th><th>Status</th><th>Diperbarui</th><th>Aksi</th></tr></thead><tbody>
-        @foreach($workAreas as $area)<tr><td><strong>{{ $area->name }}</strong><div class="muted">{{ $area->code ?: 'Tanpa kode' }}</div></td><td>{{ $area->department->name }}</td><td>{{ $area->questions_count }}</td><td><span class="badge {{ $area->is_active ? '' : 'off' }}">{{ $area->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>{{ $area->updated_at->format('d M Y H:i') }}</td><td><div class="actions"><a class="btn alt" href="{{ route('admin.work-areas.show',$area) }}">Detail</a><button class="btn alt" type="button" onclick='editArea(@js($area))'>Ubah</button><form method="POST" action="{{ route('admin.work-areas.toggle-status',$area) }}" onsubmit="return confirm('Ubah status area kerja ini?')">@csrf @method('PATCH')<button class="btn warn">{{ $area->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button></form></div></td></tr>@endforeach
-        </tbody></table></div><div class="pagination">{{ $workAreas->links() }}</div>@endif
+@extends('layouts.safetrack', ['title' => 'Kelola Area Kerja', 'pageTitle' => 'Kelola Area Kerja'])
+
+@section('content')
+<header class="page-head">
+    <div>
+        <span class="eyebrow">ADMINISTRASI</span>
+        <h1>Data master</h1>
+        <p>Satu referensi data untuk aktivitas keselamatan yang konsisten.</p>
     </div>
-</div></main></div>
-<dialog id="createArea" class="modal"><form class="modal-body" method="POST" action="{{ route('admin.work-areas.store') }}">@csrf<h2>Tambah area kerja</h2><div class="grid"><label class="field"><span>Nama *</span><input class="input" name="name" required></label><label class="field"><span>Kode</span><input class="input" name="code" maxlength="30"></label><label class="field full"><span>Departemen *</span><select class="select" name="department_id" required>@foreach($departments as $department)<option value="{{ $department->id }}">{{ $department->name }}</option>@endforeach</select></label><label class="field full"><span>Deskripsi</span><textarea class="textarea" name="description"></textarea></label><label><input type="checkbox" name="is_active" value="1" checked> Aktif</label></div><div class="actions" style="justify-content:flex-end;margin-top:20px"><button class="btn alt" type="button" onclick="createArea.close()">Batal</button><button class="btn">Simpan</button></div></form></dialog>
-<dialog id="editAreaModal" class="modal"><form id="editAreaForm" class="modal-body" method="POST">@csrf @method('PUT')<h2>Ubah area kerja</h2><div class="grid"><label class="field"><span>Nama *</span><input id="editName" class="input" name="name" required></label><label class="field"><span>Kode</span><input id="editCode" class="input" name="code"></label><label class="field full"><span>Departemen *</span><select id="editDepartment" class="select" name="department_id">@foreach($departments as $department)<option value="{{ $department->id }}">{{ $department->name }}</option>@endforeach</select></label><label class="field full"><span>Deskripsi</span><textarea id="editDescription" class="textarea" name="description"></textarea></label><label><input id="editActive" type="checkbox" name="is_active" value="1"> Aktif</label></div><div class="actions" style="justify-content:flex-end;margin-top:20px"><button class="btn alt" type="button" onclick="editAreaModal.close()">Batal</button><button class="btn">Simpan</button></div></form></dialog>
-<script>function editArea(area){const form=document.getElementById('editAreaForm');form.action=`{{ url('/admin/work-areas') }}/${area.id}`;editName.value=area.name;editCode.value=area.code??'';editDepartment.value=area.department_id;editDescription.value=area.description??'';editActive.checked=Boolean(area.is_active);editAreaModal.showModal()}</script>
-</body></html>
+    <div>
+        <button class="btn primary" type="button" onclick="openCreateModal()">+ Tambah area</button>
+    </div>
+</header>
+
+<!-- Tabs Nav Bar -->
+<div class="master-tabs-bar">
+    <a href="{{ route('admin.departments.index') }}" class="master-tab-item">
+        <span>Departemen</span> <span class="tab-badge">2</span>
+    </a>
+    <a href="{{ route('shifts.index') }}" class="master-tab-item">
+        <span>Shift kerja</span>
+    </a>
+    <button type="button" class="master-tab-item" onclick="alert('Modul Kategori Temuan dalam integrasi Data Master.')">
+        <span>Kategori temuan</span> <span class="tab-badge">2</span>
+    </button>
+    <a href="{{ route('admin.work-areas.index') }}" class="master-tab-item active">
+        <span>Area &amp; pertanyaan</span> <span class="tab-badge">{{ $workAreas->total() }}</span>
+    </a>
+</div>
+
+<!-- Main Table Panel -->
+<section class="panel">
+    <form class="toolbar filter-toolbar" method="GET" action="{{ route('admin.work-areas.index') }}">
+        <label class="filter-search">
+            <span aria-hidden="true">🔍</span>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama area...">
+        </label>
+        <button class="btn" type="submit">Terapkan</button>
+        <a class="btn ghost" href="{{ route('admin.work-areas.index') }}">Reset</a>
+    </form>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Area kerja</th>
+                    <th>Pertanyaan</th>
+                    <th>Diperbarui</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($workAreas as $area)
+                    <tr>
+                        <td><strong>{{ $area->name }}</strong></td>
+                        <td>{{ $area->questions_count }}</td>
+                        <td>{{ $area->updated_at ? $area->updated_at->format('d M Y') : '-' }}</td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="action-btn action-edit" href="{{ route('admin.work-areas.show', $area) }}">Ubah</a>
+                                <button type="button" class="action-btn action-delete" onclick="openDeleteModal({{ $area->id }}, @js($area->name))">Hapus</button>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty">Tidak ada area kerja yang cocok.</div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    @if($workAreas->hasPages())
+        <div style="padding: 16px 20px;">
+            {{ $workAreas->links() }}
+        </div>
+    @endif
+</section>
+@endsection
+
+@push('modals')
+<!-- Modal Tambah Area (2-Step Wizard) -->
+<div id="createAreaModal" class="modal-layer" role="presentation" style="display:none;" onclick="if(event.target === this) closeCreateModal()">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="create-modal-title">
+        <header>
+            <h2 id="create-modal-title">Tambah area kerja</h2>
+            <button type="button" aria-label="Tutup" onclick="closeCreateModal()">✕</button>
+        </header>
+        <div class="modal-body">
+            <div class="wizard-progress">
+                <span id="step1Indicator" class="active">1</span>
+                <i></i>
+                <span id="step2Indicator">2</span>
+            </div>
+
+            <form id="createAreaForm" method="POST" action="{{ route('admin.work-areas.store') }}">
+                @csrf
+
+                <!-- Step 1: Area Info -->
+                <div id="wizardStep1" class="form-grid">
+                    <label class="full" style="display:flex;flex-direction:column;gap:7px;color:#475569;font-size:12px;font-weight:600;">
+                        Nama area kerja *
+                        <input id="createName" name="name" value="{{ old('name') }}" placeholder="Contoh: Workshop Utama" style="width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:7px;color:#334155;" required>
+                        @error('name')<small class="field-error" style="color:#b42318;font-size:11px;">{{ $message }}</small>@enderror
+                    </label>
+                    <label class="full" style="display:flex;flex-direction:column;gap:7px;color:#475569;font-size:12px;font-weight:600;">
+                        Deskripsi
+                        <textarea id="createDescription" name="description" placeholder="Jelaskan lokasi atau fungsi area kerja." style="width:100%;min-height:92px;padding:11px 12px;border:1px solid #cbd5e1;border-radius:7px;color:#334155;resize:vertical;">{{ old('description') }}</textarea>
+                        @error('description')<small class="field-error" style="color:#b42318;font-size:11px;">{{ $message }}</small>@enderror
+                    </label>
+                    <div class="form-actions full" style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+                        <button class="btn ghost" type="button" onclick="closeCreateModal()">Batal</button>
+                        <button id="btnNextStep" class="btn primary" type="button" onclick="goToStep(2)">Lanjut ke pertanyaan →</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: 3 Initial Questions -->
+                <div id="wizardStep2" class="initial-questions" style="display:none;">
+                    <div class="wizard-copy">
+                        <strong>Tambahkan 3 pertanyaan awal</strong>
+                        <p>Pertanyaan dapat diubah kembali setelah area tersimpan.</p>
+                    </div>
+
+                    @for($i = 0; $i < 3; $i++)
+                        <label>
+                            <span>Pertanyaan {{ $i + 1 }} *</span>
+                            <textarea id="questionInput_{{ $i }}" name="questions[{{ $i }}]" placeholder="Tulis pertanyaan inspeksi {{ $i + 1 }}" required>{{ old("questions.$i") }}</textarea>
+                            @error("questions.$i")<small class="field-error" style="color:#b42318;font-size:11px;">{{ $message }}</small>@enderror
+                        </label>
+                    @endfor
+                    @error('questions')<small class="field-error" style="color:#b42318;font-size:11px;display:block;">{{ $message }}</small>@enderror
+
+                    <div class="form-actions" style="display:flex;justify-content:space-between;margin-top:16px;">
+                        <button class="btn ghost" type="button" onclick="goToStep(1)">← Kembali</button>
+                        <button id="btnSubmitArea" class="btn primary" type="submit">Simpan area</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<!-- Modal Hapus Area Kerja -->
+<div id="deleteAreaModal" class="modal-layer" role="presentation" style="display:none;" onclick="if(event.target === this) closeDeleteModal()">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+        <header>
+            <h2 id="delete-modal-title">Hapus area kerja?</h2>
+            <button type="button" aria-label="Tutup" onclick="closeDeleteModal()">✕</button>
+        </header>
+        <div class="modal-body">
+            <div class="confirm-dialog-copy">
+                <div class="confirm-dialog-icon" aria-hidden="true">!</div>
+                <div>
+                    <p>Anda akan menghapus area kerja berikut:</p>
+                    <strong id="deleteAreaName" style="margin-bottom:8px;"></strong>
+                    <small>Data akan dihapus dari daftar aktif, tetapi riwayatnya tetap tersimpan.</small>
+                </div>
+            </div>
+            <form id="deleteAreaForm" method="POST" action="">
+                @csrf
+                @method('DELETE')
+                <div class="confirm-dialog-actions">
+                    <button class="btn ghost" type="button" onclick="closeDeleteModal()">Batal</button>
+                    <button class="btn danger" type="submit">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+@endpush
+
+@push('scripts')
+<script>
+    const createModal = document.getElementById('createAreaModal');
+    const deleteModal = document.getElementById('deleteAreaModal');
+    const step1El = document.getElementById('wizardStep1');
+    const step2El = document.getElementById('wizardStep2');
+    const step1Ind = document.getElementById('step1Indicator');
+    const step2Ind = document.getElementById('step2Indicator');
+    const createNameInput = document.getElementById('createName');
+
+    function openCreateModal() {
+        createModal.style.display = 'flex';
+        goToStep(1);
+    }
+
+    function closeCreateModal() {
+        createModal.style.display = 'none';
+        goToStep(1);
+    }
+
+    function goToStep(step) {
+        if (step === 2) {
+            if (!createNameInput.value.trim()) {
+                createNameInput.focus();
+                createNameInput.reportValidity();
+                return;
+            }
+            step1El.style.display = 'none';
+            step2El.style.display = 'grid';
+            step1Ind.className = 'done';
+            step2Ind.className = 'active';
+        } else {
+            step2El.style.display = 'none';
+            step1El.style.display = 'grid';
+            step1Ind.className = 'active';
+            step2Ind.className = '';
+        }
+    }
+
+    function openDeleteModal(areaId, areaName) {
+        document.getElementById('deleteAreaName').textContent = areaName;
+        document.getElementById('deleteAreaForm').action = `{{ url('/admin/work-areas') }}/${areaId}`;
+        deleteModal.style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        deleteModal.style.display = 'none';
+    }
+
+    // Auto reopen wizard on validation error
+    @if($errors->has('questions') || $errors->has('questions.*'))
+        openCreateModal();
+        goToStep(2);
+    @elseif($errors->has('name') || $errors->has('description'))
+        openCreateModal();
+        goToStep(1);
+    @endif
+</script>
+@endpush

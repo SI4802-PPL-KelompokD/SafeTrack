@@ -8,7 +8,7 @@ class InspectionAnswer extends Model
 {
     protected $table = 'inspection_answer';
 
-    protected $guarded = ['*'];
+    protected $guarded = ['id'];
 
     public function findings()
     {

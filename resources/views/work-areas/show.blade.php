@@ -1,9 +1,210 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pertanyaan {{ $workArea->name }} – SafeTrack</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#f8fafc;color:#334155;font:14px system-ui,sans-serif}.content{max-width:1100px;margin:auto;padding:34px 20px}.back{color:#475569;text-decoration:none}.head,.row,.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h1{color:#0f172a}.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-top:20px;padding:20px}.btn{padding:9px 14px;border:0;border-radius:6px;background:#1e293b;color:#fff;text-decoration:none;cursor:pointer}.btn.alt{background:#fff;color:#334155;border:1px solid #cbd5e1}.btn.danger{background:#b91c1c}.input,.textarea{padding:9px 11px;border:1px solid #cbd5e1;border-radius:6px;width:100%}.question{padding:16px 0;border-top:1px solid #e2e8f0}.question:first-of-type{border-top:0}.badge{font-size:12px;border-radius:999px;padding:4px 8px;background:#dcfce7;color:#15803d}.off{background:#f1f5f9;color:#64748b}.muted{color:#64748b}.alert{padding:12px;margin-top:15px;border-radius:6px;background:#ecfdf5;color:#065f46}.error{background:#fef2f2;color:#991b1b}.modal{border:0;border-radius:12px;width:min(600px,92vw)}.modal::backdrop{background:#0f172a99}.field{display:grid;gap:6px;margin-bottom:13px}@media(max-width:650px){.actions{align-items:stretch}.actions form,.actions button{width:100%}}</style></head><body><div class="content">
-<a class="back" href="{{ route('admin.work-areas.index') }}">← Kembali ke area kerja</a><div class="head"><div><h1>{{ $workArea->name }}</h1><div class="muted">{{ $workArea->department->name }} · {{ $workArea->code ?: 'Tanpa kode' }} · {{ $workArea->is_active ? 'Aktif' : 'Nonaktif' }}</div></div><button class="btn" onclick="createQuestion.showModal()">+ Tambah pertanyaan</button></div>
-@if(session('success'))<div class="alert">{{ session('success') }}</div>@endif @if(session('error'))<div class="alert error">{{ session('error') }}</div>@endif @if($errors->any())<div class="alert error">{{ $errors->first() }}</div>@endif
-<div class="card"><h2>Pertanyaan inspeksi</h2>@forelse($questions as $question)<div class="question"><div class="row"><div><strong>{{ $question->sort_order }}. {{ $question->question }}</strong><div class="muted">Diperbarui {{ $question->updated_at->format('d M Y H:i') }}</div></div><span class="badge {{ $question->is_active?'':'off' }}">{{ $question->is_active?'Aktif':'Nonaktif' }}</span></div><div class="actions" style="justify-content:flex-end;margin-top:12px"><button class="btn alt" onclick='editQuestion(@js($question))'>Ubah</button><form method="POST" action="{{ route('admin.work-areas.questions.toggle-status',[$workArea,$question]) }}">@csrf @method('PATCH')<button class="btn alt">{{ $question->is_active?'Nonaktifkan':'Aktifkan' }}</button></form><form method="POST" action="{{ route('admin.work-areas.questions.destroy',[$workArea,$question]) }}" onsubmit="return confirm('Hapus pertanyaan ini?')">@csrf @method('DELETE')<button class="btn danger">Hapus</button></form></div></div>@empty<p class="muted">Belum ada pertanyaan inspeksi untuk area ini.</p>@endforelse {{ $questions->links() }}</div>
+@extends('layouts.safetrack', ['title' => 'Ubah ' . $workArea->name, 'pageTitle' => 'Ubah Area Kerja'])
+
+@section('content')
+<header class="page-head">
+    <div>
+        <span class="eyebrow">DATA MASTER</span>
+        <h1>Ubah area kerja</h1>
+        <p>Perbarui informasi area dan pertanyaan inspeksi.</p>
+    </div>
+    <div class="actions">
+        <a class="btn" href="{{ route('admin.work-areas.index') }}">← Kembali</a>
+        <button class="btn primary" type="button" onclick="openCreateQuestionModal()">+ Tambah pertanyaan</button>
+    </div>
+</header>
+
+<!-- Area Information Section -->
+<section class="panel area-editor" style="margin-bottom:24px;">
+    <div class="panel-head">
+        <div>
+            <h2>Informasi area</h2>
+            <p>Ubah nama dan deskripsi area kerja.</p>
+        </div>
+        @if(session('success') && !session('question_action'))
+            <span class="save-indicator">Tersimpan</span>
+        @endif
+    </div>
+
+    <form class="area-editor-form" method="POST" action="{{ route('admin.work-areas.update', $workArea) }}">
+        @csrf
+        @method('PUT')
+
+        <label>
+            Nama area kerja *
+            <input name="name" value="{{ old('name', $workArea->name) }}" required>
+            @error('name')<small class="field-error" style="color:#b42318;font-size:11px;">{{ $message }}</small>@enderror
+        </label>
+
+        <label>
+            Deskripsi
+            <textarea name="description" placeholder="Jelaskan lokasi atau fungsi area kerja.">{{ old('description', $workArea->description) }}</textarea>
+            @error('description')<small class="field-error" style="color:#b42318;font-size:11px;">{{ $message }}</small>@enderror
+        </label>
+
+        <div class="area-editor-actions">
+            <button class="btn primary" type="submit">Simpan perubahan</button>
+        </div>
+    </form>
+</section>
+
+<!-- Inspection Questions Section -->
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Pertanyaan inspeksi</h2>
+            <p>Atur pertanyaan yang digunakan pada area {{ $workArea->name }}.</p>
+        </div>
+        <span class="badge">{{ $questions->total() }} pertanyaan</span>
+    </div>
+
+    @forelse($questions as $item)
+        <article class="question-row">
+            <div>
+                <span class="order">{{ $item->sort_order }}</span>
+                <strong>{{ $item->question }}</strong>
+                <small>Diperbarui {{ $item->updated_at ? $item->updated_at->format('d M Y') : '-' }}</small>
+            </div>
+            <div class="question-actions">
+                <span class="badge {{ $item->is_active ? 'green' : 'gray' }}">{{ $item->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                <button class="action-btn action-edit" type="button" onclick="openEditQuestionModal({{ $item->id }}, @js($item->question), {{ $item->sort_order }}, {{ $item->is_active ? 'true' : 'false' }})">Ubah</button>
+                <form method="POST" action="{{ route('admin.work-areas.questions.toggle-status', [$workArea, $item]) }}" style="display:inline;">
+                    @csrf
+                    @method('PATCH')
+                    <button class="action-btn {{ $item->is_active ? 'action-disable' : 'action-enable' }}" type="submit">
+                        {{ $item->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                    </button>
+                </form>
+                <button class="action-btn action-delete" type="button" onclick="openDeleteQuestionModal({{ $item->id }}, @js($item->question))">Hapus</button>
+            </div>
+        </article>
+    @empty
+        <div class="empty">Belum ada pertanyaan inspeksi untuk area ini.</div>
+    @endforelse
+
+    @if($questions->hasPages())
+        <div style="padding: 16px 20px;">
+            {{ $questions->links() }}
+        </div>
+    @endif
+</section>
+@endsection
+
+@push('modals')
+<!-- Modal Tambah / Ubah Pertanyaan -->
+<div id="questionModal" class="modal-layer" role="presentation" style="display:none;" onclick="if(event.target === this) closeQuestionModal()">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="question-modal-title">
+        <header>
+            <h2 id="question-modal-title">Tambah pertanyaan</h2>
+            <button type="button" aria-label="Tutup" onclick="closeQuestionModal()">✕</button>
+        </header>
+        <div class="modal-body">
+            <form id="questionForm" method="POST" action="{{ route('admin.work-areas.questions.store', $workArea) }}" class="form-grid">
+                @csrf
+                <div id="questionMethodField"></div>
+
+                <label class="full" style="display:flex;flex-direction:column;gap:7px;color:#475569;font-size:12px;font-weight:600;">
+                    Teks pertanyaan *
+                    <textarea id="modalQuestionText" name="question" required style="width:100%;min-height:92px;padding:11px 12px;border:1px solid #cbd5e1;border-radius:7px;resize:vertical;color:#334155;">{{ old('question') }}</textarea>
+                    @error('question')<small class="field-error" style="color:#b42318;font-size:11px;">{{ $message }}</small>@enderror
+                </label>
+
+                <label style="display:flex;flex-direction:column;gap:7px;color:#475569;font-size:12px;font-weight:600;">
+                    Urutan *
+                    <input id="modalQuestionOrder" type="number" min="1" name="sort_order" value="{{ old('sort_order', 1) }}" required style="width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:7px;color:#334155;">
+                    @error('sort_order')<small class="field-error" style="color:#b42318;font-size:11px;">{{ $message }}</small>@enderror
+                </label>
+
+                <label class="check" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569;margin-top:24px;">
+                    <input id="modalQuestionActive" type="checkbox" name="is_active" value="1" checked>
+                    Pertanyaan aktif
+                </label>
+
+                <div class="form-actions full" style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+                    <button class="btn ghost" type="button" onclick="closeQuestionModal()">Batal</button>
+                    <button class="btn primary" type="submit">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </section>
 </div>
-<dialog id="createQuestion" class="modal"><form method="POST" action="{{ route('admin.work-areas.questions.store',$workArea) }}">@csrf<div style="padding:22px"><h2>Tambah pertanyaan</h2><label class="field">Teks pertanyaan *<textarea class="textarea" name="question" required></textarea></label><label class="field">Urutan *<input class="input" type="number" min="1" name="sort_order" value="{{ ($questions->max('sort_order') ?? 0)+1 }}" required></label><label><input type="checkbox" name="is_active" value="1" checked> Aktif</label><div class="actions" style="justify-content:flex-end;margin-top:18px"><button class="btn alt" type="button" onclick="createQuestion.close()">Batal</button><button class="btn">Simpan</button></div></div></form></dialog>
-<dialog id="editQuestionModal" class="modal"><form id="editQuestionForm" method="POST">@csrf @method('PUT')<div style="padding:22px"><h2>Ubah pertanyaan</h2><label class="field">Teks pertanyaan *<textarea id="questionText" class="textarea" name="question" required></textarea></label><label class="field">Urutan *<input id="questionOrder" class="input" type="number" min="1" name="sort_order" required></label><label><input id="questionActive" type="checkbox" name="is_active" value="1"> Aktif</label><div class="actions" style="justify-content:flex-end;margin-top:18px"><button class="btn alt" type="button" onclick="editQuestionModal.close()">Batal</button><button class="btn">Simpan</button></div></div></form></dialog>
-<script>function editQuestion(q){editQuestionForm.action=`{{ url('/admin/work-areas/'.$workArea->id.'/questions') }}/${q.id}`;questionText.value=q.question;questionOrder.value=q.sort_order;questionActive.checked=Boolean(q.is_active);editQuestionModal.showModal()}</script></body></html>
+
+<!-- Modal Hapus Pertanyaan -->
+<div id="deleteQuestionModal" class="modal-layer" role="presentation" style="display:none;" onclick="if(event.target === this) closeDeleteQuestionModal()">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="delete-q-modal-title">
+        <header>
+            <h2 id="delete-q-modal-title">Hapus pertanyaan inspeksi?</h2>
+            <button type="button" aria-label="Tutup" onclick="closeDeleteQuestionModal()">✕</button>
+        </header>
+        <div class="modal-body">
+            <div class="confirm-dialog-copy">
+                <div class="confirm-dialog-icon" aria-hidden="true">!</div>
+                <div>
+                    <p>Anda akan menghapus pertanyaan berikut:</p>
+                    <strong id="deleteQuestionItemName" style="margin-bottom:8px;"></strong>
+                    <small>Data akan dihapus dari daftar aktif, tetapi riwayatnya tetap tersimpan.</small>
+                </div>
+            </div>
+            <form id="deleteQuestionForm" method="POST" action="">
+                @csrf
+                @method('DELETE')
+                <div class="confirm-dialog-actions">
+                    <button class="btn ghost" type="button" onclick="closeDeleteQuestionModal()">Batal</button>
+                    <button class="btn danger" type="submit">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+@endpush
+
+@push('scripts')
+<script>
+    const questionModal = document.getElementById('questionModal');
+    const questionForm = document.getElementById('questionForm');
+    const questionTitle = document.getElementById('question-modal-title');
+    const questionMethod = document.getElementById('questionMethodField');
+    const questionText = document.getElementById('modalQuestionText');
+    const questionOrder = document.getElementById('modalQuestionOrder');
+    const questionActive = document.getElementById('modalQuestionActive');
+    const deleteQModal = document.getElementById('deleteQuestionModal');
+
+    function openCreateQuestionModal() {
+        questionTitle.textContent = 'Tambah pertanyaan';
+        questionForm.action = `{{ route('admin.work-areas.questions.store', $workArea) }}`;
+        questionMethod.innerHTML = '';
+        questionText.value = '';
+        questionOrder.value = '{{ $questions->total() + 1 }}';
+        questionActive.checked = true;
+        questionModal.style.display = 'flex';
+    }
+
+    function openEditQuestionModal(id, text, sortOrder, isActive) {
+        questionTitle.textContent = 'Ubah pertanyaan';
+        questionForm.action = `{{ url('/admin/work-areas/' . $workArea->id . '/questions') }}/${id}`;
+        questionMethod.innerHTML = '@method("PUT")';
+        questionText.value = text;
+        questionOrder.value = sortOrder;
+        questionActive.checked = Boolean(isActive);
+        questionModal.style.display = 'flex';
+    }
+
+    function closeQuestionModal() {
+        questionModal.style.display = 'none';
+    }
+
+    function openDeleteQuestionModal(id, text) {
+        document.getElementById('deleteQuestionItemName').textContent = text;
+        document.getElementById('deleteQuestionForm').action = `{{ url('/admin/work-areas/' . $workArea->id . '/questions') }}/${id}`;
+        deleteQModal.style.display = 'flex';
+    }
+
+    function closeDeleteQuestionModal() {
+        deleteQModal.style.display = 'none';
+    }
+
+    // Auto reopen question modal on error
+    @if($errors->has('question') || $errors->has('sort_order'))
+        questionModal.style.display = 'flex';
+    @endif
+</script>
+@endpush

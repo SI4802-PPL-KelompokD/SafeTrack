@@ -29,9 +29,9 @@ class WorkAreaManagementTest extends TestCase
         $response = $this->actingAs(User::where('username', 'admin')->firstOrFail())
             ->get(route('admin.work-areas.index'));
 
-        $response->assertOk()->assertInertia(fn (Assert $page) => $page
-            ->component('WorkAreas/Index', false)
-            ->has('workAreas.data'));
+        $response->assertOk()
+            ->assertViewIs('work-areas.index')
+            ->assertViewHas('workAreas');
     }
 
     public function test_hse_and_non_hse_employees_cannot_open_work_area_management_page(): void
@@ -54,7 +54,7 @@ class WorkAreaManagementTest extends TestCase
         $question = InspectionQuestion::where('work_area_id', $area->id)->firstOrFail();
         $shift = Shift::firstOrFail();
         $before = [];
-        foreach (['work_areas', 'inspection_questions', 'shifts', 'audit_logs'] as $table) {
+        foreach (['area_kerja', 'inspection_questions', 'shift', 'audit_logs'] as $table) {
             $before[$table] = DB::table($table)->orderBy('id')->get()->toJson();
         }
         $this->actingAs($employee);

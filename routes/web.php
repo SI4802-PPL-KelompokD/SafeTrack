@@ -76,13 +76,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         ]);
     })->name('dashboard');
 
-    // Daily Inspections (Inertia)
-    Route::middleware('inspection.inertia')->group(function () {
-        Route::get('/daily-inspections', [DailyInspectionController::class, 'index'])->name('daily-inspections.index');
-        Route::middleware('inspection-user')->group(function () {
-            Route::get('/daily-inspections/create', [DailyInspectionController::class, 'create'])->name('daily-inspections.create');
-            Route::post('/daily-inspections', [DailyInspectionController::class, 'store'])->name('daily-inspections.store');
-        });
+    // Daily Inspections
+    Route::get('/daily-inspections', [DailyInspectionController::class, 'index'])->name('daily-inspections.index');
+    Route::middleware('inspection-user')->group(function () {
+        Route::get('/daily-inspections/create', [DailyInspectionController::class, 'create'])->name('daily-inspections.create');
+        Route::post('/daily-inspections', [DailyInspectionController::class, 'store'])->name('daily-inspections.store');
     });
     Route::get('/work-areas/{workArea}/active-questions', [InspectionQuestionController::class, 'index'])
         ->name('work-areas.active-questions');
@@ -117,7 +115,7 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
         });
 
-        Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
+        Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
             Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
                 ->name('work-areas.toggle-status');
