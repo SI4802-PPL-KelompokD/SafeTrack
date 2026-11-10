@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DailyInspectionController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\HazardPhotoController;
 use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
 use App\Http\Middleware\RequireAdminActionIdentity;
 use App\Models\SapMonthlySummary;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -35,7 +37,19 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-// Guest Authentication Routes (UC-02 Login)
+// Shortcut Dev: Akses langsung sebagai Admin (Kelola Departemen) saat login dalam pengembangan
+Route::get('/dev-login', function () {
+    $admin = User::where('username', 'admin')->first();
+    if ($admin) {
+        Auth::login($admin);
+
+        return redirect()->route('admin.departments.index');
+    }
+
+    return 'User admin belum ada. Jalankan: php artisan db:seed --class=DemoSeeder';
+})->name('dev.login');
+
+// Guest Authentication Routes (UC-01 Registrasi, UC-02 Login)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
@@ -51,15 +65,29 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $currentPeriod = now()->format('Y-m-01');
-        $sapSummary = SapMonthlySummary::with('eligibleReward')
-            ->where('user_id', $user->id)
-            ->where('period', $currentPeriod)
-            ->first();
+        $sapSummary = null;
+        try {
+            $sapSummary = SapMonthlySummary::with('eligibleReward')
+                ->where('user_id', $user->id)
+                ->where('period', $currentPeriod)
+                ->first();
+        } catch (Throwable) {
+            // Fallback aman jika tabel atau kolom reward belum ter-migrasi penuh
+        }
 
         return view('dashboard', [
             'sapSummary' => $sapSummary,
         ]);
     })->name('dashboard');
+
+    // Daily Inspections
+    Route::get('/daily-inspections', [DailyInspectionController::class, 'index'])->name('daily-inspections.index');
+    Route::middleware('inspection-user')->group(function () {
+        Route::get('/daily-inspections/create', [DailyInspectionController::class, 'create'])->name('daily-inspections.create');
+        Route::post('/daily-inspections', [DailyInspectionController::class, 'store'])->name('daily-inspections.store');
+    });
+    Route::get('/work-areas/{workArea}/active-questions', [InspectionQuestionController::class, 'index'])
+        ->name('work-areas.active-questions');
 
     // ---- PBI-13: Laporan Saya, Daftar Pelaporan, Detail Laporan (semua peran login) ----
     Route::get('/laporan-saya', [HazardReportController::class, 'mine'])->name('hazards.mine');
@@ -71,66 +99,36 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/laporan-bahaya/{hazardReport}/bukti/{photo}', [HazardPhotoController::class, 'resolution'])
         ->withTrashed()->name('hazards.resolution-photos.show');
 
-    // // ---- PBI-21: Pencatatan Safety Talk (route statis SEBELUM {safetyTalk}) ----
-    // Route::get('/safety-talk', [SafetyTalkController::class, 'index'])->name('safety-talks.index');
-    // Route::get('/safety-talk/create', [SafetyTalkController::class, 'create'])->name('safety-talks.create');
-    // Route::post('/safety-talk', [SafetyTalkController::class, 'store'])->name('safety-talks.store');
-    // Route::get('/safety-talk/{safetyTalk}', [SafetyTalkController::class, 'show'])
-    //     ->withTrashed()->name('safety-talks.show');
-
-    // Admin & Super Admin Only Routes (Kelola Shift, Work Areas, & Pencapaian SAP UC-28)
+    // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {
         Route::get('/data-master', [ShiftController::class, 'index'])->name('admin.data-master');
         Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::prefix('admin')->name('admin.')->group(function () {
-            Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
-        });
+
+        // SAP (Pencapaian SAP UC-28)
         Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
         Route::post('/sap/recalculate', [SapController::class, 'recalculate'])->name('sap.recalculate');
 
-        // // ---- PBI-22: Verifikasi dan Kelola Safety Talk ----
-        // Route::post('/safety-talk/{safetyTalk}/verifikasi', [SafetyTalkManagementController::class, 'verify'])
-        //     ->name('safety-talks.verify');
-        // Route::delete('/safety-talk/{safetyTalk}', [SafetyTalkManagementController::class, 'archive'])
-        //     ->name('safety-talks.archive');
-        // Route::post('/safety-talk/{safetyTalk}/pulihkan', [SafetyTalkManagementController::class, 'restore'])
-        //     ->withTrashed()->name('safety-talks.restore');
+        Route::prefix('admin')->name('admin.')->group(function () {
+            // Pengguna Management
+            Route::get('pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
+            Route::put('pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
+            Route::delete('pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+            Route::post('pengguna/{pengguna}/reset-password', [PenggunaController::class, 'resetPassword'])->name('pengguna.reset-password');
 
-        // Hazard Reports (Laporan Bahaya)
-        Route::get('/hazards', [HazardReportController::class, 'index'])->name('hazards.index');
-        Route::get('/hazards/mine', [HazardReportController::class, 'mine'])->name('hazards.mine');
-        Route::get('/hazards/{hazardReport}', [HazardReportController::class, 'show'])->name('hazards.show');
-        Route::get('/hazards/{hazardReport}/photos/{photo}', [HazardPhotoController::class, 'hazard'])->name('hazards.photos.show');
-        Route::get('/hazards/{hazardReport}/resolution-photos/{photo}', [HazardPhotoController::class, 'resolution'])->name('hazards.resolution-photos.show');
+            // Departments
+            Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
+        });
 
-        // Admin & Super Admin Only Routes (Kelola Shift Kerja)
-        Route::middleware('admin')->group(function () {
-            Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
-
-            // SAP (Pencapaian SAP)
-            Route::get('/sap', [SapController::class, 'index'])->name('sap.index');
-            Route::post('/sap/recalculate', [SapController::class, 'recalculate'])->name('sap.recalculate');
-
-            Route::prefix('admin')->name('admin.')->group(function () {
-                // Pengguna Management
-                Route::get('pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
-                Route::put('pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
-                Route::delete('pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
-            });
-
-            Route::prefix('admin')->name('admin.')->middleware('inspection.inertia')->group(function () {
-                Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update']);
-                Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
-                    ->name('work-areas.toggle-status');
-                Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
-                    ->name('work-areas.questions.store');
-                Route::put('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'update'])
-                    ->name('work-areas.questions.update');
-                Route::patch('work-areas/{workArea}/questions/{question}/toggle-status', [InspectionQuestionController::class, 'toggleStatus'])
-                    ->name('work-areas.questions.toggle-status');
-                Route::delete('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'destroy'])
-                    ->name('work-areas.questions.destroy');
-            });
+        Route::prefix('admin')->name('admin.')->middleware(RequireAdminActionIdentity::class)->group(function () {
+            Route::resource('work-areas', WorkAreaController::class)->only(['index', 'store', 'show', 'update']);
+            Route::patch('work-areas/{workArea}/toggle-status', [WorkAreaController::class, 'toggleStatus'])
+                ->name('work-areas.toggle-status');
+            Route::post('work-areas/{workArea}/questions', [InspectionQuestionController::class, 'store'])
+                ->name('work-areas.questions.store');
+            Route::put('work-areas/{workArea}/questions/{question}', [InspectionQuestionController::class, 'update'])
+                ->name('work-areas.questions.update');
+            Route::patch('work-areas/{workArea}/questions/{question}/toggle-status', [InspectionQuestionController::class, 'toggleStatus'])
+                ->name('work-areas.questions.toggle-status');
         });
     });
 });

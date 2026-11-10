@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// PUBLIK: autentikasi mobile.
+// Public Authentication Route
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 
-// SEMUA ROLE: token Sanctum, status akun, dan role valid.
-Route::middleware(['auth:sanctum', 'active', 'can:access-application'])->group(function () {
+// Authenticated Routes (Requires Bearer Token)
+Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
 

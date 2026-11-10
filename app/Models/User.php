@@ -23,6 +23,7 @@ use Laravel\Sanctum\HasApiTokens;
     'profile_photo_path',
     'department_id',
     'employee_registry_id',
+    'role',
     'is_active',
     'deleted_by',
     'deletion_reason',
@@ -45,26 +46,9 @@ class User extends Authenticatable
     /**
      * Admin/HSE = role super_admin atau admin (sama dengan middleware EnsureAdmin).
      */
-    public const ADMIN_ROLES = ['admin', 'super_admin'];
-
-    public const ROLES = ['employee', ...self::ADMIN_ROLES];
-
     public function isAdmin(): bool
     {
-        return in_array($this->role, self::ADMIN_ROLES, true);
-    }
-
-    public function roleLabel(): string
-    {
-        if ($this->isAdmin()) {
-            return 'Admin/HSE';
-        }
-
-        if ($this->role === 'employee') {
-            return $this->department?->is_hse ? 'Karyawan HSE' : 'Karyawan';
-        }
-
-        return 'Tidak dikenal';
+        return in_array($this->role, ['super_admin', 'admin'], true);
     }
 
     public function department(): BelongsTo
