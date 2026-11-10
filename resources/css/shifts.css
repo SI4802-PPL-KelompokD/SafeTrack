@@ -54,16 +54,21 @@
 .shift-content .table-wrap { overflow-x: auto }
 .shift-content table { width: 100%; border-collapse: collapse }
 .shift-content th {
-    background: #f8fafc; color: #94a3b8;
-    font-size: 12px; font-weight: 600; text-align: left;
+    background: #f8fafc;
+    color: #64748b !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
 }
 .shift-content th, .shift-content td { padding: 18px 24px; border-bottom: 1px solid #e2e8f0 }
 .shift-content td { font-size: 13.5px; color: #334155 }
 .shift-content .empty { padding: 36px; text-align: center; color: #64748b }
-.shift-action-heading { text-align: right }
+.shift-content th.shift-action-heading { text-align: left !important }
 
 /* Row actions */
-.shift-actions { display: flex; align-items: center; justify-content: flex-end; gap: 20px; white-space: nowrap }
+.shift-actions { display: flex; align-items: center; justify-content: flex-start !important; gap: 20px; white-space: nowrap }
 .shift-actions form { margin: 0 }
 .shift-edit {
     border: 0; background: none; color: #17375e; font-weight: 700; font-size: 13.5px;
@@ -140,12 +145,30 @@
 }
 .wa-dialog h2 { margin: 0; font-size: 18px; font-weight: 700; color: #0f172a }
 .wa-dialog header button {
-    width: 36px; height: 36px; border: 1px solid #cbd5e1;
-    border-radius: 8px; background: white; color: #64748b;
-    font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0;
     transition: all 0.15s ease;
 }
-.wa-dialog header button:hover { background: #f8fafc; color: #0f172a }
+.wa-dialog header button:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+.wa-dialog header button:focus,
+.wa-dialog header button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
 .wa-dialog-body { padding: 24px; max-height: calc(85dvh - 140px); overflow-y: auto; overflow-x: visible; }
 
 /* Labels & Asterisk Inline */

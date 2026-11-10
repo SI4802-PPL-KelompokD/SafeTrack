@@ -142,7 +142,13 @@ document.addEventListener('click', (event) => {
     const open = event.target.closest('[data-open-dialog]');
     if (open) {
         const dialog = document.getElementById(open.dataset.openDialog);
-        if (dialog) dialog.showModal();
+        if (dialog) {
+            dialog.showModal();
+            const firstInput = dialog.querySelector('input:not([type="hidden"]):not([readonly]), textarea');
+            if (firstInput) {
+                setTimeout(() => firstInput.focus(), 40);
+            }
+        }
     }
     const close = event.target.closest('[data-close-dialog]');
     if (close) {
@@ -169,6 +175,9 @@ document.addEventListener('click', (event) => {
     document.getElementById('edit-action-reason').value = '';
 
     document.getElementById('edit-shift').showModal();
+    setTimeout(() => {
+        document.getElementById('edit-name')?.focus();
+    }, 40);
 });
 
 /* Toggle status form interception */
@@ -189,7 +198,9 @@ document.addEventListener('submit', (event) => {
 
     document.getElementById('confirm-submit').disabled = false;
     confirmDialog.showModal();
-    identityForm.elements.namedItem('admin_name').focus();
+    setTimeout(() => {
+        identityForm.elements.namedItem('admin_name')?.focus();
+    }, 40);
 });
 
 /* Confirm identity for toggle status */

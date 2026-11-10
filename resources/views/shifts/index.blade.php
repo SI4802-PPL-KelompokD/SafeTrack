@@ -31,10 +31,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Nama</th>
-                        <th>Jam kerja</th>
-                        <th>Diperbarui</th>
-                        <th class="shift-action-heading">Aksi</th>
+                        <th style="width: 32%;">Nama</th>
+                        <th style="width: 26%;">Jam kerja</th>
+                        <th style="width: 22%;">Diperbarui</th>
+                        <th style="width: 20%;" class="shift-action-heading">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,7 +79,11 @@
 <dialog id="create-shift" class="wa-dialog" aria-labelledby="create-shift-title" @if($errors->any() && old('_form') === 'create') data-reopen @endif>
     <header>
         <h2 id="create-shift-title">Tambah shift kerja</h2>
-        <button type="button" data-close-dialog aria-label="Tutup">&times;</button>
+        <button type="button" data-close-dialog aria-label="Tutup">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M1 1L13 13M1 13L13 1"/>
+            </svg>
+        </button>
     </header>
     <form method="POST" action="{{ route('shifts.store') }}" id="create-shift-form">
         @csrf
@@ -202,7 +206,11 @@
 <dialog id="edit-shift" class="wa-dialog" aria-labelledby="edit-shift-title" @if($errors->any() && old('_form') === 'edit') data-reopen @endif>
     <header>
         <h2 id="edit-shift-title">Ubah shift kerja</h2>
-        <button type="button" data-close-dialog aria-label="Tutup">&times;</button>
+        <button type="button" data-close-dialog aria-label="Tutup">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M1 1L13 13M1 13L13 1"/>
+            </svg>
+        </button>
     </header>
     <form method="POST" id="edit-shift-form">
         @csrf
@@ -328,7 +336,11 @@
 <dialog id="admin-confirm" class="wa-dialog wa-confirm" aria-labelledby="confirm-title">
     <header>
         <h2 id="confirm-title">Aktifkan shift kerja?</h2>
-        <button type="button" data-close-dialog aria-label="Tutup">&times;</button>
+        <button type="button" data-close-dialog aria-label="Tutup">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M1 1L13 13M1 13L13 1"/>
+            </svg>
+        </button>
     </header>
     <form id="admin-confirm-form">
         <div class="wa-dialog-body">
