@@ -102,7 +102,14 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {
         Route::get('/data-master', [ShiftController::class, 'index'])->name('admin.data-master');
-        Route::resource('shifts', ShiftController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
+
+        Route::middleware(RequireAdminActionIdentity::class)->group(function () {
+            Route::post('shifts', [ShiftController::class, 'store'])->name('shifts.store');
+            Route::put('shifts/{shift}', [ShiftController::class, 'update'])->name('shifts.update');
+            Route::patch('shifts/{shift}/toggle-status', [ShiftController::class, 'toggleStatus'])
+                ->name('shifts.toggle-status');
+        });
 
         // SAP (Pencapaian SAP UC-28)
         Route::get('/sap', [SapController::class, 'index'])->name('sap.index');

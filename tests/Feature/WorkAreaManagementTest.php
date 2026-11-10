@@ -165,7 +165,7 @@ class WorkAreaManagementTest extends TestCase
             ['GET', route('shifts.index')],
             ['POST', route('shifts.store')],
             ['PUT', route('shifts.update', $shift)],
-            ['DELETE', route('shifts.destroy', $shift)],
+            ['PATCH', route('shifts.toggle-status', $shift)],
             ['GET', route('admin.work-areas.index')],
             ['GET', route('admin.work-areas.show', $area)],
             ['POST', route('admin.work-areas.store')],

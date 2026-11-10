@@ -66,6 +66,16 @@
             font-weight: 600;
             color: #64748b;
         }
+        .sidebar nav a.active {
+            background-color: #fffbeb !important;
+            color: #92400e !important;
+            font-weight: 700 !important;
+            border-left: 3.5px solid #f59e0b !important;
+            border-radius: 0 7px 7px 0 !important;
+        }
+        .sidebar nav a.active svg {
+            color: #d97706 !important;
+        }
     </style>
     @stack('styles')
 </head>
