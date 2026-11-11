@@ -8,6 +8,16 @@ use App\Models\HazardReport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\StoreHazardReportRequest;
+use App\Models\HazardCategory;
+use App\Models\HazardPhoto;
+use App\Services\AuditLogger;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
  * PBI-13 — Laporan Saya, Daftar Pelaporan, dan Detail Laporan (read-only).
@@ -99,5 +109,125 @@ class HazardReportController extends Controller
             'statuses' => HazardReport::STATUS_LABELS,
             'departments' => Department::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ];
+    }
+
+    /** PBI-11 — Menampilkan form pembuatan laporan bahaya. */
+    public function create(): Response
+    {
+        return Inertia::render('Hazards/Create', [
+            'categories' => HazardCategory::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+
+            'departments' => Department::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+
+            'endpoints' => [
+                'store' => route('hazards.store'),
+                'create' => route('hazards.create'),
+            ],
+        ]);
+    }
+
+    /** PBI-11 — Menyimpan laporan bahaya baru. */
+    public function store(
+        StoreHazardReportRequest $request,
+        AuditLogger $auditLogger
+    ): RedirectResponse {
+        $validated = $request->validated();
+
+        // Gunakan UUID dari frontend atau buat UUID baru.
+        $clientRequestId = $validated['client_request_id']
+            ?? (string) Str::uuid();
+
+        $storedFiles = [];
+
+        try {
+            DB::transaction(function () use (
+                $validated,
+                $request,
+                $auditLogger,
+                $clientRequestId,
+                &$storedFiles
+            ) {
+                // Mencegah laporan ganda berdasarkan client_request_id.
+                $report = HazardReport::firstOrCreate(
+                    ['client_request_id' => $clientRequestId],
+                    [
+                        'reporter_id' => $request->user()->id,
+                        'title' => $validated['title'],
+                        'location' => $validated['location'],
+                        'description' => $validated['description'],
+                        'category_id' => $validated['category_id'],
+                        'reporter_department_id' => $validated['reporter_department_id'],
+                        'repair_department_id' => $validated['repair_department_id'],
+                        'immediate_action' => $validated['immediate_action'],
+
+                        // TODO: Menunggu keputusan tim mengenai risk_level.
+                        'risk_level' => 'medium',
+
+                        'status' => HazardReport::STATUS_OPEN,
+
+                        // Menggunakan waktu server.
+                        'reported_at' => now(),
+                    ]
+                );
+
+                // Jika UUID sudah pernah digunakan, tidak membuat data baru.
+                if (! $report->wasRecentlyCreated) {
+                    return;
+                }
+
+                // Menyimpan foto secara privat menggunakan disk local.
+                foreach ($request->file('photos', []) as $photo) {
+                    $path = $photo->store(
+                        'hazard-reports',
+                        'local'
+                    );
+
+                    if (! $path) {
+                        throw new \RuntimeException(
+                            'Foto bukti gagal disimpan.'
+                        );
+                    }
+
+                    $storedFiles[] = $path;
+
+                    // Menyimpan informasi foto ke tabel hazard_photos.
+                    HazardPhoto::create([
+                        'hazard_report_id' => $report->id,
+                        'uploaded_by' => $request->user()->id,
+                        'disk' => 'local',
+                        'path' => $path,
+                        'original_name' => $photo->getClientOriginalName(),
+                        'mime_type' => $photo->getMimeType(),
+                        'size_bytes' => $photo->getSize(),
+                    ]);
+                }
+
+                // Mencatat aktivitas pembuatan laporan ke audit log.
+                $auditLogger->log(
+                    $request->user(),
+                    'tambah',
+                    $report,
+                    null,
+                    $report->fresh()->toArray()
+                );
+            });
+        } catch (\Throwable $exception) {
+            // Menghapus file dari disk local jika transaksi gagal.
+            if (! empty($storedFiles)) {
+                Storage::disk('local')->delete($storedFiles);
+            }
+
+            throw $exception;
+        }
+
+        return redirect()
+            ->route('hazards.create')
+            ->with('success', 'Laporan bahaya berhasil dibuat.');
     }
 }
