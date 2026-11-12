@@ -103,7 +103,7 @@
             height: 64px; background: #ffffff; border-bottom: 1px solid var(--border-light);
             padding: 0 32px; display: flex; align-items: center; justify-content: space-between;
         }
-        .content-area { padding: 32px 36px; max-width: 1200px; }
+        .content-area { padding: 32px 36px; width: 100%; }
 
         .welcome-hero-card {
             background: linear-gradient(135deg, #0f2a4a 0%, #1e3a5f 100%);
@@ -113,7 +113,7 @@
         .welcome-hero-card h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
         .welcome-hero-card p { font-size: 14px; color: #cbd5e1; }
 
-        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 28px; }
         .card-stat { background: #ffffff; border: 1px solid var(--border-light); border-radius: 10px; padding: 20px; }
         .card-stat-label { font-size: 13px; color: #64748b; margin-bottom: 6px; }
         .card-stat-val { font-size: 28px; font-weight: 800; color: #0f172a; }
@@ -157,13 +157,13 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="menu-link">
+                <a href="{{ route('hazards.index') }}" class="menu-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
                     <span>Laporan Bahaya</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('daily-inspections.index') }}" class="menu-link">
+                <a href="#" class="menu-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V19.5a2.25 2.25 0 002.25 2.25h.75"/></svg>
                     <span>Inspeksi Harian</span>
                 </a>
@@ -175,20 +175,26 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="menu-link">
+                <a href="{{ in_array(Auth::user()->role, ['super_admin', 'admin'], true) ? route('sap.index') : '#' }}" class="menu-link">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.757l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59"/></svg>
                     <span>Pencapaian SAP</span>
                 </a>
             </li>
         </ul>
 
-        @if (Auth::user() && in_array(Auth::user()->role, ['super_admin', 'admin'], true))
+        @if (Auth::user() && Auth::user()->can('manage-administration'))
             <div class="nav-title">Administrasi</div>
             <ul class="menu-list">
                 <li>
+                    <a href="{{ route('admin.pengguna.index') }}" class="menu-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+                        <span>Kelola Karyawan</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('shifts.index') }}" class="menu-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>Kelola Shift Kerja</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/></svg>
+                        <span>Data Master</span>
                     </a>
                 </li>
             </ul>
@@ -242,19 +248,45 @@
             <div class="stats-row">
                 <div class="card-stat">
                     <div class="card-stat-label">Laporan Bahaya Saya</div>
-                    <div class="card-stat-val">0</div>
+                    <div class="card-stat-val">{{ $sapSummary?->hazard_count ?? 0 }}</div>
                 </div>
                 <div class="card-stat">
                     <div class="card-stat-label">Inspeksi Bulan Ini</div>
-                    <div class="card-stat-val">0</div>
+                    <div class="card-stat-val">{{ $sapSummary?->inspection_count ?? 0 }}</div>
                 </div>
                 <div class="card-stat">
                     <div class="card-stat-label">Poin SAP K3</div>
-                    <div class="card-stat-val">0</div>
+                    <div class="card-stat-val">{{ $sapSummary?->total_points ?? 0 }}</div>
+                </div>
+                <div class="card-stat">
+                    <div class="card-stat-label">
+                        @if (Auth::user()->department?->is_hse)
+                            Target K3 (HSE)
+                        @else
+                            Hak Reward K3
+                        @endif
+                    </div>
+                    <div class="card-stat-val" style="font-size:18px;margin-top:6px;">
+                        @if (Auth::user()->department?->is_hse)
+                            @if ($sapSummary?->target_met === true)
+                                <span style="color:#15803d;font-weight:700;">&#10003; Terpenuhi</span>
+                            @elseif ($sapSummary?->target_met === false)
+                                <span style="color:#b91c1c;font-weight:700;">Belum Terpenuhi</span>
+                            @else
+                                <span style="color:#64748b;font-size:14px;font-weight:600;">Belum Ada Aturan</span>
+                            @endif
+                        @else
+                            @if ($sapSummary?->reward_eligible && $sapSummary?->eligibleReward)
+                                <span style="color:#b45309;font-weight:700;">🎁 {{ $sapSummary->eligibleReward->name }}</span>
+                            @else
+                                <span style="color:#64748b;font-size:14px;font-weight:600;">Belum Capai Ambang</span>
+                            @endif
+                        @endif
+                    </div>
                 </div>
             </div>
 
-            @if (Auth::user()->role === 'employee')
+            @if (Auth::user()->can('submit-inspections'))
                 <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:24px;">
                     <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:8px;">Akses Akun Karyawan</h3>
                     <p style="font-size:13.5px;color:#64748b;line-height:1.6;">

@@ -3,30 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DailyInspection extends Model
 {
-    protected $fillable = ['client_request_id', 'inspector_id', 'department_id', 'work_area_id', 'shift_id', 'inspection_date', 'status', 'notes'];
+    protected $table = 'daily_inspection';
 
-    public function workArea(): BelongsTo
+    protected $guarded = ['id'];
+
+    public function answers()
     {
-        return $this->belongsTo(WorkArea::class);
+        return $this->hasMany(InspectionAnswer::class);
     }
 
-    public function inspector(): BelongsTo
+    public function inspector()
     {
         return $this->belongsTo(User::class, 'inspector_id');
     }
 
-    public function shift(): BelongsTo
+    public function workArea()
     {
-        return $this->belongsTo(Shift::class);
+        return $this->belongsTo(WorkArea::class, 'work_area_id');
     }
 
-    public function answers(): HasMany
+    public function shift()
     {
-        return $this->hasMany(InspectionAnswer::class);
+        return $this->belongsTo(Shift::class, 'shift_id');
     }
 }

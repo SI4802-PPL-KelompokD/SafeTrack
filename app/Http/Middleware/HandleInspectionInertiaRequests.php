@@ -20,7 +20,7 @@ class HandleInspectionInertiaRequests extends Middleware
                     'id' => $user->id,
                     'name' => $user->name,
                     'role' => $user->role,
-                    'isAdmin' => in_array($user->role, ['super_admin', 'admin'], true),
+                    'isAdmin' => (bool) $user->can('manage-administration'),
                 ] : null,
             ],
             'flash' => [
@@ -30,10 +30,16 @@ class HandleInspectionInertiaRequests extends Middleware
             'navigation' => [
                 'dashboard' => route('dashboard'),
                 'inspections' => route('daily-inspections.index'),
-                'workAreas' => $user && in_array($user->role, ['super_admin', 'admin'], true)
+                'dataMaster' => $user && $user->can('manage-administration')
+                    ? route('shifts.index')
+                    : null,
+                'workAreas' => $user && $user->can('manage-administration')
                     ? route('admin.work-areas.index')
                     : null,
-                'shifts' => $user && in_array($user->role, ['super_admin', 'admin'], true)
+                'departments' => $user && in_array($user->role, ['super_admin', 'admin'], true)
+                    ? route('admin.departments.index')
+                    : null,
+                'shifts' => $user && $user->can('manage-administration')
                     ? route('shifts.index')
                     : null,
                 'logout' => route('logout'),
