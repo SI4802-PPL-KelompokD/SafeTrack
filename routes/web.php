@@ -63,6 +63,12 @@ Route::post('/demo/login/{account}', [AuthController::class, 'demoLogin'])->midd
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    if (app()->environment(['local', 'testing'])) {
+        Route::post('/demo/switch-account', [AuthController::class, 'switchDemoAccount'])
+            ->name('demo.switch-account');
+    }
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $currentPeriod = now()->format('Y-m-01');
