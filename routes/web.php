@@ -89,25 +89,32 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/work-areas/{workArea}/active-questions', [InspectionQuestionController::class, 'index'])
         ->name('work-areas.active-questions');
 
-    // ---- PBI-13: Laporan Saya, Daftar Pelaporan, Detail Laporan (semua peran login) ----
-    Route::get('/laporan-saya', [HazardReportController::class, 'mine'])->name('hazards.mine');
-    // PBI-11 - Pembuatan Laporan Bahaya
-Route::middleware('inspection.inertia')->group(function () {
-    Route::get('/laporan-bahaya/create',
-        [HazardReportController::class, 'create']
-    )->name('hazards.create');
+    // ---- PBI-13: Laporan Saya, Daftar Pelaporan, Detail Laporan ----
+    Route::get('/laporan-saya', [HazardReportController::class, 'mine'])
+        ->name('hazards.mine');
 
-    Route::post('/laporan-bahaya',
-        [HazardReportController::class, 'store']
-    )->name('hazards.store');
-});
-    Route::get('/laporan-bahaya', [HazardReportController::class, 'index'])->name('hazards.index');
+    Route::get('/laporan-bahaya', [HazardReportController::class, 'index'])
+        ->name('hazards.index');
+
+    // ---- PBI-11: Pembuatan Laporan Bahaya ----
+    Route::get('/laporan-bahaya/create', [HazardReportController::class, 'create'])
+        ->name('hazards.create');
+
+    Route::post('/laporan-bahaya', [HazardReportController::class, 'store'])
+        ->name('hazards.store');
+
+    // Route dinamis harus berada setelah route create.
     Route::get('/laporan-bahaya/{hazardReport}', [HazardReportController::class, 'show'])
-        ->withTrashed()->name('hazards.show');
+        ->withTrashed()
+        ->name('hazards.show');
+
     Route::get('/laporan-bahaya/{hazardReport}/foto/{photo}', [HazardPhotoController::class, 'hazard'])
-        ->withTrashed()->name('hazards.photos.show');
+        ->withTrashed()
+        ->name('hazards.photos.show');
+
     Route::get('/laporan-bahaya/{hazardReport}/bukti/{photo}', [HazardPhotoController::class, 'resolution'])
-        ->withTrashed()->name('hazards.resolution-photos.show');
+        ->withTrashed()
+        ->name('hazards.resolution-photos.show');
 
     // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {

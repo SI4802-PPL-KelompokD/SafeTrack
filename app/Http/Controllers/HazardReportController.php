@@ -16,8 +16,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
-use Inertia\Response;
 
 /**
  * PBI-13 — Laporan Saya, Daftar Pelaporan, dan Detail Laporan (read-only).
@@ -112,9 +110,9 @@ class HazardReportController extends Controller
     }
 
     /** PBI-11 — Menampilkan form pembuatan laporan bahaya. */
-    public function create(): Response
+    public function create(): View
     {
-        return Inertia::render('Hazards/Create', [
+        return view('hazards.create', [
             'categories' => HazardCategory::query()
                 ->where('is_active', true)
                 ->orderBy('name')
@@ -124,11 +122,6 @@ class HazardReportController extends Controller
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name']),
-
-            'endpoints' => [
-                'store' => route('hazards.store'),
-                'create' => route('hazards.create'),
-            ],
         ]);
     }
 
