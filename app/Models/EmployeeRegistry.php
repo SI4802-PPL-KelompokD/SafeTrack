@@ -13,21 +13,29 @@ class EmployeeRegistry extends Model
 
     public function getTable()
     {
-        return $this->table ?? (Schema::hasTable('nik') ? 'nik' : 'employee_registry');
+        return Schema::hasTable('nik') ? 'nik' : 'employee_registry';
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
     }
 
     public function department(): BelongsTo
     {
-        return $this->belongsTo(Department::class, 'department_id');
+        return $this->belongsTo(Department::class);
     }
 
     public function employmentStatus(): BelongsTo
     {
-        return $this->belongsTo(EmploymentStatus::class, 'employment_status_id');
+        return $this->belongsTo(EmploymentStatus::class);
     }
 
     public function user(): HasOne
     {
-        return $this->hasOne(User::class, 'employee_registry_id');
+        return $this->hasOne(User::class);
     }
+    
 }

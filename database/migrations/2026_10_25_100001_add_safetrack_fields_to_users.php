@@ -12,7 +12,7 @@ return new class extends Migration {
   Schema::table('users',function(Blueprint $t){
    $t->foreignId('employee_registry_id')->unique()->constrained('employee_registry')->restrictOnDelete();
    $t->foreignId('department_id')->constrained('departments')->restrictOnDelete();
-   $t->string('username',60)->unique();
+   $t->string('username',60);
    $t->enum('role',['super_admin','admin','employee'])->default('employee');
    $t->boolean('is_active')->default(true);
    $t->string('profile_photo_path',500)->nullable();
@@ -30,3 +30,4 @@ return new class extends Migration {
   });
  }
 };
+
