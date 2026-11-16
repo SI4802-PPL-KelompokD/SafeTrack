@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SapController;
+use App\Http\Controllers\SapMonitoringController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
 use App\Http\Middleware\RequireAdminActionIdentity;
@@ -105,6 +106,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->withTrashed()->name('hazards.photos.show');
     Route::get('/laporan-bahaya/{hazardReport}/bukti/{photo}', [HazardPhotoController::class, 'resolution'])
         ->withTrashed()->name('hazards.resolution-photos.show');
+
+    // ---- PBI-10: Monitoring Pencapaian SAP (semua peran login) ----
+    Route::get('/pencapaian-sap', [SapMonitoringController::class, 'index'])->name('sap.monitoring');
 
     // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {
