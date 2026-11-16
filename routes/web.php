@@ -6,12 +6,10 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\HazardPhotoController;
 use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SapController;
-use App\Http\Controllers\SapMonitoringController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
 use App\Http\Middleware\RequireAdminActionIdentity;
@@ -66,12 +64,6 @@ Route::post('/demo/login/{account}', [AuthController::class, 'demoLogin'])->midd
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    if (app()->environment(['local', 'testing'])) {
-        Route::post('/demo/switch-account', [AuthController::class, 'switchDemoAccount'])
-            ->name('demo.switch-account');
-    }
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $currentPeriod = now()->format('Y-m-01');
@@ -99,35 +91,15 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/work-areas/{workArea}/active-questions', [InspectionQuestionController::class, 'index'])
         ->name('work-areas.active-questions');
 
-    // ---- PBI-13: Laporan Saya, Daftar Pelaporan, Detail Laporan ----
-    Route::get('/laporan-saya', [HazardReportController::class, 'mine'])
-        ->name('hazards.mine');
-
-    Route::get('/laporan-bahaya', [HazardReportController::class, 'index'])
-        ->name('hazards.index');
-
-    // ---- PBI-11: Pembuatan Laporan Bahaya ----
-    Route::get('/laporan-bahaya/create', [HazardReportController::class, 'create'])
-        ->name('hazards.create');
-
-    Route::post('/laporan-bahaya', [HazardReportController::class, 'store'])
-        ->name('hazards.store');
-
-    // Route dinamis harus berada setelah route create.
+    // ---- PBI-13: Laporan Saya, Daftar Pelaporan, Detail Laporan (semua peran login) ----
+    Route::get('/laporan-saya', [HazardReportController::class, 'mine'])->name('hazards.mine');
+    Route::get('/laporan-bahaya', [HazardReportController::class, 'index'])->name('hazards.index');
     Route::get('/laporan-bahaya/{hazardReport}', [HazardReportController::class, 'show'])
-        ->withTrashed()
-        ->name('hazards.show');
-
+        ->withTrashed()->name('hazards.show');
     Route::get('/laporan-bahaya/{hazardReport}/foto/{photo}', [HazardPhotoController::class, 'hazard'])
-        ->withTrashed()
-        ->name('hazards.photos.show');
-
+        ->withTrashed()->name('hazards.photos.show');
     Route::get('/laporan-bahaya/{hazardReport}/bukti/{photo}', [HazardPhotoController::class, 'resolution'])
-        ->withTrashed()
-        ->name('hazards.resolution-photos.show');
-
-    // ---- PBI-10: Monitoring Pencapaian SAP (semua peran login) ----
-    Route::get('/pencapaian-sap', [SapMonitoringController::class, 'index'])->name('sap.monitoring');
+        ->withTrashed()->name('hazards.resolution-photos.show');
 
     // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {
