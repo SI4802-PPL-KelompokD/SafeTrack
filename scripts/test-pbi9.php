@@ -160,7 +160,7 @@ try {
                     mkdir(dirname($jar), 0755, true);
                 }
                 echo "Mengunduh Selenium 4.52.0 dari rilis resmi...\n";
-                commandOutput([PHP_OS_FAMILY === 'Windows' ? 'curl.exe' : 'curl', '-fL', '--retry', '2', '-o', $jar, 'https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.52.0/selenium-server-4.52.0.jar'], $root);
+                commandOutput(['curl.exe', '-fL', '--retry', '2', '-o', $jar, 'https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.52.0/selenium-server-4.52.0.jar'], $root);
             }
             $selenium = startService(['java', '-jar', $jar, 'standalone', '--host', '127.0.0.1', '--port', '4445', '--selenium-manager', 'true', '-I', $metadata['browser'], '--max-sessions', '2', '--tracing', 'false'], $root, $artifacts.'/selenium.log', ['SE_AVOID_STATS' => 'true']);
             $services[] = $selenium;
