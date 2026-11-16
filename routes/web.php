@@ -6,10 +6,12 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\HazardPhotoController;
 use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SapController;
+use App\Http\Controllers\SapMonitoringController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\WorkAreaController;
 use App\Http\Middleware\RequireAdminActionIdentity;
@@ -64,6 +66,12 @@ Route::post('/demo/login/{account}', [AuthController::class, 'demoLogin'])->midd
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    if (app()->environment(['local', 'testing'])) {
+        Route::post('/demo/switch-account', [AuthController::class, 'switchDemoAccount'])
+            ->name('demo.switch-account');
+    }
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $currentPeriod = now()->format('Y-m-01');
@@ -100,6 +108,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->withTrashed()->name('hazards.photos.show');
     Route::get('/laporan-bahaya/{hazardReport}/bukti/{photo}', [HazardPhotoController::class, 'resolution'])
         ->withTrashed()->name('hazards.resolution-photos.show');
+
+    // ---- PBI-10: Monitoring Pencapaian SAP (semua peran login) ----
+    Route::get('/pencapaian-sap', [SapMonitoringController::class, 'index'])->name('sap.monitoring');
 
     // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {
