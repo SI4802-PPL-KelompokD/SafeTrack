@@ -91,6 +91,13 @@
             width: 34px; height: 34px; border-radius: 50%;
             background: #fef3c7; color: #92400e; display: flex; align-items: center; justify-content: center;
             font-size: 12px; font-weight: 700;
+            text-decoration: none;
+            overflow: hidden;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .user-avatar-badge:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 0 2px #f59e0b;
         }
         .btn-exit-form button {
             background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px;
@@ -153,7 +160,13 @@
 
         <div class="sidebar-footer">
             <div style="display:flex;align-items:center;gap:10px;">
-                <div class="user-avatar-badge">{{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}</div>
+                <a href="{{ route('profile.edit') }}" title="Kelola Profil" class="user-avatar-badge">
+                    @if(Auth::user()?->profile_photo_url)
+                        <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" style="width:100%;height:100%;object-fit:cover;">
+                    @else
+                        {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}
+                    @endif
+                </a>
                 <div>
                     <div style="font-size:13px;font-weight:700;color:#0f172a;">{{ Auth::user()->name ?? 'Pengguna' }}</div>
                     <div style="font-size:11px;color:#64748b;">
@@ -180,7 +193,13 @@
             </div>
             <div style="display:flex;align-items:center;gap:12px;">
                 <span style="font-size:12.5px;color:#64748b;">Halo, <strong>{{ Auth::user()->name ?? 'Pengguna' }}</strong></span>
-                <div class="user-avatar-badge" style="width:30px;height:30px;font-size:11px;">{{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}</div>
+                <a href="{{ route('profile.edit') }}" title="Kelola Profil" class="user-avatar-badge" style="width:30px;height:30px;font-size:11px;">
+                    @if(Auth::user()?->profile_photo_url)
+                        <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" style="width:100%;height:100%;object-fit:cover;">
+                    @else
+                        {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}
+                    @endif
+                </a>
             </div>
         </header>
 

@@ -76,6 +76,15 @@
         .sidebar nav a.active svg {
             color: #d97706 !important;
         }
+        .profile-avatar-link {
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .profile-avatar-link:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 0 2px #f59e0b;
+        }
     </style>
     @stack('styles')
     @include('partials.favicon')
@@ -107,7 +116,13 @@
         </nav>
 
         <div class="sidebar-user">
-            <div class="avatar">{{ $initials }}</div>
+            <a href="{{ route('profile.edit') }}" title="Kelola Profil" class="avatar profile-avatar-link" style="overflow:hidden;">
+                @if($user?->profile_photo_url)
+                    <img src="{{ $user->profile_photo_url }}" alt="{{ $userName }}" style="width:100%;height:100%;object-fit:cover;">
+                @else
+                    {{ $initials }}
+                @endif
+            </a>
             <div>
                 <strong>{{ $userName }}</strong>
                 <small>{{ $roleLabel }}</small>
@@ -139,7 +154,13 @@
                 <div style="font-size:12px;font-weight:600;padding:5px 10px;background:#f1f5f9;border-radius:6px;color:#334155;">
                     {{ $roleLabel }}: {{ $userName }}
                 </div>
-                <div class="avatar" style="width:30px;height:30px;font-size:11px;">{{ $initials }}</div>
+                <a href="{{ route('profile.edit') }}" title="Kelola Profil" class="avatar profile-avatar-link" style="width:30px;height:30px;font-size:11px;overflow:hidden;">
+                    @if($user?->profile_photo_url)
+                        <img src="{{ $user->profile_photo_url }}" alt="{{ $userName }}" style="width:100%;height:100%;object-fit:cover;">
+                    @else
+                        {{ $initials }}
+                    @endif
+                </a>
             </div>
         </header>
 
