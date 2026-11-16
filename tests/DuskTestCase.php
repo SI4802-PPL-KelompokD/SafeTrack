@@ -55,11 +55,7 @@ abstract class DuskTestCase extends BaseTestCase
         }
         $edge = config('dusk.browser') === 'edge';
         $capabilities = $edge ? DesiredCapabilities::microsoftEdge() : DesiredCapabilities::chrome();
-        $browserOptions = ['args' => $arguments];
-        if ($binary = config('dusk.browser_binary')) {
-            $browserOptions['binary'] = $binary;
-        }
-        $capabilities->setCapability($edge ? 'ms:edgeOptions' : 'goog:chromeOptions', $browserOptions);
+        $capabilities->setCapability($edge ? 'ms:edgeOptions' : 'goog:chromeOptions', ['args' => $arguments]);
         $capabilities->setCapability('pageLoadStrategy', 'eager');
 
         $driver = RemoteWebDriver::create(config('dusk.driver_url'), $capabilities, 30000, 60000);
