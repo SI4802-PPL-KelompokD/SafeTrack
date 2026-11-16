@@ -107,8 +107,11 @@ return new class extends Migration
         Schema::dropIfExists('roles');
         Schema::dropIfExists('status_company');
 
+        // Beri pengaman Schema::hasTable agar tidak error kalau tabel sudah tidak ada
         foreach (array_reverse($this->tableRenames, true) as $currentName => $erdName) {
-            Schema::rename($erdName, $currentName);
+            if (Schema::hasTable($erdName)) {
+                Schema::rename($erdName, $currentName);
+            }
         }
     }
 };

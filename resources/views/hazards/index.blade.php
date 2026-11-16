@@ -21,8 +21,12 @@
                 @else
                     Semua laporan terverifikasi dapat dilihat dan ditangani bersama.
                 @endif
-            </p>
+                        </p>
         </div>
+
+        <a href="{{ route('hazards.create') }}" class="btn btn-primary">
+            + Buat Laporan
+        </a>
     </div>
 
     <section class="panel">
