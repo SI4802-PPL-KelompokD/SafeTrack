@@ -1,0 +1,110 @@
+name: PBI-9 CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pbi9-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dusk-selenium:
+    name: Laravel Dusk + Selenium (PBI-9)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: safetrack_test
+          MYSQL_ROOT_PASSWORD: ci-pbi9-only
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci-pbi9-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, xml, dom, fileinfo, curl, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Chrome and ChromeDriver
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+          install-dependencies: true
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare test environment
+        run: |
+          cp .env.testing.example .env
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=ci-pbi9-only/' .env
+          php artisan key:generate --no-interaction
+          php artisan config:clear --no-interaction
+
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run PBI-9 feature and browser tests
+        env:
+          DUSK_BROWSER_BINARY: ${{ steps.chrome.outputs.chrome-path }}
+          SE_BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          SE_AVOID_STATS: 'true'
+        run: php scripts/test-pbi9.php --headless --browser=chrome
+
+      - name: Publish test summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f storage/app/pbi9-evidence/latest.txt ]; then
+            evidence_dir="$(cat storage/app/pbi9-evidence/latest.txt)"
+            if [ -f "$evidence_dir/report.md" ]; then
+              cat "$evidence_dir/report.md" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+
+      - name: Upload reports, screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pbi9-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            storage/app/pbi9-evidence/
+            storage/logs/laravel.log
+          if-no-files-found: warn
+          retention-days: 14

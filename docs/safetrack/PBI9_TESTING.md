@@ -158,3 +158,21 @@ Hasil aktual dibaca dari JUnit, bukan angka yang diisi manual. Log dari run gaga
 - `.env.dusk` dibuat manual: isi APP_KEY dan kredensial lokal yang benar; template `.env.dusk.example` bukan environment siap pakai karena APP_KEY kosong.
 
 Referensi: [Laravel Dusk](https://laravel.com/docs/13.x/dusk), [Selenium Grid Standalone](https://www.selenium.dev/documentation/grid/getting_started/).
+
+## Check otomatis pada pull request ke main
+
+Workflow `.github/workflows/pbi9-tests.yml` menambahkan check **Laravel Dusk + Selenium (PBI-9)** pada pull request yang menargetkan `main`. Workflow juga berjalan pada push ke `main` dan dapat dijalankan manual melalui tab Actions setelah tersedia di branch default.
+
+CI menggunakan Ubuntu, PHP 8.3, Node 24, Java 21, MySQL 8.4, serta Chrome/ChromeDriver. Perintahnya:
+
+```text
+php scripts/test-pbi9.php --headless --browser=chrome
+```
+
+Workflow menyiapkan environment dan database uji, membangun frontend, lalu menjalankan kedua suite PBI-9. Kredensial MySQL dalam workflow hanya untuk service database sementara milik job CI. Environment/kredensial lokal tidak diunggah.
+
+Setelah perubahan workflow dan runner di-commit serta di-push ke branch pull request, buka tab **Checks** pada PR. Konflik merge perlu diselesaikan sebelum workflow `pull_request` dapat berjalan. Hasil lengkap tersedia pada halaman run Actions, bagian **Summary** dan **Artifacts**. Artifact `pbi9-evidence-...` berisi laporan, JUnit XML, screenshot, serta log dan disimpan selama 14 hari.
+
+Agar check wajib lulus sebelum merge, pengelola repository dapat membuka **Settings ? Rules ? Rulesets** (atau **Settings ? Branches ? Branch protection rules**), memilih target `main`, lalu mengaktifkan **Require status checks to pass** dan memilih check ini setelah pernah berjalan. Workflow ini tidak mengubah aturan repository secara otomatis.
+
+Validasi workflow secara lokal dan pengujian lokal tidak menggantikan hasil GitHub Actions. Status hijau pada PR baru dapat dipastikan setelah run pada GitHub selesai.
