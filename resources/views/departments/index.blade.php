@@ -22,23 +22,6 @@
     ];
     $icon = fn (string $name) => '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . ($paths[$name] ?? '') . '</svg>';
 
-    $nav = [
-        'UTAMA' => [
-            ['Ringkasan', 'dashboard', route('dashboard'), false],
-            ['Laporan Bahaya', 'alert', '#', false],
-            ['Inspeksi Harian', 'clipboard', '#', false],
-            ['Safety Talk', 'talk', '#', false],
-            ['Pencapaian SAP', 'target', '#', false],
-            ['Notifikasi', 'bell', '#', false],
-        ],
-        'ADMINISTRASI' => [
-            ['Kelola Karyawan', 'users', '#', false],
-            ['Data Master', 'database', route('admin.departments.index'), true],
-            ['Ekspor Laporan', 'download', '#', false],
-            ['Jejak Audit', 'history', '#', false],
-        ],
-    ];
-
     $user = Auth::user();
     $userName = $user->name ?? 'Administrator';
     $initials = strtoupper(mb_substr($userName, 0, 1) . (mb_strpos($userName, ' ') !== false ? mb_substr($userName, mb_strpos($userName, ' ') + 1, 1) : mb_substr($userName, 1, 1)));
@@ -216,12 +199,7 @@
         <div><strong>PT Sentra Industri</strong><small>Workspace demonstrasi</small></div>
     </div>
     <nav class="nav-scroll" aria-label="Navigasi utama">
-        @foreach ($nav as $label => $items)
-            <div class="nav-label">{{ $label }}</div>
-            @foreach ($items as [$text, $ic, $href, $active])
-                <a href="{{ $href }}" class="nav-item {{ $active ? 'active' : '' }}" @if($active) aria-current="page" @endif>{!! $icon($ic) !!}{{ $text }}</a>
-            @endforeach
-        @endforeach
+        @include('partials.sidebar-menu', ['linkClass' => 'nav-item', 'labelClass' => 'nav-label', 'listClass' => ''])
     </nav>
     <div class="sidebar-foot">
         <div class="guide-card">

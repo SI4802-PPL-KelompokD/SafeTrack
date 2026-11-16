@@ -40,3 +40,7 @@ tests-selenium/reports/
 .pytest_cache/
 __pycache__/
 *.pyc
+!.env.dusk.example
+/tests/Browser/screenshots/
+/tests/Browser/console/
+/tests/Browser/source/
