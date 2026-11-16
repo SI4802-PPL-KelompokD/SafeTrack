@@ -8,7 +8,7 @@ class InspectionAnswer extends Model
 {
     protected $table = 'inspection_answer';
 
-    protected $fillable = ['inspection_question_id', 'question_snapshot', 'answer', 'notes'];
+    protected $guarded = ['id'];
 
     public function findings()
     {

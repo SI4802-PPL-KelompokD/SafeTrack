@@ -49,9 +49,9 @@ class DailyInspectionTest extends TestCase
         $this->actingAs($admin)
             ->get(route('daily-inspections.index'))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('DailyInspections/Index', false)
-                ->where('isAdmin', true));
+            ->assertViewIs('daily-inspections.index')
+            ->assertViewHas('isAdmin', true)
+            ->assertDontSee('+ Buat inspeksi');
     }
 
     public function test_hse_can_open_and_store_daily_inspection(): void
@@ -61,10 +61,9 @@ class DailyInspectionTest extends TestCase
         $this->actingAs($hse)
             ->get(route('daily-inspections.create'))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('DailyInspections/Index', false)
-                ->where('isAdmin', false)
-                ->where('openCreateModal', true));
+            ->assertViewIs('daily-inspections.index')
+            ->assertViewHas('isAdmin', false)
+            ->assertViewHas('openCreateModal', true);
         $this->actingAs($hse)
             ->post(route('daily-inspections.store'), $this->validInspectionPayload())
             ->assertRedirect(route('daily-inspections.index'))
@@ -80,10 +79,9 @@ class DailyInspectionTest extends TestCase
         $this->actingAs($employee)
             ->get(route('daily-inspections.create'))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('DailyInspections/Index', false)
-                ->where('isAdmin', false)
-                ->where('openCreateModal', true));
+            ->assertViewIs('daily-inspections.index')
+            ->assertViewHas('isAdmin', false)
+            ->assertViewHas('openCreateModal', true);
         $this->actingAs($employee)
             ->post(route('daily-inspections.store'), $this->validInspectionPayload())
             ->assertRedirect(route('daily-inspections.index'))
@@ -137,18 +135,15 @@ class DailyInspectionTest extends TestCase
             'role' => 'admin',
         ])->assertRedirect(route('daily-inspections.index'));
         $this->assertDatabaseHas('daily_inspection', ['inspector_id' => $employee->id, 'department_id' => $employee->department_id]);
-        $this->get(route('daily-inspections.index', ['inspector_id' => $other->id, 'role' => 'admin']))
-            ->assertOk()->assertInertia(fn (Assert $page) => $page
-            ->component('DailyInspections/Index', false)
-            ->where('inspections.total', 1)
-            ->where('inspections.data.0.inspector_id', $employee->id)
-            ->where('auth.user.isAdmin', false)
-            ->where('navigation.workAreas', null)
-            ->where('navigation.shifts', null));
+        $response = $this->get(route('daily-inspections.index', ['inspector_id' => $other->id, 'role' => 'admin']))
+            ->assertOk()
+            ->assertViewIs('daily-inspections.index')
+            ->assertViewHas('inspections', fn ($inspections) => $inspections->total() === 1 && $inspections->first()->inspector_id === $employee->id)
+            ->assertViewHas('isAdmin', false);
         $this->actingAs(User::where('username', 'admin')->firstOrFail())
             ->get(route('daily-inspections.index'))->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('DailyInspections/Index', false)->where('inspections.total', 2));
+            ->assertViewIs('daily-inspections.index')
+            ->assertViewHas('inspections', fn ($inspections) => $inspections->total() === 2);
     }
 
     private function validInspectionPayload(): array

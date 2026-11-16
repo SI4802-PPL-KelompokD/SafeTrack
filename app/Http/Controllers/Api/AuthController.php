@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -26,11 +27,11 @@ class AuthController extends Controller
         $user = User::with(['department', 'employeeRegistry'])
             ->where(function ($query) use ($loginInput) {
                 $query->where('username', $loginInput)
-                    ->orWhere('email', $loginInput);
+                      ->orWhere('email', $loginInput);
             })
             ->first();
 
-        if (! $user || ! Hash::check($password, $user->password)) {
+        if (!$user || !Hash::check($password, $user->password)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Username/email atau password salah.',
@@ -38,14 +39,12 @@ class AuthController extends Controller
         }
 
         // Periksa apakah akun aktif
-        if (! $user->is_active) {
+        if (!$user->is_active) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Akun Anda berstatus nonaktif. Silakan hubungi administrator.',
             ], 403);
         }
-
-        abort_unless($user->can('access-application'), 403);
 
         // Buat token autentikasi Sanctum untuk mobile
         $token = $user->createToken('safetrack-mobile')->plainTextToken;

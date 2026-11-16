@@ -200,6 +200,7 @@
         }
         @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
     </style>
+    @include('partials.favicon')
 </head>
 <body>
 <aside class="sidebar" id="sidebar">

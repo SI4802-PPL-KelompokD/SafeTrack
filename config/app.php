@@ -2,8 +2,6 @@
 
 return [
 
-    'demo_login' => (bool) env('DEMO_LOGIN', false),
-
     /*
     |--------------------------------------------------------------------------
     | Application Name

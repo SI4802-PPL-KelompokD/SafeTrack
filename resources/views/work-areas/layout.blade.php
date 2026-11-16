@@ -1,26 +1,11 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0f2a4a"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icons/safetrack-192.svg">
-<title>@yield('title', 'Area dan Pertanyaan') · SafeTrack</title>
-@vite(['resources/css/app.css', 'resources/css/work-areas.css', 'resources/js/work-areas.js'])
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-@include('shared.admin-styles')
-</head>
-<body><div class="app-shell">
-@include('shared.admin-shell')
-<div class="content-container work-area-content">
-@if(session('success'))<div class="alert success" role="status">{{ session('success') }}</div>@endif
-@if(session('error'))<div class="alert error" role="alert">{{ session('error') }}</div>@endif
-@if($errors->any())
-<div class="alert error" role="alert"><strong>Perubahan belum tersimpan.</strong><ul>@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>
-@endif
-@yield('content')
-@include('shared.admin-footer')
-</div></main></div>
+@extends('layouts.safetrack', ['title' => 'Area dan Pertanyaan', 'pageTitle' => 'Data Master'])
+@section('content')
+@vite(['resources/css/work-areas.css', 'resources/js/work-areas.js'])
+<div class="work-area-content">
+@yield('area-content')
+</div>
+@endsection
+@push('modals')
 <dialog id="admin-confirm" class="wa-dialog wa-confirm" aria-labelledby="confirm-title">
 <header><h2 id="confirm-title">Konfirmasi simpan perubahan</h2><button type="button" data-close-dialog aria-label="Tutup">×</button></header>
 <form id="admin-confirm-form">
@@ -31,4 +16,5 @@
 </div>
 <footer><button type="button" class="btn ghost" data-close-dialog>Batal</button><button class="btn primary" id="confirm-submit">Simpan perubahan</button></footer>
 </form></dialog>
-</body></html>
+
+@endpush

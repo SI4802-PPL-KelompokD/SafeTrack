@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -23,6 +24,7 @@ use Laravel\Sanctum\HasApiTokens;
     'profile_photo_path',
     'department_id',
     'employee_registry_id',
+    'role',
     'is_active',
     'deleted_by',
     'deletion_reason',
@@ -43,28 +45,21 @@ class User extends Authenticatable
     }
 
     /**
-     * Admin/HSE = role super_admin atau admin (sama dengan middleware EnsureAdmin).
+     * Kirim email reset password berbahasa Indonesia (PBI-07).
+     *
+     * @param  string  $token
      */
-    public const ADMIN_ROLES = ['admin', 'super_admin'];
-
-    public const ROLES = ['employee', ...self::ADMIN_ROLES];
-
-    public function isAdmin(): bool
+    public function sendPasswordResetNotification($token): void
     {
-        return in_array($this->role, self::ADMIN_ROLES, true);
+        $this->notify(new ResetPasswordNotification($token));
     }
 
-    public function roleLabel(): string
+    /**
+     * Admin/HSE = role super_admin atau admin (sama dengan middleware EnsureAdmin).
+     */
+    public function isAdmin(): bool
     {
-        if ($this->isAdmin()) {
-            return 'Admin/HSE';
-        }
-
-        if ($this->role === 'employee') {
-            return $this->department?->is_hse ? 'Karyawan HSE' : 'Karyawan';
-        }
-
-        return 'Tidak dikenal';
+        return in_array($this->role, ['super_admin', 'admin'], true);
     }
 
     public function department(): BelongsTo
@@ -164,4 +159,3 @@ class User extends Authenticatable
         return $query->where('is_active', $isActive);
     }
 }
-

@@ -203,6 +203,10 @@ class PenggunaController extends Controller
      */
     private function authorizeAdmin(): void
     {
-        abort_unless(Auth::user()?->can('access-admin'), 403, 'Akses ditolak.');
+        $user = Auth::user();
+
+        if (! $user || ! in_array($user->role, ['super_admin', 'admin'], true)) {
+            abort(403, 'Akses ditolak. Fitur ini hanya dapat diakses oleh Admin/HSE.');
+        }
     }
 }

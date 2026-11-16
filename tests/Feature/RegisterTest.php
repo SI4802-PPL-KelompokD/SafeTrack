@@ -65,13 +65,13 @@ class RegisterTest extends TestCase
         $this->assertNotNull($user);
         $this->assertEquals('Calon Karyawan Tetap', $user->name);
         $this->assertEquals('employee', $user->role);
-        $this->assertEquals(DB::table('departments')->where('code', 'OPS')->value('id'), $user->department_id); // OPS department
+        $this->assertEquals(2, $user->department_id); // OPS department
         $this->assertTrue((bool) $user->is_active);
         $this->assertNotEquals('Password123!', $user->password);
         $this->assertTrue(Hash::check('Password123!', $user->password));
 
         // Registry link terhubung
-        $registry = DB::table('nik')->where('nik', 'DEMO004')->first();
+        $registry = DB::table('employee_registry')->where('nik', 'DEMO004')->first();
         $this->assertEquals($registry->id, $user->employee_registry_id);
     }
 
@@ -101,7 +101,7 @@ class RegisterTest extends TestCase
      */
     public function test_registration_fails_when_registry_is_inactive(): void
     {
-        DB::table('nik')->where('nik', 'DEMO004')->update(['is_active' => false]);
+        DB::table('employee_registry')->where('nik', 'DEMO004')->update(['is_active' => false]);
         $usersBefore = User::count();
 
         $response = $this->post('/register', [
@@ -256,7 +256,7 @@ class RegisterTest extends TestCase
         $user = User::where('username', 'hacker.admin')->first();
         $this->assertNotNull($user);
         $this->assertEquals('employee', $user->role);
-        $this->assertEquals(DB::table('departments')->where('code', 'OPS')->value('id'), $user->department_id); // Tetap OPS dari registry
+        $this->assertEquals(2, $user->department_id); // Tetap OPS dari registry
     }
 
     /**

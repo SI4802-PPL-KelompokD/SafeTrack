@@ -119,11 +119,9 @@ class PenggunaService
     public function revokeUserSessions(User $user): void
     {
         $user->forceFill(['remember_token' => null])->saveQuietly();
-        $user->tokens()->delete();
 
         if (Schema::hasTable('user_sessions')) {
-            DB::table('user_sessions')->where('user_id', $user->id)
-                ->where('is_active', true)->update(['is_active' => false, 'logout_at' => now()]);
+            DB::table('user_sessions')->where('user_id', $user->id)->delete();
         }
 
         if (Schema::hasTable('sessions')) {

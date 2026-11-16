@@ -1,6 +1,6 @@
 @extends('work-areas.layout')
 @section('title', 'Ubah Area Kerja')
-@section('content')
+@section('area-content')
 <div class="page-head"><div><span class="eyebrow">DATA MASTER</span><h1>Ubah area kerja</h1><p>Perbarui informasi area dan pertanyaan inspeksi.</p></div><div class="actions"><a class="btn" href="{{ route('admin.work-areas.index') }}">← Kembali</a><button class="btn primary" type="button" data-question-new>+ Tambah pertanyaan</button></div></div>
 <section class="panel area-editor"><div class="panel-head"><div><h2>Informasi area</h2><p>Ubah nama dan deskripsi area kerja.</p></div>
 <form method="POST" action="{{ route('admin.work-areas.toggle-status', $workArea) }}" data-admin-action data-confirm-title="{{ $workArea->is_active ? 'Nonaktifkan' : 'Aktifkan' }} area kerja?" data-confirm-label="{{ $workArea->is_active ? 'Nonaktifkan' : 'Aktifkan' }} area kerja">@csrf @method('PATCH')<input type="hidden" name="is_active" value="{{ $workArea->is_active ? 0 : 1 }}"><button type="submit" class="wa-switch {{ $workArea->is_active ? 'is-on' : '' }}" role="switch" aria-checked="{{ $workArea->is_active ? 'true' : 'false' }}" aria-label="{{ $workArea->is_active ? 'Nonaktifkan' : 'Aktifkan' }} area kerja"><span aria-hidden="true">{{ $workArea->is_active ? 'ON' : 'OFF' }}</span><i aria-hidden="true"></i></button></form></div>

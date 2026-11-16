@@ -1,8 +1,8 @@
 @extends('work-areas.layout')
 @section('title', 'Kelola Area Kerja')
-@section('content')
-<div class="page-header-row"><div class="page-header-text"><div class="page-category-tag">Administrasi</div><h1 class="page-main-title">Data master</h1><p class="page-desc-text">Satu referensi data untuk aktivitas keselamatan yang konsisten.</p></div><button type="button" class="btn-add-primary" data-open-dialog="create-area">+ Tambah area</button></div>
-@include('shared.master-tabs', ['activeMasterTab' => 'areas'])
+@section('area-content')
+<div class="page-head"><div class="page-header-text"><div class="eyebrow">Administrasi</div><h1 class="page-main-title">Data master</h1><p class="page-desc-text">Satu referensi data untuk aktivitas keselamatan yang konsisten.</p></div><button type="button" class="btn primary" data-open-dialog="create-area">+ Tambah area</button></div>
+<div class="master-tabs-bar"><a class="master-tab-item" href="{{ route('admin.departments.index') }}">Departemen</a><a class="master-tab-item" href="{{ route('shifts.index') }}">Shift kerja</a><span class="master-tab-item active">Area &amp; pertanyaan</span></div>
 <section class="panel">
 <form class="wa-search" method="GET" action="{{ route('admin.work-areas.index') }}"><label><span aria-hidden="true">⌕</span><input name="search" value="{{ request('search') }}" placeholder="Cari nama area..." aria-label="Cari nama area"></label><button class="btn">Cari</button><a class="btn ghost" href="{{ route('admin.work-areas.index') }}">Reset</a></form>
 <div class="table-wrap"><table><thead><tr><th>Area kerja</th><th>Pertanyaan</th><th>Diperbarui</th><th class="wa-action-heading">Aksi</th></tr></thead><tbody>
