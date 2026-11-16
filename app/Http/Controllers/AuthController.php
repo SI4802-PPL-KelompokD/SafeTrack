@@ -17,18 +17,12 @@ class AuthController extends Controller
     public function showLoginForm(): View|RedirectResponse
     {
         if (Auth::check()) {
-            $user = Auth::user();
-            if ($user->can('manage-administration')) {
-                return redirect()->route('shifts.index');
-            }
-
             return redirect()->route('dashboard');
         }
 
         return view('auth.login');
     }
 
-    
     /**
      * Proses autentikasi login (UC-02).
      * Mendukung login dengan username atau email dan password,
@@ -77,13 +71,8 @@ class AuthController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        // 4. Arahkan pengguna sesuai dengan role masing-masing
-        if ($user->role === 'employee') {
-            return redirect()->route('dashboard')
-                ->with('success', 'Selamat datang di SafeTrack, '.$user->name.'.');
-        }
-
-        return redirect()->route('shifts.index')
+        // 4. Semua role (Karyawan maupun Admin) diarahkan ke halaman Ringkasan
+        return redirect()->route('dashboard')
             ->with('success', 'Selamat datang di SafeTrack, '.$user->name.'.');
     }
 

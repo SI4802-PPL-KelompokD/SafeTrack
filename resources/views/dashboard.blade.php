@@ -124,6 +124,7 @@
         .alert-box.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
         .alert-box.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
     </style>
+    @include('partials.favicon')
 </head>
 <body>
 <div class="app-shell">

@@ -31,7 +31,7 @@ export default function WorkAreaIndex({ workAreas, filters, endpoints }) {
             <button type="button" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13.5px', fontWeight: 500, color: '#475569', cursor: 'pointer' }} onClick={() => alert('Modul Departemen dalam integrasi Data Master.')}>
                 <span>Departemen</span> <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 600 }}>2</span>
             </button>
-            <a href="/shifts" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13.5px', fontWeight: 500, color: '#475569', textDecoration: 'none', cursor: 'pointer' }}>
+            <a href="/admin/shifts" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13.5px', fontWeight: 500, color: '#475569', textDecoration: 'none', cursor: 'pointer' }}>
                 <span>Shift kerja</span>
             </a>
             <button type="button" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13.5px', fontWeight: 500, color: '#475569', cursor: 'pointer' }} onClick={() => alert('Modul Kategori Temuan dalam integrasi Data Master.')}>
