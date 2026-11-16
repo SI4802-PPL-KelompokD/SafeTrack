@@ -544,6 +544,9 @@
             gap: 14px;
         }
         .btn-action-kelola {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             background: none;
             border: none;
             color: var(--navy-dark);
@@ -556,6 +559,11 @@
         .btn-action-kelola:hover {
             color: #2563eb;
             text-decoration: underline;
+        }
+        .btn-action-kelola:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 4px;
+            border-radius: 3px;
         }
         .btn-action-hapus {
             background: none;
@@ -890,95 +898,7 @@
             </div>
         </div>
 
-        <!-- UTAMA Menu Group -->
-        <div class="nav-section-title">Utama</div>
-        <ul class="sidebar-menu">
-            <li>
-                <a href="{{ route('dashboard') }}" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                    </svg>
-                    <span>Ringkasan</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('hazards.index') }}" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                    </svg>
-                    <span>Laporan Bahaya</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V19.5a2.25 2.25 0 002.25 2.25h.75" />
-                    </svg>
-                    <span>Inspeksi Harian</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                    </svg>
-                    <span>Safety Talk</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('sap.index') }}" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.757l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
-                    </svg>
-                    <span>Pencapaian SAP</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                    </svg>
-                    <span>Notifikasi</span>
-                </a>
-            </li>
-        </ul>
-
-        <!-- ADMINISTRASI Menu Group -->
-        <div class="nav-section-title">Administrasi</div>
-        <ul class="sidebar-menu">
-            <li>
-                <a href="{{ route('admin.pengguna.index') }}" class="sidebar-link active-amber" id="menuKelolaKaryawan">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                    </svg>
-                    <span>Kelola Karyawan</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('shifts.index') }}" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Data Master</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                    <span>Ekspor Laporan</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="sidebar-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Jejak Audit</span>
-                </a>
-            </li>
-        </ul>
+        @include('partials.sidebar-menu', ['activeClass' => 'active-amber'])
 
         <!-- Bottom User Profile Card -->
         <div class="sidebar-user-footer">
@@ -1045,7 +965,7 @@
             <!-- 3 Summary Cards -->
             <div class="summary-grid">
                 <div class="summary-card">
-                    <div class="summary-card-title">Seluruh pengguna</div>
+                    <div class="summary-card-title">Seluruh karyawan</div>
                     <div class="summary-card-val" id="statTotalUsers">{{ $totalUsers }}</div>
                 </div>
                 <div class="summary-card">
@@ -1170,23 +1090,22 @@
                                     </td>
                                     <td style="text-align:right;">
                                         <div class="table-action-links">
+                                            <button type="button"
+                                                    class="btn-action-kelola"
+                                                    aria-label="Kelola akun {{ $user->name }}"
+                                                    aria-haspopup="dialog"
+                                                    aria-controls="modalManagePengguna"
+                                                    onclick="openManageModal({{ $user->id }})">
+                                                <svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM2 21v-2a6 6 0 0 1 10-4.5M16 8h6m-3-3v6M14 17h8m-5-3v6" />
+                                                </svg>
+                                                Kelola
+                                            </button>
                                             @if ($isEmployee)
                                                 <button type="button"
-                                                        class="btn-action-kelola"
-                                                        onclick="openManageModal({{ $user->id }})">
-                                                    Kelola
-                                                </button>
-                                                <button type="button"
                                                         class="btn-action-hapus"
-                                                        onclick="openDeleteModalDirect({{ $user->id }}, '{{ addslashes($user->name) }}')">
+                                                        onclick="openDeleteModalDirect({{ $user->id }}, this.closest('tr').dataset.name)">
                                                     Hapus
-                                                </button>
-                                            @else
-                                                <button type="button"
-                                                        class="btn-action-kelola"
-                                                        style="opacity:0.6;cursor:default;"
-                                                        title="Akun Admin tidak menjadi target pengelolaan">
-                                                    Kelola
                                                 </button>
                                             @endif
                                         </div>
@@ -1217,7 +1136,7 @@
                 <!-- Table Card Footer -->
                 <div class="table-card-footer">
                     <div class="footer-note-text" id="footerCountText">
-                        Menampilkan {{ $users->count() }} pengguna. Akun baru dibuat melalui registrasi menggunakan NIK yang terdaftar.
+                        Menampilkan {{ $users->count() }} karyawan. Akun baru dibuat melalui registrasi menggunakan NIK yang terdaftar.
                     </div>
                     <div>
                         {{ $users->links() }}
@@ -1381,10 +1300,7 @@
         const row = document.getElementById('user-row-' + userId);
         if (!row) return;
 
-        if (row.dataset.isEmployee !== '1') {
-            showToast('Hanya akun karyawan yang dapat dikelola. Akun Admin bukan target pengelolaan.', 'error');
-            return;
-        }
+        if (row.dataset.isEmployee !== '1') return;
 
         currentSelectedUserId = userId;
 
@@ -1409,6 +1325,8 @@
     async function submitManageUser(event) {
         event.preventDefault();
         if (!currentSelectedUserId) return;
+        const selectedRow = document.getElementById('user-row-' + currentSelectedUserId);
+        if (selectedRow?.dataset.isEmployee !== '1') return;
 
         const btn = document.getElementById('btnSubmitManageUser');
         const btnText = document.getElementById('btnSubmitText');
