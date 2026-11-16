@@ -6,6 +6,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\HazardPhotoController;
 use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SapController;
@@ -55,6 +56,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:6,1')->name('register.store');
+
+    // PBI-07: Reset Password via Email (UC-04)
+    Route::get('/forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'store'])->middleware('throttle:6,1')->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:6,1')->name('password.update');
 });
 
 // Authenticated Routes (UC-03 Logout & Dashboards)

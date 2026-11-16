@@ -479,7 +479,7 @@
             <!-- Sublinks: Akun demonstrasi & Lupa password -->
             <div class="form-sublinks">
                 <span class="demo-hint-text">Akun demonstrasi</span>
-                <a href="#" class="link-forgot-pass" onclick="alert('Silakan hubungi tim Admin/HSE untuk reset password akun lokal.')">Lupa password?</a>
+                <a href="{{ route('password.request') }}" class="link-forgot-pass">Lupa password?</a>
             </div>
 
             <!-- Submit Button -->
