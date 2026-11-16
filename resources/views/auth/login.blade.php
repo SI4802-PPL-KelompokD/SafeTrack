@@ -375,6 +375,7 @@
             }
         }
     </style>
+    @include('partials.favicon')
 </head>
 <body>
 

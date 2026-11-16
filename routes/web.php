@@ -30,11 +30,6 @@ Route::get('/', function () {
         return redirect()->route('login');
     }
 
-    $user = Auth::user();
-    if (in_array($user->role, ['super_admin', 'admin'], true)) {
-        return redirect()->route('shifts.index');
-    }
-
     return redirect()->route('dashboard');
 });
 
@@ -109,13 +104,16 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {
         Route::get('/data-master', [ShiftController::class, 'index'])->name('admin.data-master');
-        Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
+        // Kelola Shift Kerja (PBI-02) di bawah prefix /admin; nama route shifts.* tetap.
+        Route::prefix('admin')->group(function () {
+            Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
 
-        Route::middleware(RequireAdminActionIdentity::class)->group(function () {
-            Route::post('shifts', [ShiftController::class, 'store'])->name('shifts.store');
-            Route::put('shifts/{shift}', [ShiftController::class, 'update'])->name('shifts.update');
-            Route::patch('shifts/{shift}/toggle-status', [ShiftController::class, 'toggleStatus'])
-                ->name('shifts.toggle-status');
+            Route::middleware(RequireAdminActionIdentity::class)->group(function () {
+                Route::post('shifts', [ShiftController::class, 'store'])->name('shifts.store');
+                Route::put('shifts/{shift}', [ShiftController::class, 'update'])->name('shifts.update');
+                Route::patch('shifts/{shift}/toggle-status', [ShiftController::class, 'toggleStatus'])
+                    ->name('shifts.toggle-status');
+            });
         });
 
         // SAP (Pencapaian SAP UC-28)
