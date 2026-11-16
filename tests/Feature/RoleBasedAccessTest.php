@@ -27,10 +27,10 @@ class RoleBasedAccessTest extends TestCase
 
     public function test_guests_receive_401_for_protected_json_requests(): void
     {
-        foreach (['/dashboard', '/daily-inspections', '/daily-inspections/create', '/shifts', '/admin/work-areas'] as $url) {
+        foreach (['/dashboard', '/daily-inspections', '/daily-inspections/create', '/admin/shifts', '/admin/work-areas'] as $url) {
             $this->getJson($url)->assertUnauthorized();
         }
-        foreach (['/daily-inspections', '/shifts', '/admin/work-areas'] as $url) {
+        foreach (['/daily-inspections', '/admin/shifts', '/admin/work-areas'] as $url) {
             $this->postJson($url, [])->assertUnauthorized();
         }
         $this->get('/dashboard')->assertRedirect(route('login'));
@@ -41,7 +41,7 @@ class RoleBasedAccessTest extends TestCase
         $user = new User;
         $user->forceFill(['id' => 1, 'role' => 'employee', 'is_active' => true]);
         $this->actingAs($user);
-        foreach (['/shifts', '/admin/work-areas'] as $url) {
+        foreach (['/admin/shifts', '/admin/work-areas'] as $url) {
             $this->get($url)->assertForbidden();
             $this->getJson($url.'?role=super_admin')->assertForbidden();
             $this->postJson($url, ['role' => 'admin', 'userId' => 2])->assertForbidden();
@@ -54,7 +54,7 @@ class RoleBasedAccessTest extends TestCase
             $user = new User;
             $user->forceFill(['id' => 1, 'role' => $role, 'is_active' => $role !== 'employee']);
             $this->actingAs($user);
-            foreach (['/dashboard', '/daily-inspections', '/daily-inspections/create', '/shifts', '/admin/work-areas'] as $url) {
+            foreach (['/dashboard', '/daily-inspections', '/daily-inspections/create', '/admin/shifts', '/admin/work-areas'] as $url) {
                 $this->getJson($url)->assertForbidden();
             }
             $this->postJson('/daily-inspections', [])->assertForbidden();

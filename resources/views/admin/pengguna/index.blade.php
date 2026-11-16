@@ -856,6 +856,7 @@
             .modal-grid-row { grid-template-columns: 1fr; }
         }
     </style>
+    @include('partials.favicon')
 </head>
 <body>
 <div class="app-shell">

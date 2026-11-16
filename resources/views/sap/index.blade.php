@@ -654,6 +654,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+    @include('partials.favicon')
 </head>
 <body>
 <div class="app-layout">
