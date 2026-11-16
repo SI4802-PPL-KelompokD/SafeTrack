@@ -7,6 +7,7 @@ use App\Http\Controllers\HazardPhotoController;
 use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SapController;
@@ -31,11 +32,6 @@ Route::get('/', function () {
         return redirect()->route('login');
     }
 
-    $user = Auth::user();
-    if (in_array($user->role, ['super_admin', 'admin'], true)) {
-        return redirect()->route('shifts.index');
-    }
-
     return redirect()->route('dashboard');
 });
 
@@ -57,6 +53,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:6,1')->name('register.store');
+
+    // PBI-07: Reset Password via Email (UC-04)
+    Route::get('/forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'store'])->middleware('throttle:6,1')->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:6,1')->name('password.update');
 });
 
 // Authenticated Routes (UC-03 Logout & Dashboards)
@@ -113,13 +115,16 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Admin & Super Admin Only Routes
     Route::middleware('admin')->group(function () {
         Route::get('/data-master', [ShiftController::class, 'index'])->name('admin.data-master');
-        Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
+        // Kelola Shift Kerja (PBI-02) di bawah prefix /admin; nama route shifts.* tetap.
+        Route::prefix('admin')->group(function () {
+            Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
 
-        Route::middleware(RequireAdminActionIdentity::class)->group(function () {
-            Route::post('shifts', [ShiftController::class, 'store'])->name('shifts.store');
-            Route::put('shifts/{shift}', [ShiftController::class, 'update'])->name('shifts.update');
-            Route::patch('shifts/{shift}/toggle-status', [ShiftController::class, 'toggleStatus'])
-                ->name('shifts.toggle-status');
+            Route::middleware(RequireAdminActionIdentity::class)->group(function () {
+                Route::post('shifts', [ShiftController::class, 'store'])->name('shifts.store');
+                Route::put('shifts/{shift}', [ShiftController::class, 'update'])->name('shifts.update');
+                Route::patch('shifts/{shift}/toggle-status', [ShiftController::class, 'toggleStatus'])
+                    ->name('shifts.toggle-status');
+            });
         });
 
         // SAP (Pencapaian SAP UC-28)

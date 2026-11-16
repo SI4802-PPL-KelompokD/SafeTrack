@@ -78,6 +78,7 @@
         }
     </style>
     @stack('styles')
+    @include('partials.favicon')
 </head>
 <body>
 <div class="app-shell">
