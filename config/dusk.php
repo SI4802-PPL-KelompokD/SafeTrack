@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'driver_url' => env('DUSK_DRIVER_URL', 'http://127.0.0.1:4445'),
-    'browser' => env('DUSK_BROWSER', 'edge'),
+    'driver_url' => env('DUSK_DRIVER_URL', 'http://127.0.0.1:9515'),
+    'browser' => env('DUSK_BROWSER', 'chrome'),
     'headless' => env('DUSK_HEADLESS', false),
-    'artifacts' => env('PBI9_ARTIFACTS', 'storage/app/pbi9-evidence/manual'),
+    'artifacts' => env('DUSK_ARTIFACTS', 'tests/Browser'),
 ];

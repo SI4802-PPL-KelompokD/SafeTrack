@@ -4,13 +4,13 @@
     "browserVersion": "157.0.8103.79",
     "chrome": {
         "chromedriverVersion": "157.0.8103.78 (4b3d0dabb8250b6f152d2d85d79e7706e309d087-refs/branch-heads/8103@{#1573})",
-        "userDataDir": "/var/folders/xy/76ym90595qv0tgjdydw0h7t40000gn/T/org.chromium.Chromium.scoped_dir.SJy20I"
+        "userDataDir": "/var/folders/xy/76ym90595qv0tgjdydw0h7t40000gn/T/org.chromium.Chromium.scoped_dir.xbRqq9"
     },
     "fedcm:accounts": true,
     "goog:chromeOptions": {
-        "debuggerAddress": "localhost:50708"
+        "debuggerAddress": "localhost:64622"
     },
-    "goog:processID": 34768,
+    "goog:processID": 45408,
     "networkConnectionEnabled": false,
     "pageLoadStrategy": "eager",
     "platformName": "mac",

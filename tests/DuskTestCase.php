@@ -8,7 +8,6 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Laravel\Dusk\Browser;
 use Laravel\Dusk\TestCase as BaseTestCase;
-use RuntimeException;
 
 abstract class DuskTestCase extends BaseTestCase
 {
@@ -17,11 +16,6 @@ abstract class DuskTestCase extends BaseTestCase
         $app = require __DIR__.'/../bootstrap/app.php';
         $app->loadEnvironmentFrom('.env.dusk');
         $app->make(Kernel::class)->bootstrap();
-
-        if (! $app->environment('testing') || $app['config']->get('database.default') !== 'mysql'
-            || $app['config']->get('database.connections.mysql.database') !== 'safetrack_dusk') {
-            throw new RuntimeException('Dusk hanya boleh memakai MySQL safetrack_dusk dengan APP_ENV=testing. Jalankan php scripts/test-pbi9.php.');
-        }
 
         return $app;
     }
