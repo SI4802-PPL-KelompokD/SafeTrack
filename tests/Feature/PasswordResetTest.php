@@ -37,7 +37,7 @@ class PasswordResetTest extends TestCase
         $this->from(route('password.request'))
             ->post(route('password.email'), ['email' => $user->email])
             ->assertRedirect(route('password.request'))
-            ->assertSessionHas('success');
+            ->assertSessionHas('success', 'Tautan reset password telah dikirim ke email Anda. Silakan periksa inbox atau folder spam.');
 
         Notification::assertSentTo($user, ResetPasswordNotification::class, function (ResetPasswordNotification $notification) use ($user): bool {
             $mail = $notification->toMail($user);
@@ -47,26 +47,41 @@ class PasswordResetTest extends TestCase
         });
     }
 
-    public function test_unknown_email_gets_same_message_without_email_being_sent(): void
+    public function test_unknown_email_is_rejected_without_email_being_sent(): void
     {
         Notification::fake();
 
         $this->post(route('password.email'), ['email' => 'tidak-terdaftar@example.com'])
-            ->assertSessionHas('success')
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasErrors(['email' => 'Email tidak terdaftar di SafeTrack.'])
+            ->assertSessionMissing('success');
 
         Notification::assertNothingSent();
+        $this->assertDatabaseMissing('password_reset_token', ['email' => 'tidak-terdaftar@example.com']);
     }
 
-    public function test_inactive_user_does_not_receive_reset_link(): void
+    public function test_inactive_user_is_rejected_without_reset_link(): void
     {
         Notification::fake();
         $user = User::factory()->create(['is_active' => false]);
 
         $this->post(route('password.email'), ['email' => $user->email])
-            ->assertSessionHas('success');
+            ->assertSessionHasErrors(['email' => 'Akun Anda berstatus nonaktif. Silakan hubungi Administrator atau tim HSE.'])
+            ->assertSessionMissing('success');
 
         Notification::assertNotSentTo($user, ResetPasswordNotification::class);
+        $this->assertDatabaseMissing('password_reset_token', ['email' => $user->email]);
+    }
+
+    public function test_second_request_within_sixty_seconds_is_rejected(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+
+        $this->post(route('password.email'), ['email' => $user->email])->assertSessionHas('success');
+        $this->post(route('password.email'), ['email' => $user->email])
+            ->assertSessionHasErrors(['email' => 'Tautan reset baru saja dikirim. Silakan tunggu 60 detik sebelum meminta tautan lagi.']);
+
+        Notification::assertSentToTimes($user, ResetPasswordNotification::class, 1);
     }
 
     public function test_user_can_reset_password_with_valid_token(): void
