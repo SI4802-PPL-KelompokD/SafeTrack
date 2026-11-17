@@ -6,7 +6,10 @@ use App\Models\Department;
 use App\Models\EmploymentStatus;
 use App\Models\User;
 use Database\Seeders\DemoSeeder;
+use DOMDocument;
+use DOMXPath;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestWith;
 use Tests\TestCase;
 
 class PenggunaManagementTest extends TestCase
@@ -48,11 +51,75 @@ class PenggunaManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Kelola karyawan');
         $response->assertSee('ADMINISTRASI');
-        $response->assertSee('Seluruh pengguna');
+        $response->assertSee('Seluruh karyawan');
         $response->assertSee('Akun aktif');
         $response->assertSee('Departemen');
         $response->assertSee('Karyawan Demo');
         $response->assertSee('DEMO003');
+    }
+
+    public function test_administrator_accounts_are_excluded_from_employee_list_and_counts(): void
+    {
+        $otherAdmin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('admin.pengguna.index'));
+
+        $response->assertOk()
+            ->assertDontSee('user-row-'.$this->adminUser->id, false)
+            ->assertDontSee('user-row-'.$otherAdmin->id, false)
+            ->assertViewHas('totalUsers', 2)
+            ->assertViewHas('activeUsers', 2)
+            ->assertViewHas('users', fn ($users): bool => $users->total() === 2 && $users->every(fn (User $user): bool => $user->role === 'employee'));
+    }
+
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function test_employee_manage_button_is_available_regardless_of_active_status(bool $isActive): void
+    {
+        $this->employeeUser->update(['is_active' => $isActive]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('admin.pengguna.index'));
+
+        $response->assertOk();
+        $document = new DOMDocument;
+        $document->loadHTML($response->getContent(), LIBXML_NOERROR | LIBXML_NOWARNING);
+        $buttons = (new DOMXPath($document))->query('//tr[@id="user-row-'.$this->employeeUser->id.'"]//button[@class="btn-action-kelola"]');
+
+        $this->assertCount(1, $buttons);
+        $this->assertFalse($buttons->item(0)->hasAttribute('disabled'));
+        $this->assertSame('openManageModal('.$this->employeeUser->id.')', $buttons->item(0)->getAttribute('onclick'));
+    }
+
+    public function test_update_response_counts_only_employees_after_account_is_deactivated(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->putJson(route('admin.pengguna.update', $this->employeeUser), [
+                'department_id' => $this->employeeUser->department_id,
+                'employment_status_id' => $this->permanentStatus->id,
+                'is_active' => false,
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('user.is_active', false)
+            ->assertJsonPath('stats.totalUsers', 2)
+            ->assertJsonPath('stats.activeUsers', 1);
+        $this->assertFalse($this->employeeUser->fresh()->is_active);
+        $this->assertFalse($this->employeeUser->employeeRegistry->fresh()->is_active);
+    }
+
+    public function test_delete_response_counts_only_remaining_employees(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->deleteJson(route('admin.pengguna.destroy', $this->employeeUser), [
+                'deletion_reason' => 'Karyawan sudah tidak bekerja di perusahaan.',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('stats.totalUsers', 1)
+            ->assertJsonPath('stats.activeUsers', 1);
+        $this->assertSoftDeleted($this->employeeUser);
     }
 
     /**

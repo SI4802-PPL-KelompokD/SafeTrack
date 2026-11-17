@@ -33,6 +33,7 @@ class PenggunaController extends Controller
         $status = $request->query('status');
 
         $users = User::query()
+            ->where('role', 'employee')
             ->with(['department', 'employeeRegistry.employmentStatus'])
             ->search($search)
             ->filterDepartemen($departmentId)
@@ -41,8 +42,8 @@ class PenggunaController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $totalUsers = User::count();
-        $activeUsers = User::where('is_active', true)->count();
+        $totalUsers = User::where('role', 'employee')->count();
+        $activeUsers = User::where('role', 'employee')->where('is_active', true)->count();
         $totalDepartments = Department::where('is_active', true)->count();
 
         $departments = Department::where('is_active', true)
@@ -106,8 +107,8 @@ class PenggunaController extends Controller
                         'role' => $updatedUser->role,
                     ],
                     'stats' => [
-                        'totalUsers' => User::count(),
-                        'activeUsers' => User::where('is_active', true)->count(),
+                        'totalUsers' => User::where('role', 'employee')->count(),
+                        'activeUsers' => User::where('role', 'employee')->where('is_active', true)->count(),
                         'totalDepartments' => Department::where('is_active', true)->count(),
                     ],
                 ]);
@@ -166,8 +167,8 @@ class PenggunaController extends Controller
                     'message' => 'Akun karyawan berhasil dihapus.',
                     'deleted_id' => $pengguna->id,
                     'stats' => [
-                        'totalUsers' => User::count(),
-                        'activeUsers' => User::where('is_active', true)->count(),
+                        'totalUsers' => User::where('role', 'employee')->count(),
+                        'activeUsers' => User::where('role', 'employee')->where('is_active', true)->count(),
                         'totalDepartments' => Department::where('is_active', true)->count(),
                     ],
                 ]);
