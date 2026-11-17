@@ -97,6 +97,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     // ---- PBI-13: Laporan Saya, Daftar Pelaporan, Detail Laporan (semua peran login) ----
     Route::get('/laporan-saya', [HazardReportController::class, 'mine'])->name('hazards.mine');
     Route::get('/laporan-bahaya', [HazardReportController::class, 'index'])->name('hazards.index');
+
+    Route::get('/laporan-bahaya/create', [HazardReportController::class, 'create'])->name('hazards.create');
+    Route::post('/laporan-bahaya', [HazardReportController::class, 'store'])->name('hazards.store');
     Route::get('/laporan-bahaya/{hazardReport}', [HazardReportController::class, 'show'])
         ->withTrashed()->name('hazards.show');
     Route::get('/laporan-bahaya/{hazardReport}/foto/{photo}', [HazardPhotoController::class, 'hazard'])
