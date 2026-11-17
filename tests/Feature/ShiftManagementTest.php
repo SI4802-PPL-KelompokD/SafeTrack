@@ -313,4 +313,46 @@ class ShiftManagementTest extends TestCase
 
         $response->assertSessionHasErrors(['admin_name', 'action_reason']);
     }
+
+    /**
+     * TC-14: Sistem menolak format jam yang tidak valid.
+     */
+    public function test_shift_creation_rejects_invalid_time_format(): void
+    {
+        $response = $this->actingAs($this->adminUser)->post(route('shifts.store'), [
+            'name' => 'Shift Jam Salah',
+            'starts_at' => '25:00',
+            'ends_at' => 'abc',
+            'admin_name' => 'Admin Test',
+            'action_reason' => 'Alasan pengujian otomatis format jam',
+        ]);
+
+        $response->assertSessionHasErrors(['starts_at', 'ends_at']);
+    }
+
+    /**
+     * TC-15: Sistem menolak alasan tindakan jika kurang dari 10 karakter.
+     */
+    public function test_shift_creation_rejects_short_action_reason(): void
+    {
+        $response = $this->actingAs($this->adminUser)->post(route('shifts.store'), [
+            'name' => 'Shift Alasan Pendek',
+            'starts_at' => '07:00',
+            'ends_at' => '15:00',
+            'admin_name' => 'Admin Test',
+            'action_reason' => 'Pendek',
+        ]);
+
+        $response->assertSessionHasErrors(['action_reason']);
+    }
+
+    /**
+     * TC-17: Pengguna belum login (Guest) dialihkan ke halaman login saat akses shifts.
+     */
+    public function test_unauthenticated_user_redirected_to_login(): void
+    {
+        $response = $this->get(route('shifts.index'));
+
+        $response->assertRedirect(route('login'));
+    }
 }
