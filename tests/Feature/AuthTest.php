@@ -42,7 +42,7 @@ class AuthTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('shifts.index'));
+        $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('success');
     }
 
@@ -130,7 +130,7 @@ class AuthTest extends TestCase
     {
         $employee = User::where('username', 'karyawan')->first();
 
-        $response = $this->actingAs($employee)->get('/shifts');
+        $response = $this->actingAs($employee)->get('/admin/shifts');
 
         $response->assertForbidden();
     }
@@ -142,7 +142,7 @@ class AuthTest extends TestCase
     {
         $admin = User::where('username', 'admin')->first();
 
-        $response = $this->actingAs($admin)->get('/shifts');
+        $response = $this->actingAs($admin)->get('/admin/shifts');
 
         $response->assertStatus(200);
         $response->assertSee('Kelola shift kerja');
