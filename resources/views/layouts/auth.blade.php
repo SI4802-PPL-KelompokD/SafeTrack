@@ -11,6 +11,7 @@
     @endif
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     @stack('styles')
+    @include('partials.favicon')
 </head>
 <body>
     <main class="auth-page">

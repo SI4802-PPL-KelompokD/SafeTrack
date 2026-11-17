@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
+use App\Models\HazardCategory;
+use App\Models\Shift;
 use App\Models\WorkArea;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +20,7 @@ class WorkAreaController extends Controller
         $workAreas = WorkArea::query()
             ->withCount('questions')
             ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%'.$request->string('search')->trim().'%'))
+            ->orderByDesc('is_active')
             ->orderBy('name')
             ->orderBy('id')
             ->paginate(10)
@@ -24,7 +28,17 @@ class WorkAreaController extends Controller
 
         return view('work-areas.index', [
             'workAreas' => $workAreas,
+            'tabCounts' => [
+                'departments' => Department::count(),
+                'shifts' => Shift::count(),
+                'hazard_categories' => HazardCategory::count(),
+                'work_areas' => WorkArea::count(),
+            ],
             'filters' => $request->only(['search']),
+            'endpoints' => [
+                'index' => route('admin.work-areas.index'),
+                'store' => route('admin.work-areas.store'),
+            ],
         ]);
     }
 
@@ -55,11 +69,16 @@ class WorkAreaController extends Controller
 
     public function show(WorkArea $workArea): View
     {
-        $questions = $workArea->questions()->orderBy('sort_order')->orderBy('id')->paginate(15);
+        $questions = $workArea->questions()->orderByDesc('is_active')->orderBy('sort_order')->orderBy('id')->paginate(15);
 
         return view('work-areas.show', [
             'workArea' => $workArea,
             'questions' => $questions,
+            'endpoints' => [
+                'index' => route('admin.work-areas.index'),
+                'update' => route('admin.work-areas.update', $workArea),
+                'questionsStore' => route('admin.work-areas.questions.store', $workArea),
+            ],
         ]);
     }
 
@@ -73,19 +92,11 @@ class WorkAreaController extends Controller
         return back()->with('success', 'Area kerja berhasil diperbarui.');
     }
 
-    public function destroy(Request $request, WorkArea $workArea): RedirectResponse
-    {
-        $before = $workArea->toArray();
-        $workArea->delete();
-        $this->audit($request, 'work_area.deleted', $workArea, $before, []);
-
-        return redirect()->route('admin.work-areas.index')->with('success', 'Area kerja berhasil dihapus.');
-    }
-
     public function toggleStatus(Request $request, WorkArea $workArea): RedirectResponse
     {
+        $request->validate(['is_active' => ['required', 'boolean']]);
         $before = $workArea->toArray();
-        $workArea->update(['is_active' => ! $workArea->is_active]);
+        $workArea->update(['is_active' => $request->boolean('is_active')]);
         $this->audit($request, 'work_area.status_changed', $workArea, $before, $workArea->fresh()->toArray());
 
         return back()->with('success', 'Status area kerja berhasil diperbarui.');
@@ -100,7 +111,7 @@ class WorkAreaController extends Controller
 
         if ($withQuestions) {
             $rules['questions'] = ['required', 'array', 'size:3'];
-            $rules['questions.*'] = ['required', 'string', 'max:2000', 'distinct'];
+            $rules['questions.*'] = ['required', 'string', 'max:2000', 'distinct:ignore_case'];
         }
 
         return $request->validate($rules, [
@@ -120,7 +131,7 @@ class WorkAreaController extends Controller
             'entity_type' => WorkArea::class,
             'entity_id' => $workArea->id,
             'before_values' => $before ? json_encode($before) : null,
-            'after_values' => json_encode($after),
+            'after_values' => json_encode([...$after, 'admin_name' => $request->input('admin_name'), 'action_reason' => $request->input('action_reason')]),
             'ip_address' => $request->ip(),
             'user_agent' => Str::limit((string) $request->userAgent(), 1000),
             'created_at' => now(),
