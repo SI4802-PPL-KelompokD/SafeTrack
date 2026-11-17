@@ -8,6 +8,7 @@ use App\Http\Controllers\HazardReportController;
 use App\Http\Controllers\InspectionQuestionController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PenggunaController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SapController;
 use App\Http\Controllers\ShiftController;
@@ -64,6 +65,8 @@ Route::post('/demo/login/{account}', [AuthController::class, 'demoLogin'])->midd
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $currentPeriod = now()->format('Y-m-01');
