@@ -43,9 +43,9 @@
 
     @if (session('dev_reset_url'))
         <div class="dev-reset-box" role="status">
-            <strong>Mode pengembangan:</strong> email tidak benar-benar dikirim (MAIL_MAILER=log).
+            <strong>Mode pengembangan:</strong> aplikasi sedang berjalan di komputer lokal, sehingga email tidak dikirim ke inbox. Klik tombol di bawah untuk melanjutkan reset password.
             <br>
-            <a href="{{ session('dev_reset_url') }}">Buka tautan reset password &rarr;</a>
+            <a href="{{ session('dev_reset_url') }}">Buka halaman reset password &rarr;</a>
         </div>
     @endif
 

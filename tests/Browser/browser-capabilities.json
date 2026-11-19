@@ -1,0 +1,36 @@
+{
+    "acceptInsecureCerts": false,
+    "browserName": "chrome",
+    "browserVersion": "157.0.8103.79",
+    "chrome": {
+        "chromedriverVersion": "157.0.8103.78 (4b3d0dabb8250b6f152d2d85d79e7706e309d087-refs/branch-heads/8103@{#1573})",
+        "userDataDir": "/var/folders/xy/76ym90595qv0tgjdydw0h7t40000gn/T/org.chromium.Chromium.scoped_dir.xbRqq9"
+    },
+    "fedcm:accounts": true,
+    "goog:chromeOptions": {
+        "debuggerAddress": "localhost:64622"
+    },
+    "goog:processID": 45408,
+    "networkConnectionEnabled": false,
+    "pageLoadStrategy": "eager",
+    "platformName": "mac",
+    "proxy": [],
+    "setWindowRect": true,
+    "strictFileInteractability": false,
+    "timeouts": {
+        "implicit": 0,
+        "pageLoad": 300000,
+        "script": 30000
+    },
+    "unhandledPromptBehavior": "dismiss and notify",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+    "webauthn:extension:cmtgKey": true,
+    "webauthn:extension:credBlob": true,
+    "webauthn:extension:largeBlob": true,
+    "webauthn:extension:minPinLength": true,
+    "webauthn:extension:prf": true,
+    "webauthn:virtualAuthenticators": true,
+    "platform": "mac",
+    "version": "157.0.8103.79",
+    "acceptSslCerts": false
+}

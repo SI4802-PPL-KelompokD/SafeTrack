@@ -13,11 +13,13 @@ use Illuminate\View\View;
 
 class PasswordResetController extends Controller
 {
-    /**
-     * Pesan yang sama untuk email terdaftar maupun tidak, agar form ini
-     * tidak bisa dipakai untuk menebak email mana yang terdaftar.
-     */
-    private const LINK_SENT_MESSAGE = 'Jika email tersebut terdaftar dan akunnya aktif, tautan reset password telah dikirim. Silakan periksa inbox atau folder spam Anda.';
+    private const LINK_SENT_MESSAGE = 'Tautan reset password telah dikirim ke email Anda. Silakan periksa inbox atau folder spam.';
+
+    private const EMAIL_NOT_REGISTERED_MESSAGE = 'Email tidak terdaftar di SafeTrack.';
+
+    private const INACTIVE_ACCOUNT_MESSAGE = 'Akun Anda berstatus nonaktif. Silakan hubungi Administrator atau tim HSE.';
+
+    private const THROTTLED_MESSAGE = 'Tautan reset baru saja dikirim. Silakan tunggu 60 detik sebelum meminta tautan lagi.';
 
     private const INVALID_LINK_MESSAGE = 'Tautan reset password tidak valid atau sudah kedaluwarsa. Silakan minta tautan baru.';
 
@@ -31,6 +33,8 @@ class PasswordResetController extends Controller
 
     /**
      * Kirim tautan reset berisi token berbatas waktu ke email terdaftar (UC-04 langkah 2).
+     * Email tidak terdaftar ditolak dengan pesan kesalahan (UC-04 alur alternatif 2'),
+     * dan akun nonaktif ditolak seperti pada proses login.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -41,9 +45,19 @@ class PasswordResetController extends Controller
             'email.email' => 'Format email tidak valid.',
         ]);
 
+        $user = User::where('email', $validated['email'])->first();
+
+        if (! $user) {
+            return $this->rejectEmail(self::EMAIL_NOT_REGISTERED_MESSAGE);
+        }
+
+        if (! $user->is_active) {
+            return $this->rejectEmail(self::INACTIVE_ACCOUNT_MESSAGE);
+        }
+
         $developmentResetUrl = null;
 
-        Password::sendResetLink(
+        $status = Password::sendResetLink(
             ['email' => $validated['email'], 'is_active' => true],
             function (User $user, string $token) use (&$developmentResetUrl): void {
                 $notification = new ResetPasswordNotification($token);
@@ -55,9 +69,18 @@ class PasswordResetController extends Controller
             },
         );
 
+        if ($status === Password::RESET_THROTTLED) {
+            return $this->rejectEmail(self::THROTTLED_MESSAGE);
+        }
+
         return back()
             ->with('success', self::LINK_SENT_MESSAGE)
             ->with('dev_reset_url', $developmentResetUrl);
+    }
+
+    private function rejectEmail(string $message): RedirectResponse
+    {
+        return back()->withInput(request()->only('email'))->withErrors(['email' => $message]);
     }
 
     /**
