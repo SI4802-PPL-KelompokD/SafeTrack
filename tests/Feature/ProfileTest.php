@@ -32,7 +32,7 @@ class ProfileTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Profil Saya');
-        $response->assertSee('Akun & Preferensi');
+        $response->assertSee('Akun & Preferensi', false);
         $response->assertSee('Simpan Perubahan');
     }
 
@@ -112,7 +112,7 @@ class ProfileTest extends TestCase
             'email' => $otherUser->email,
         ]);
 
-        $response->assertSessionHasErrors(['email' => 'Alamat email sudah digunakan oleh pengguna lain.']);
+        $response->assertSessionHasErrors(['email' => 'Email sudah digunakan.']);
         $this->assertNotSame('Admin Gagal Email', $user->fresh()->name);
     }
 
@@ -124,7 +124,7 @@ class ProfileTest extends TestCase
         Storage::fake('public');
 
         $user = User::where('username', 'admin')->first();
-        $file = UploadedFile::fake()->image('profile.jpg', 300, 300);
+        $file = $this->fakePng('profile.png', 500);
 
         $response = $this->actingAs($user)->put('/profile', [
             'name' => $user->name,
@@ -259,7 +259,7 @@ class ProfileTest extends TestCase
         $user = User::where('username', 'admin')->first();
 
         // Unggah foto 1
-        $file1 = UploadedFile::fake()->image('first.jpg');
+        $file1 = $this->fakePng('first.png');
         $this->actingAs($user)->put('/profile', [
             'name' => $user->name,
             'email' => $user->email,
@@ -269,7 +269,7 @@ class ProfileTest extends TestCase
         Storage::disk('public')->assertExists($oldPath);
 
         // Unggah foto 2
-        $file2 = UploadedFile::fake()->image('second.png');
+        $file2 = $this->fakePng('second.png');
         $this->actingAs($user)->put('/profile', [
             'name' => $user->name,
             'email' => $user->email,
@@ -301,5 +301,12 @@ class ProfileTest extends TestCase
         $response->assertSee('Petugas HSE Terverifikasi');
         $response->assertSee('hse.verified@safetrack.test');
     }
-}
 
+    private function fakePng(string $filename, int $sizeInKilobytes = 1): UploadedFile
+    {
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=');
+        $contents = str_pad($png, $sizeInKilobytes * 1024, "\0");
+
+        return UploadedFile::fake()->createWithContent($filename, $contents);
+    }
+}

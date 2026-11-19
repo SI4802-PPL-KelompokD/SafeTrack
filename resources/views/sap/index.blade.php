@@ -742,6 +742,10 @@
                 </div>
             @endif
 
+            @if ($dataError)
+                <div class="alert-box error" role="alert">Data pencapaian SAP gagal dimuat. Coba lagi.</div>
+            @endif
+
             <!-- Page Header -->
             <div class="page-header">
                 <div>
@@ -850,24 +854,25 @@
             <div class="table-card">
                 <div class="table-header-bar">
                     <div>
-                        <div class="table-title">Daftar Rekap SAP: {{ $periodCarbon->translatedFormat('F Y') }}</div>
-                        <div class="table-subtitle">Data sinkronisasi kumulatif dari ledger perolehan poin K3 karyawan</div>
+                        <div class="table-title">Top 3 Karyawan Non-HSE: {{ $periodCarbon->translatedFormat('F Y') }}</div>
+                        <div class="table-subtitle">Karyawan Non-HSE dengan total poin SAP tertinggi pada periode ini</div>
                     </div>
                 </div>
 
-                @if ($summaries->isEmpty())
+                @if ($dataError)
                     <div class="empty-state">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
-                        </svg>
-                        <h3 class="empty-title">Belum Ada Rekap SAP untuk Periode Ini</h3>
-                        <p class="empty-desc">Tekan tombol <strong>Hitung Ulang SAP</strong> di atas untuk memproses dan mengumpulkan seluruh poin karyawan secara otomatis.</p>
+                        <h3 class="empty-title">Data pencapaian tidak tersedia</h3>
+                    </div>
+                @elseif ($summaries->isEmpty())
+                    <div class="empty-state">
+                        <h3 class="empty-title">Belum ada kontribusi Non-HSE pada periode ini</h3>
                     </div>
                 @else
                     <div style="overflow-x:auto;">
                         <table class="data-table">
                             <thead>
                                 <tr>
+                                    <th style="text-align:center;">Peringkat</th>
                                     <th>Karyawan</th>
                                     <th>Departemen</th>
                                     <th style="text-align:center;" title="Hazard Report Valid">Hazard</th>
@@ -881,7 +886,8 @@
                             </thead>
                             <tbody>
                                 @foreach ($summaries as $summary)
-                                    <tr>
+                                    <tr data-rank="{{ $loop->iteration }}">
+                                        <td style="text-align:center;font-weight:700;">#{{ $loop->iteration }}</td>
                                         <td>
                                             <div class="user-cell">
                                                 <div class="user-circle">
@@ -944,11 +950,61 @@
                         </table>
                     </div>
 
-                    @if ($summaries->hasPages())
-                        <div class="pagination-container">
-                            {{ $summaries->links() }}
-                        </div>
-                    @endif
+                @endif
+            </div>
+
+            <div class="table-card" style="margin-top:24px;">
+                <div class="table-header-bar">
+                    <div>
+                        <div class="table-title">Pencapaian HSE: {{ $periodCarbon->translatedFormat('F Y') }}</div>
+                        <div class="table-subtitle">Jumlah aktivitas dibandingkan dengan target per karyawan HSE</div>
+                    </div>
+                </div>
+
+                @if ($dataError)
+                    <div class="empty-state"><h3 class="empty-title">Data pencapaian tidak tersedia</h3></div>
+                @elseif (! $hasTargetData)
+                    <div class="empty-state" id="sapTargetsEmpty">
+                        <h3 class="empty-title">Belum terdapat data pencapaian untuk periode ini</h3>
+                    </div>
+                @elseif ($hseRows->isEmpty())
+                    <div class="empty-state" id="hseHistoryEmpty">
+                        <h3 class="empty-title">Belum ada data pencapaian HSE untuk periode ini</h3>
+                    </div>
+                @else
+                    <div style="overflow-x:auto;">
+                        <table class="data-table" id="hseAchievementTable">
+                            <thead>
+                                <tr>
+                                    <th>Karyawan HSE</th>
+                                    <th>Departemen</th>
+                                    <th style="text-align:center;">Hazard (aktual / target)</th>
+                                    <th style="text-align:center;">Inspeksi (aktual / target)</th>
+                                    <th style="text-align:center;">Safety Talk (aktual / target)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($hseRows as $row)
+                                    <tr data-hse-name="{{ $row['name'] }}">
+                                        <td>{{ $row['name'] }}</td>
+                                        <td>{{ $row['department'] }}</td>
+                                        @foreach (['hazard', 'inspection', 'safety_talk'] as $activity)
+                                            <td style="text-align:center;">
+                                                <strong>{{ $row[$activity]['actual'] }} / {{ $row[$activity]['target'] ?? '-' }}</strong>
+                                                <div style="font-size:12px;color:var(--text-muted);">
+                                                    @if ($row[$activity]['percentage'] === null)
+                                                        -
+                                                    @else
+                                                        {{ number_format($row[$activity]['percentage'], 1) }}%
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
         </div>
