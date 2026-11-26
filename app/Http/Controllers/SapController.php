@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SapCalculationLog;
 use App\Models\SapMonthlySummary;
 use App\Models\SapTarget;
 use App\Services\SapCalculationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Throwable;
@@ -95,8 +97,7 @@ class SapController extends Controller
                 ->where('is_hse_snapshot', false)
                 ->whereHas('user', function ($query) use ($searchUsers): void {
                     $query->where('role', 'employee')
-                        ->whereHas('department', fn ($departmentQuery) =>
-                            $departmentQuery->where('is_hse', false)
+                        ->whereHas('department', fn ($departmentQuery) => $departmentQuery->where('is_hse', false)
                         );
 
                     $searchUsers($query);
@@ -114,8 +115,7 @@ class SapController extends Controller
                 ->get()
                 ->groupBy('user_id')
                 ->map(
-                    fn (Collection $targets): Collection =>
-                        $targets->keyBy('activity')
+                    fn (Collection $targets): Collection => $targets->keyBy('activity')
                 );
 
             $hasTargetData = $targetRecords->isNotEmpty();
@@ -138,8 +138,7 @@ class SapController extends Controller
                 ->where('is_hse_snapshot', true)
                 ->whereHas('user', function ($query) use ($searchUsers): void {
                     $query->where('role', 'employee')
-                        ->whereHas('department', fn ($departmentQuery) =>
-                            $departmentQuery->where('is_hse', true)
+                        ->whereHas('department', fn ($departmentQuery) => $departmentQuery->where('is_hse', true)
                         );
 
                     $searchUsers($query);
@@ -219,6 +218,11 @@ class SapController extends Controller
                 ? round($totalPoints / $totalEmployeesRecapped, 1)
                 : 0;
 
+            // UC-28 langkah 2: Waktu terakhir diperbarui (global)
+            $lastUpdatedAt = (clone $baseStatsQuery)
+                ->whereNotNull('calculated_at')
+                ->max('calculated_at');
+
         } catch (Throwable $exception) {
             Log::error('Gagal memuat monitoring pencapaian SAP.', [
                 'period' => $periodDate,
@@ -229,6 +233,7 @@ class SapController extends Controller
             $hseRows = collect();
             $hasTargetData = false;
             $dataError = true;
+            $lastUpdatedAt = null;
 
             $totalPoints = 0;
             $participatingEmployees = 0;
@@ -254,6 +259,7 @@ class SapController extends Controller
             'hasTargetData' => $hasTargetData,
             'dataError' => $dataError,
             'search' => $search,
+            'lastUpdatedAt' => $lastUpdatedAt ? Carbon::parse($lastUpdatedAt) : null,
         ]);
     }
 
@@ -279,6 +285,15 @@ class SapController extends Controller
         try {
             $processedCount = $this->sapService->recalculateAll($periodCarbon);
 
+            // K2: Catat keberhasilan refresh ke log perhitungan
+            SapCalculationLog::create([
+                'trigger_type' => 'manual_refresh',
+                'triggered_by' => Auth::id(),
+                'period' => $periodCarbon->format('Y-m-01'),
+                'status' => 'success',
+                'processed_count' => $processedCount,
+            ]);
+
             return redirect()
                 ->route('sap.index', [
                     'year' => $selectedYear,
@@ -286,7 +301,7 @@ class SapController extends Controller
                 ])
                 ->with(
                     'success',
-                    "Perhitungan ulang SAP untuk periode {$periodCarbon->translatedFormat('F Y')} berhasil diperbarui ({$processedCount} karyawan diproses)."
+                    "Rekap pencapaian SAP berhasil diperbarui. ({$processedCount} karyawan diproses)."
                 );
 
         } catch (Throwable $e) {
@@ -296,6 +311,15 @@ class SapController extends Controller
                 'month' => $selectedMonth,
             ]);
 
+            // K2: Catat kegagalan refresh ke log perhitungan
+            SapCalculationLog::create([
+                'trigger_type' => 'manual_refresh',
+                'triggered_by' => Auth::id(),
+                'period' => $periodCarbon->format('Y-m-01'),
+                'status' => 'failed',
+                'error_message' => mb_substr($e->getMessage(), 0, 1000),
+            ]);
+
             return redirect()
                 ->route('sap.index', [
                     'year' => $selectedYear,
@@ -303,7 +327,7 @@ class SapController extends Controller
                 ])
                 ->with(
                     'error',
-                    'Terjadi kesalahan sistem saat memproses hitung ulang SAP. Hitung ulang dibatalkan dan data rekap tetap seperti semula.'
+                    'Rekap pencapaian SAP gagal diperbarui. Data tidak berubah, silakan coba lagi.'
                 );
         }
     }

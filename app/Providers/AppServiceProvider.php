@@ -2,9 +2,15 @@
 
 namespace App\Providers;
 
+use App\Models\DailyInspection;
 use App\Models\HazardReport;
+use App\Models\HazardResolution;
 use App\Models\SafetyTalk;
 use App\Models\User;
+use App\Observers\DailyInspectionObserver;
+use App\Observers\HazardReportObserver;
+use App\Observers\HazardResolutionObserver;
+use App\Observers\SafetyTalkObserver;
 use App\Policies\HazardReportPolicy;
 use App\Policies\SafetyTalkPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -33,5 +39,11 @@ class AppServiceProvider extends ServiceProvider
         // Policies Modul (SPK-7)
         Gate::policy(HazardReport::class, HazardReportPolicy::class);
         Gate::policy(SafetyTalk::class, SafetyTalkPolicy::class);
+
+        // UC-25: Observer untuk trigger perhitungan SAP otomatis
+        HazardReport::observe(HazardReportObserver::class);
+        DailyInspection::observe(DailyInspectionObserver::class);
+        SafetyTalk::observe(SafetyTalkObserver::class);
+        HazardResolution::observe(HazardResolutionObserver::class);
     }
 }
