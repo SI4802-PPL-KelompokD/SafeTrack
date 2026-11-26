@@ -10,7 +10,6 @@ use App\Models\SafetyTalk;
 use App\Models\SapEntry;
 use App\Models\SapMonthlySummary;
 use App\Models\SapPointRule;
-use App\Models\SapTarget;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -22,16 +21,17 @@ class SapCalculationService
      * Standard SAP Activities as defined in SafeTrack system.
      */
     public const ACTIVITY_HAZARD = 'hazard_verified';
+
     public const ACTIVITY_INSPECTION = 'inspection_reviewed';
+
     public const ACTIVITY_SAFETY_TALK = 'safety_talk_published';
+
     public const ACTIVITY_RESOLUTION = 'resolution_accepted';
 
     /**
      * Hitung poin SAP bulanan untuk seorang karyawan (UC-25).
      *
-     * @param User $user
-     * @param Carbon|string|null $period
-     * @return SapMonthlySummary
+     * @param  Carbon|string|null  $period
      */
     public function calculateForUser(User $user, $period = null): SapMonthlySummary
     {
@@ -41,7 +41,7 @@ class SapCalculationService
         $endOfMonth = $periodCarbon->copy()->endOfMonth();
 
         try {
-            return DB::transaction(function () use ($user, $periodCarbon, $periodDate, $startOfMonth, $endOfMonth) {
+            return DB::transaction(function () use ($user, $periodDate, $startOfMonth, $endOfMonth) {
                 // Pastikan rule poin aktif tersedia untuk setiap kegiatan
                 $rules = $this->getActivePointRules($periodDate);
 
@@ -190,7 +190,7 @@ class SapCalculationService
                 );
             });
         } catch (\Throwable $e) {
-            Log::error("Kegagalan perhitungan poin SAP untuk pengguna ID {$user->id} periode {$periodDate}: " . $e->getMessage(), [
+            Log::error("Kegagalan perhitungan poin SAP untuk pengguna ID {$user->id} periode {$periodDate}: ".$e->getMessage(), [
                 'user_id' => $user->id,
                 'period' => $periodDate,
                 'trace' => $e->getTraceAsString(),
@@ -202,7 +202,10 @@ class SapCalculationService
     /**
      * Hitung ulang rekap SAP bulanan untuk semua karyawan aktif (UC-28).
      *
-     * @param Carbon|string|null $period
+     * Alur Normal langkah 10: Semua karyawan dihitung dalam satu proses atomic.
+     * Alur Alternatif A2: Jika gagal, seluruh refresh dibatalkan (rollback).
+     *
+     * @param  Carbon|string|null  $period
      * @return int Jumlah karyawan yang berhasil dihitung
      */
     public function recalculateAll($period = null): int
@@ -215,13 +218,16 @@ class SapCalculationService
             ->whereNull('deleted_at')
             ->get();
 
-        $processed = 0;
-        foreach ($users as $user) {
-            $this->calculateForUser($user, $periodCarbon);
-            $processed++;
-        }
+        // Wrap dalam satu transaksi besar agar atomic (P3 / A2)
+        return DB::transaction(function () use ($users, $periodCarbon): int {
+            $processed = 0;
+            foreach ($users as $user) {
+                $this->calculateForUser($user, $periodCarbon);
+                $processed++;
+            }
 
-        return $processed;
+            return $processed;
+        });
     }
 
     /**
@@ -248,7 +254,6 @@ class SapCalculationService
     /**
      * Mengambil atau membuat aturan poin default untuk periode tersebut.
      *
-     * @param string $periodDate
      * @return array<string, SapPointRule>
      */
     protected function getActivePointRules(string $periodDate): array
@@ -271,7 +276,7 @@ class SapCalculationService
                 ->orderByDesc('effective_from')
                 ->first();
 
-            if (!$rule) {
+            if (! $rule) {
                 // Buat rule fallback jika belum ada
                 $rule = SapPointRule::firstOrCreate(
                     [
@@ -299,10 +304,6 @@ class SapCalculationService
      * - Untuk HSE: Konversi poin menjadi pemenuhan target bulanan (KPI) berdasarkan aturan konversi SAP (UC-27/PBI-23).
      *   Jika aturan konversi HSE belum ditetapkan, jangan jalankan konversi dan jangan ubah target_met menjadi true.
      *
-     * @param User $user
-     * @param int $totalPoints
-     * @param string $periodDate
-     * @param bool $isHse
      * @return array{target_met: ?bool, reward_eligible: bool, eligible_reward_id: ?int}
      */
     public function convertPoints(User $user, int $totalPoints, string $periodDate, bool $isHse): array
@@ -321,7 +322,7 @@ class SapCalculationService
                     ->first();
 
                 // Alur Alternatif (2'): Jika aturan konversi belum ditetapkan / tidak tersedia, jangan konversi dan jangan set target_met menjadi true
-                if (!$hseRule) {
+                if (! $hseRule) {
                     return [
                         'target_met' => null,
                         'reward_eligible' => false,
@@ -364,7 +365,7 @@ class SapCalculationService
             ];
         } catch (\Throwable $e) {
             // Error Situation: Catat kegagalan dan status tidak berubah
-            Log::error("Kegagalan konversi poin SAP (UC-26) untuk pengguna ID {$user->id}: " . $e->getMessage(), [
+            Log::error("Kegagalan konversi poin SAP (UC-26) untuk pengguna ID {$user->id}: ".$e->getMessage(), [
                 'user_id' => $user->id,
                 'total_points' => $totalPoints,
                 'period' => $periodDate,
@@ -380,4 +381,3 @@ class SapCalculationService
         }
     }
 }
-

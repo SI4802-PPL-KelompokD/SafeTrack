@@ -753,6 +753,14 @@
                     <h1 class="page-title">Pencapaian SAP Karyawan</h1>
                     <p class="page-desc">Rekapitulasi otomatis dan perhitungan poin keaktifan K3 bulanan dari Hazard Report, Inspeksi, Safety Talk, dan Resolusi.</p>
                 </div>
+                <div style="text-align:right;font-size:12.5px;color:var(--text-muted);margin-top:8px;">
+                    <span style="font-weight:600;">Terakhir diperbarui:</span>
+                    @if ($lastUpdatedAt)
+                        <span id="lastUpdatedLabel" style="color:var(--text-heading);font-weight:700;">{{ $lastUpdatedAt->format('d/m/Y H:i') }}</span>
+                    @else
+                        <span id="lastUpdatedLabel" style="color:var(--text-light);font-style:italic;">belum pernah diperbarui</span>
+                    @endif
+                </div>
             </div>
 
             <!-- Filter & Action Card -->
@@ -786,15 +794,15 @@
                 </form>
 
                 <!-- Trigger Hitung Ulang SAP (UC-28) -->
-                <form method="POST" action="{{ route('sap.recalculate') }}" onsubmit="return confirm('Jalankan hitung ulang poin SAP untuk periode {{ Carbon\Carbon::createFromDate($selectedYear, $selectedMonth, 1)->translatedFormat('F Y') }}? Semua aktivitas valid akan disinkronkan ke ledger.');">
+                <form method="POST" action="{{ route('sap.recalculate') }}" id="formRecalculateSap" onsubmit="return handleRecalculateSubmit();">
                     @csrf
                     <input type="hidden" name="month" value="{{ $selectedMonth }}">
                     <input type="hidden" name="year" value="{{ $selectedYear }}">
                     <button type="submit" class="btn-recalculate" id="btnRecalculateSap" title="Hitung Ulang SAP Bulanan">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:17px;height:17px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:17px;height:17px;" id="recalcIcon">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                         </svg>
-                        <span>Hitung Ulang SAP</span>
+                        <span id="recalcLabel">Hitung Ulang SAP</span>
                     </button>
                 </form>
             </div>
@@ -1010,5 +1018,34 @@
         </div>
     </main>
 </div>
+
+<script>
+    // UC-28 P1: Tombol Refresh nonaktif dan berubah menjadi "Memperbarui..." saat proses berjalan
+    function handleRecalculateSubmit() {
+        var periodText = '{{ Carbon\Carbon::createFromDate($selectedYear, $selectedMonth, 1)->translatedFormat("F Y") }}';
+        if (!confirm('Jalankan hitung ulang poin SAP untuk periode ' + periodText + '? Semua aktivitas valid akan disinkronkan ke ledger.')) {
+            return false;
+        }
+
+        var btn = document.getElementById('btnRecalculateSap');
+        var label = document.getElementById('recalcLabel');
+        var icon = document.getElementById('recalcIcon');
+
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+        label.textContent = 'Memperbarui...';
+        icon.style.animation = 'spin 1s linear infinite';
+
+        return true;
+    }
+</script>
+
+<style>
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
 </body>
 </html>
